@@ -29,5 +29,5 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
-# Mac shit
+# Mac stuff
 .DS_Store
