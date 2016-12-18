@@ -1,0 +1,5 @@
+/Users/hobbit/projects/ProyectoFinal/Scripts/Core/pf-core/pf-core/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/hobbit/projects/ProyectoFinal/Scripts/Core/pf-core/pf-core/bin/Debug/pf-core.exe.mdb
+/Users/hobbit/projects/ProyectoFinal/Scripts/Core/pf-core/pf-core/bin/Debug/pf-core.exe
+/Users/hobbit/projects/ProyectoFinal/Scripts/Core/pf-core/pf-core/obj/x86/Debug/pf-core.exe
+/Users/hobbit/projects/ProyectoFinal/Scripts/Core/pf-core/pf-core/obj/x86/Debug/pf-core.exe.mdb
