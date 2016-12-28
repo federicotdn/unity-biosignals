@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
 [assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("hobbit")]
+[assembly: AssemblyCopyright("Federico Tedin and Javier Fraire")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 
