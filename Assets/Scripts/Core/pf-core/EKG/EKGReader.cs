@@ -3,33 +3,37 @@ using System.Collections.Concurrent;
 using System.IO.Ports;
 
 namespace pfcore {
-    public class EMGReader {
-        // Values for Olimexino328 Arduino sketch
-        private const int baudRate = 57600;
-        private const Parity parity = Parity.None;
+    class EKGReader {
+        // Values for CMS50D+ CONTEC Pulse Oximeter
+        private const int baudRate = 19200;
+        private const Parity parity = Parity.Odd;
         private const int dataBits = 8;
         private const StopBits stopBits = StopBits.One;
 
         private SerialPort serialPort;
 
-        public ConcurrentQueue<EMGPacket> PacketQueue { get; }
+        public ConcurrentQueue<EKGPacket> PacketQueue { get; }
         private int maxQueueSize;
 
-        public EMGReader(string portName, int maxQueueSize) {
+        public EKGReader(string portName, int maxQueueSize) {
             serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
             serialPort.ReadTimeout = SerialPort.InfiniteTimeout;
-            PacketQueue = new ConcurrentQueue<EMGPacket>();
+            PacketQueue = new ConcurrentQueue<EKGPacket>();
             this.maxQueueSize = maxQueueSize;
+        }
+
+        private bool highBitOn(byte b) {
+            return (b & 0x80) == 0x80;
         }
 
         public void Start() {
             serialPort.Open();
 
-            byte[] buffer = new byte[EMGPacket.PACKET_SIZE];
+            byte[] buffer = new byte[EKGPacket.PACKET_SIZE];
 
             while (true) {
                 bool readOk = true;
-                EMGPacket packet = new EMGPacket();
+                EKGPacket packet = new EKGPacket();
 
                 for (int i = 0; i < buffer.Length && readOk; i++) {
                     int val = serialPort.ReadByte();
@@ -39,9 +43,8 @@ namespace pfcore {
 
                     byte readByte = (byte)val;
 
-                    if ((i == 0 && readByte != EMGPacket.SYNC0_BYTE) ||
-                        (i == 1 && readByte != EMGPacket.SYNC1_BYTE) ||
-                        (i == 2 && readByte != EMGPacket.VERSION_BYTE)) {
+                    if ((i == 0 && !highBitOn(readByte)) ||
+                        (i != 0 && highBitOn(readByte))) {
 
                         readOk = false;
                     }
@@ -49,13 +52,11 @@ namespace pfcore {
                     buffer[i] = readByte;
                 }
 
-                if (readOk) {
-                    packet.Unpack(buffer);
-
+                if (readOk && packet.HeartRate != 0) {
                     PacketQueue.Enqueue(packet);
 
                     while (PacketQueue.Count > maxQueueSize) {
-                        EMGPacket temp;
+                        EKGPacket temp;
                         PacketQueue.TryDequeue(out temp);
                     }
                 }
