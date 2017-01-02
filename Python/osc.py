@@ -26,13 +26,12 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   dispatcher = dispatcher.Dispatcher()
-  dispatcher.map("/muse/elements/blink", print)
+  dispatcher.map("/muse/elements/alpha_absolute", print)
 
 #   dispatcher.map("/muse/elements/jaw_clench", print)
 #   dispatcher.map("/muse/elements/experimental/mellow", print)
 #   dispatcher.map("/muse/elements/horseshoe", print)
 #   dispatcher.map("/muse/elements/is_good", print)
-  dispatcher.map("/muse/eeg", print)
   
 
   server = osc_server.ThreadingOSCUDPServer(

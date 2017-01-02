@@ -26,27 +26,27 @@ using System.Collections.Generic;
 
 namespace UnityOSC
 {
-    public delegate void PacketReceivedEventHandler(OSCServer sender, OSCPacket packet);
+	public delegate void PacketReceivedEventHandler(OSCServer sender, OSCPacket packet);
 
 	/// <summary>
 	/// Receives incoming OSC messages
 	/// </summary>
 	public class OSCServer
-    {
-        #region Delegates
-        public event PacketReceivedEventHandler PacketReceivedEvent;
-        #endregion
+	{
+		#region Delegates
+		public event PacketReceivedEventHandler PacketReceivedEvent;
+		#endregion
 
-        #region Constructors
-        public OSCServer (int localPort)
+		#region Constructors
+		public OSCServer(int localPort)
 		{
-            PacketReceivedEvent += delegate(OSCServer s, OSCPacket p) { };
+			PacketReceivedEvent += delegate (OSCServer s, OSCPacket p) { };
 
 			_localPort = localPort;
 			Connect();
 		}
 		#endregion
-		
+
 		#region Member Variables
 		private UdpClient _udpClient;
 		private int _localPort;
@@ -54,7 +54,7 @@ namespace UnityOSC
 		private OSCPacket _lastReceivedPacket;
 		private int _sleepMilliseconds = 10;
 		#endregion
-		
+
 		#region Properties
 		public UdpClient UDPClient
 		{
@@ -67,7 +67,7 @@ namespace UnityOSC
 				_udpClient = value;
 			}
 		}
-		
+
 		public int LocalPort
 		{
 			get
@@ -79,7 +79,7 @@ namespace UnityOSC
 				_localPort = value;
 			}
 		}
-		
+
 		public OSCPacket LastReceivedPacket
 		{
 			get
@@ -104,76 +104,77 @@ namespace UnityOSC
 			}
 		}
 		#endregion
-	
+
 		#region Methods
-		
+
 		/// <summary>
 		/// Opens the server at the given port and starts the listener thread.
 		/// </summary>
 		public void Connect()
 		{
-			if(this._udpClient != null) Close();
-			
+			if (this._udpClient != null) Close();
+
 			try
 			{
 				_udpClient = new UdpClient(_localPort);
 				_receiverThread = new Thread(new ThreadStart(this.ReceivePool));
 				_receiverThread.Start();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				throw e;
 			}
 		}
-		
+
 		/// <summary>
 		/// Closes the server and terminates its listener thread.
 		/// </summary>
 		public void Close()
 		{
-			if(_receiverThread !=null) _receiverThread.Abort();
+			if (_receiverThread != null) _receiverThread.Abort();
 			_receiverThread = null;
 			_udpClient.Close();
 			_udpClient = null;
 		}
-		
+
 
 		/// <summary>
 		/// Receives and unpacks an OSC packet.
-        /// A <see cref="OSCPacket"/>
+		/// A <see cref="OSCPacket"/>
 		/// </summary>
 		private void Receive()
 		{
-			IPEndPoint ip = null;
-			
+			IPEndPoint ip = new IPEndPoint(IPAddress.Any, 0);
+
 			try
 			{
 				byte[] bytes = _udpClient.Receive(ref ip);
 
-				if(bytes != null && bytes.Length > 0)
+				if (bytes != null && bytes.Length > 0)
 				{
-                    OSCPacket packet = OSCPacket.Unpack(bytes);
+					OSCPacket packet = OSCPacket.Unpack(bytes);
 
-                    _lastReceivedPacket = packet;
+					_lastReceivedPacket = packet;
 
-                    PacketReceivedEvent(this, _lastReceivedPacket);	
+					PacketReceivedEvent(this, _lastReceivedPacket);
 				}
 			}
-			catch{
-				throw new Exception(String.Format("Can't create server at port {0}", _localPort));
-  			}
+			catch (Exception e)
+			{
+				throw new Exception(String.Format("Can't create server at port {0}", _localPort), e);
+			}
 		}
-		
+
 		/// <summary>
 		/// Thread pool that receives upcoming messages.
 		/// </summary>
 		private void ReceivePool()
 		{
-			while( true )
+			while (true)
 			{
 				Receive();
-				
-				Thread.Sleep(_sleepMilliseconds);
+
+				//Thread.Sleep(_sleepMilliseconds);
 			}
 		}
 		#endregion
