@@ -20,7 +20,7 @@ namespace pfcore {
 
         ScatterplotBox bp;
 
-        public EMGProcessor(EMGReader reade`r) {
+        public EMGProcessor(EMGReader reader) {
             this.reader = reader;
             baseTime = DateTime.Now.Ticks;
             bp = ScatterplotBox.Show(vals.ToArray());

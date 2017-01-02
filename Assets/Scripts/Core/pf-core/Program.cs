@@ -9,6 +9,7 @@ namespace pfcore
 		public static void Main (string[] args)
 		{
             Console.WriteLine("Hello from pfcore.Main");
+            Console.Read();
         }
 
         public static string TestAccordClass() {
