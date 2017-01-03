@@ -1,208 +1,115 @@
-//
-//	  UnityOSC - Open Sound Control interface for the Unity3d game engine
-//
-//	  Copyright (c) 2012 Jorge Garcia Martin
-//
-// 	  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
-// 	  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
-// 	  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
-// 	  and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-// 
-// 	  The above copyright notice and this permission notice shall be included in all copies or substantial portions 
-// 	  of the Software.
-//
-// 	  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED 
-// 	  TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-// 	  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
-// 	  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-// 	  IN THE SOFTWARE.
-//
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 
-namespace UnityOSC
+namespace OSC
 {
-	public sealed class OSCMessage : OSCPacket
+	public class OSCMessage : OSCPacket
 	{
-		#region Constructors
-		public OSCMessage (string address)
+		public String Address { get; private set; }
+
+
+		public OSCMessage(byte[] data)
 		{
-			_typeTag = DEFAULT.ToString();
-			this.Address = address;
-		}
-		
-		public OSCMessage (string address, object msgvalue)
-		{
-			_typeTag = DEFAULT.ToString();
-			this.Address = address;
-			Append(msgvalue);
-		}
-		#endregion
-		
-		#region Member Variables
-		private const char INTEGER = 'i';
-		private const char FLOAT   = 'f';
-		private const char LONG	   = 'h';
-		private const char DOUBLE  = 'd';
-		private const char STRING  = 's';
-		private const char BYTE    = 'b';
-		private const char DEFAULT = ',';
-		
-		private string _typeTag;
-		
-		#endregion
-		
-		#region Properties
-		#endregion
-	
-		#region Methods
+			int index = 0;
 
-		/// <summary>
-		/// Specifies if the message is an OSC bundle.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.Boolean"/>
-		/// </returns>
-		override public bool IsBundle() { return false; }
-		
-		/// <summary>
-		/// Packs the OSC message to binary data.
-		/// </summary>
-		override public void Pack() 
-		{	
-			List<byte> data = new List<byte>();
+			Data = new List<Object>();
+			Address = GetAddress(data, ref index);
 
-			data.AddRange(OSCPacket.PackValue(_address));
-			OSCPacket.PadNull(data);
+			if (index % 4 != 0)
+				throw new Exception("Misaligned OSC Packet data. Address string is not padded correctly and does not align to 4 byte interval");
 
-			data.AddRange(OSCPacket.PackValue(_typeTag));
-			OSCPacket.PadNull(data);
+			char[] types = getTypes(data, ref index);
 
-			foreach (object value in _data)
+			while (index % 4 != 0)
+				index++;
+
+
+			bool commaParsed = false;
+			foreach (char type in types)
 			{
-				data.AddRange(OSCPacket.PackValue(value));
-				if (value is string || value is byte[])
+				switch (type)
 				{
-					OSCPacket.PadNull(data);
-				}
-			}
-
-			this._binaryData = data.ToArray();
-		}
-		
-		/// <summary>
-		/// Unpacks an OSC message.
-		/// </summary>
-		/// <param name="data">
-		/// A <see cref="System.Byte[]"/>
-		/// </param>
-		/// <param name="start">
-		/// A <see cref="System.Int32"/>
-		/// </param>
-		/// <returns>
-		/// A <see cref="OSCMessage"/>
-		/// </returns>
-		public static OSCMessage Unpack(byte[] data, ref int start)
-		{
-			string address = OSCPacket.UnpackValue<string>(data, ref start);
-			OSCMessage message = new OSCMessage(address);
-
-			char[] tags = OSCPacket.UnpackValue<string>(data, ref start).ToCharArray();
-			foreach (char tag in tags)
-			{
-				object value;
-				switch (tag)
-				{
-					case DEFAULT:
-						continue;
-
-					case INTEGER:
-						value = OSCPacket.UnpackValue<int>(data, ref start);
+					case ('\0'):
+						break;
+					case (','):
+						if (commaParsed)
+						{
+							throw new Exception("OSC invalid format: A comma has already been parsed");
+						}
+						commaParsed = true;
+						break;
+					case ('i'):
+						int intVal = UnpackInt32(data, ref index);
+						Data.Add(intVal);
 						break;
 
-					case LONG:
-						value = OSCPacket.UnpackValue<long>(data, ref start);
+					case ('f'):
+						float floatVal = UnpackFloat(data, ref index);
+						Data.Add(floatVal);
 						break;
-
-					case FLOAT:
-						value = OSCPacket.UnpackValue<float>(data, ref start);
+					case ('s'):
+						String s = UnpackString(data, ref index);
+						Data.Add(s);
 						break;
-
-					case DOUBLE:
-						value = OSCPacket.UnpackValue<double>(data, ref start);
+					case ('b'):
+						byte[] blob = UnpackBlob(data, ref index);
+						Data.Add(blob);
 						break;
-
-					case STRING:
-						value = OSCPacket.UnpackValue<string>(data, ref start);
-						break;
-
-					case BYTE:
-						value = OSCPacket.UnpackValue<byte[]>(data, ref start);
-						break;
-
 					default:
-						Console.WriteLine("Unknown tag: " + tag);
-						continue;
+						throw new Exception("Unsupported data type.");
+
 				}
-
-				message.Append(value);
 			}
-
-			if(message.TimeStamp == 0)
-			{
-				message.TimeStamp = DateTime.Now.Ticks;
-			}
-
-			return message;
 		}
-		
-		/// <summary>
-		/// Appends a value to an OSC message.
-		/// </summary>
-		/// <param name="value">
-		/// A <see cref="T"/>
-		/// </param>
-		public override void Append<T> (T value)
+
+		public override bool IsBundle()
 		{
-			Type type = value.GetType();
-			char typeTag = DEFAULT;
+			return false;
+		}
 
-			switch (type.Name)
+		private static String GetAddress(byte[] data, ref int index)
+		{
+			int i = index;
+			string address = "";
+			for (; i < data.Length; i += 4)
 			{
-				case "Int32":
-					typeTag = INTEGER;
-					break;
+				if (data[i] == ',')
+				{
+					if (i == 0)
+						return "";
 
-				case "Int64":
-					typeTag = LONG;
+					address = Encoding.ASCII.GetString(data.SubArray(index, i - 1));
+					index = i;
 					break;
-
-				case "Single":
-					typeTag = FLOAT;
-					break;
-
-				case "Double":
-					typeTag = DOUBLE;
-					break;
-
-				case "String":
-					typeTag = STRING;
-					break;
-
-				case "Byte[]":
-					typeTag = BYTE;
-					break;
-
-				default:
-					throw new Exception("Unsupported data type.");
+				}
 			}
 
-			_typeTag += typeTag;
-			_data.Add(value);
+			if (i >= data.Length && address == null)
+				throw new Exception("no comma found");
+
+			return address.Replace("\0", "");
 		}
-		#endregion
+
+		private static char[] getTypes(byte[] data, ref int index)
+		{
+			int i = index + 4;
+			char[] types = null;
+
+			for (; i < data.Length; i += 4)
+			{
+				if (data[i - 1] == 0)
+				{
+					types = Encoding.ASCII.GetChars(data.SubArray(index, i - index));
+					index = i;
+					break;
+				}
+			}
+
+			if (i >= data.Length && types == null)
+				throw new Exception("No null terminator after type string");
+
+			return types;
+		}
 	}
 }

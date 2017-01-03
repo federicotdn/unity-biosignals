@@ -1,5 +1,5 @@
 ﻿using System;
-using UnityOSC;
+using OSC;
 using System.Collections.Concurrent;
 
 namespace pfcore
@@ -30,6 +30,7 @@ namespace pfcore
 				{
 					float[] data = new float[1];
 					data[0] = (float)msg.Data[0];
+					Console.WriteLine(data[0]);
 					PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
 				}
 			}
