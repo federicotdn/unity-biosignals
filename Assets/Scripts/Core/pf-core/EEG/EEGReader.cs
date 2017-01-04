@@ -24,14 +24,27 @@ namespace pfcore
 
 		private void OnPacketReceived(OSCServer s, OSCPacket packet)
 		{
-			foreach (OSCMessage msg in packet.Data)
+			ProcessPacket(packet);
+		}
+
+		private void ProcessPacket(OSCPacket packet)
+		{
+			foreach (OSCPacket p in packet.Data)
 			{
-				if (msg.Address == "/muse/elements/alpha_absolute")
+				if (p.IsBundle())
 				{
-					float[] data = new float[1];
-					data[0] = (float)msg.Data[0];
-					Console.WriteLine(data[0]);
-					PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
+					ProcessPacket(p);
+				}
+				else
+				{
+					OSCMessage msg = (OSCMessage)p;
+					if (msg.Address == "/muse/elements/alpha_absolute")
+					{
+						float[] data = new float[1];
+						data[0] = (float)msg.Data[0];
+						Console.WriteLine(data[0]);
+						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
+					}
 				}
 			}
 		}

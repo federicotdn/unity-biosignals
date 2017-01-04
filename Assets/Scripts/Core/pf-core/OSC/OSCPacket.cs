@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+
 namespace OSC
 {
 	public abstract class OSCPacket
@@ -40,9 +42,36 @@ namespace OSC
 
 		protected static float UnpackFloat(byte[] bytes, ref int index)
 		{
-			float ans = BitConverter.ToSingle(bytes, index);
-			index += 4;
+			int aux = index;
+			byte[] data = FixEndianness(bytes, ref aux, sizeof(float));
+			float ans = BitConverter.ToSingle(data, aux);
+			index += sizeof(float);
 			return ans;
+		}
+
+		protected static byte[] UnpackBlob(byte[] bytes, ref int index)
+		{
+			int size = UnpackInt32(bytes, ref index);
+			byte[] ans = bytes.SubArray(index, size);
+			index += size;
+			return ans;
+		}
+
+		protected static String UnpackString(byte[] bytes, ref int index)
+		{
+			String s = null;
+			for (int i = index + 4; i < bytes.Length; i += 4)
+			{
+				if (bytes[i] == 0)
+				{
+					s = Encoding.ASCII.GetString(bytes.SubArray(index, i - index));
+					s.Replace("\0", "");
+					index = i;
+					return s;
+				}
+			}
+
+			throw new Exception("No null terminator after type string");
 		}
 
 		private static byte[] FixEndianness(byte[] bytes, ref int start, int size)
