@@ -1,0 +1,162 @@
+fileFormatVersion: 2
+guid: 5d06c8e481e9c63409f7653006d9e396
+timeCreated: 1452304665
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: bullet
+    100004: bullet_shooter
+    100006: Cube_002
+    100008: Cube_005
+    100010: Gun
+    100012: Gun_trigger
+    100014: hulle
+    100016: muni_rot
+    100018: muzzle_fire
+    400000: //RootNode
+    400002: bullet
+    400004: bullet_shooter
+    400006: Cube_002
+    400008: Cube_005
+    400010: Gun
+    400012: Gun_trigger
+    400014: hulle
+    400016: muni_rot
+    400018: muzzle_fire
+    2300000: bullet
+    2300002: Cube_002
+    2300004: Cube_005
+    2300006: Gun
+    2300008: Gun_trigger
+    2300010: hulle
+    2300012: muzzle_fire
+    3300000: bullet
+    3300002: Cube_002
+    3300004: Cube_005
+    3300006: Gun
+    3300008: Gun_trigger
+    3300010: hulle
+    3300012: muzzle_fire
+    4300000: bullet
+    4300002: Cube_002
+    4300004: hulle
+    4300006: Gun
+    4300008: Cube_005
+    4300010: muzzle_fire
+    4300012: Gun_trigger
+    7400000: Default Take
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Default Take
+      takeName: Default Take
+      firstFrame: 0
+      lastFrame: 14
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: bullet
+        weight: 1
+      - path: Cube_002
+        weight: 1
+      - path: Gun
+        weight: 1
+      - path: Gun/bullet_shooter
+        weight: 1
+      - path: Gun/Cube_005
+        weight: 1
+      - path: Gun/Gun_trigger
+        weight: 1
+      - path: Gun/muni_rot
+        weight: 1
+      - path: Gun/muzzle_fire
+        weight: 1
+      - path: hulle
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
