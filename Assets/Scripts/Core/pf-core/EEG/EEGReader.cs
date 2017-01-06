@@ -1,10 +1,7 @@
-﻿using System;
-using OSC;
-using System.Collections.Concurrent;
+﻿using OSC;
 
-namespace pfcore
-{
-	public class EEGReader
+namespace pfcore {
+    public class EEGReader
 	{
 		private OSCServer server;
 		private int port;

@@ -12,9 +12,10 @@ namespace pfcore
 
 	class MainClass
 	{
-		public static void Main(string[] args)
+        public static void Main(string[] args)
 		{
-			Console.WriteLine("Hello from pfcore.Main");
+#if !UNITY_EDITOR
+            Console.WriteLine("Hello from pfcore.Main");
 			if (args.Length < 1)
 			{
 				Console.WriteLine("Invalid number of arguments.");
@@ -49,15 +50,10 @@ namespace pfcore
 					throw new Exception("No run mode specified.");
 
 			}
-		}
+#endif
+        }
 
-		public static string TestAccordClass()
-		{
-			MinimumMeanDistanceClassifier t = new MinimumMeanDistanceClassifier();
-			return t.ToString();
-		}
-
-		private static void RunEEG(string trainigPath = null, string predictionPath = null)
+        private static void RunEEG(string trainigPath = null, string predictionPath = null)
 		{
 			EEGReader reader = new EEGReader(5005);
 
@@ -103,5 +99,5 @@ namespace pfcore
                 Thread.Sleep(16);
             }
         }
-	}
+    }
 }
