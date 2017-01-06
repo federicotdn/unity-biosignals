@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Accord.MachineLearning;
+using System.Threading;
 
 namespace pfcore
 {
@@ -84,7 +85,23 @@ namespace pfcore
 
 		private static void RunEMG()
 		{
+            EMGReader reader = new EMGReader("COM4", 1000);
+            EMGProcessor processor = new EMGProcessor(reader);
+            processor.Start();
 
-		}
+            long ticks = DateTime.Now.Ticks;
+
+            while (true) {
+                long dtTicks = DateTime.Now.Ticks - ticks;
+
+                float dt = (float)dtTicks / 10000000;
+
+                processor.Update();
+
+                ticks = DateTime.Now.Ticks;
+
+                Thread.Sleep(16);
+            }
+        }
 	}
 }
