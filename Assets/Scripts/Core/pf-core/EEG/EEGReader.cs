@@ -42,9 +42,12 @@ namespace pfcore
 					{
 						float[] data = new float[1];
 						data[0] = (float)msg.Data[0];
-						Console.WriteLine(data[0]);
 						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
 					}
+					//if (msg.Address == "/Marker/1")
+					//{
+					//	Console.WriteLine("Marker");
+					//}
 				}
 			}
 		}

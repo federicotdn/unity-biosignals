@@ -7,60 +7,69 @@ using Accord.Controls;
 using ZedGraph;
 using System.Drawing;
 
-namespace pfcore {
-    class EMGProcessor {
-        private EMGReader reader;
+namespace pfcore
+{
+	class EMGProcessor
+	{
+		private EMGReader reader;
 
-        private const int FFT_SAMPLE_SIZE = 128;
+		private const int FFT_SAMPLE_SIZE = 128;
 
-        List<double> vals = new List<double>();
-        List<double> times = new List<double>();
+		List<double> vals = new List<double>();
+		List<double> times = new List<double>();
 
-        private readonly long baseTime;
+		private readonly long baseTime;
 
-        ScatterplotBox bp;
+		ScatterplotBox bp;
 
-        public EMGProcessor(EMGReader reader) {
-            this.reader = reader;
-            baseTime = DateTime.Now.Ticks;
-            bp = ScatterplotBox.Show(vals.ToArray());
-        }
+		public EMGProcessor(EMGReader reader)
+		{
+			this.reader = reader;
+			baseTime = DateTime.Now.Ticks;
+			bp = ScatterplotBox.Show(vals.ToArray());
+		}
 
-        public void Start() {
-            Thread readerThread = new Thread(new ThreadStart(reader.Start));
-            readerThread.Start();
-        }
+		public void Start()
+		{
+			//Thread readerThread = new Thread(new ThreadStart(reader.Start));
+			//readerThread.Start();
+		}
 
-        public void Update() {
-            ConcurrentQueue<EMGPacket> queue = reader.PacketQueue;
+		public void Update()
+		{
+			ConcurrentQueue<EMGPacket> queue = reader.PacketQueue;
 
-            EMGPacket packet;
-            while (queue.TryDequeue(out packet)) {
-                vals.Add(packet.channels[0] / 1000.0f);
-                times.Add((double)(packet.timeStamp - baseTime) / 10000000.0);
-            }
+			EMGPacket packet;
+			while (queue.TryDequeue(out packet))
+			{
+				vals.Add(packet.channels[0] / 1000.0f);
+				times.Add((double)(packet.timeStamp - baseTime) / 10000000.0);
+			}
 
-            bp.Invoke(new Action<double[], double[]>((double[] xs, double[] ys) => {
-                ZedGraphControl zgc = bp.ScatterplotView.Graph;
-                zgc.GraphPane.CurveList.Clear();
+			bp.Invoke(new Action<double[], double[]>((double[] xs, double[] ys) =>
+			{
+				ZedGraphControl zgc = bp.ScatterplotView.Graph;
+				zgc.GraphPane.CurveList.Clear();
 
-                zgc.GraphPane.AddCurve("vals", xs, ys, Color.Blue, SymbolType.Circle);
+				zgc.GraphPane.AddCurve("vals", xs, ys, Color.Blue, SymbolType.Circle);
 
-                zgc.AxisChange();
-                zgc.Invalidate();
+				zgc.AxisChange();
+				zgc.Invalidate();
 
-            }), times.ToArray(), vals.ToArray());
+			}), times.ToArray(), vals.ToArray());
 
-            while (queue.TryDequeue(out packet)) {
-                /* Discard packets */
-            }
+			while (queue.TryDequeue(out packet))
+			{
+				/* Discard packets */
+			}
 
-            if (vals.Count > 3000) {
-                vals.Clear();
-                times.Clear();
-            }
+			if (vals.Count > 3000)
+			{
+				vals.Clear();
+				times.Clear();
+			}
 
-            Console.WriteLine(vals.Count);
-        }
-    }
+			Console.WriteLine(vals.Count);
+		}
+	}
 }

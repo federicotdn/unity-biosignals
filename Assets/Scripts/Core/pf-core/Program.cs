@@ -14,20 +14,27 @@ namespace pfcore
 		public static void Main(string[] args)
 		{
 			Console.WriteLine("Hello from pfcore.Main");
-			if (args.Length != 1)
+			if (args.Length < 1)
 			{
 				Console.WriteLine("Invalid number of arguments.");
 				return;
 			}
 
-            RunMode runMode;
-            Enum.TryParse(args[0], true, out runMode);
+			RunMode runMode;
+			Enum.TryParse(args[0], true, out runMode);
 
 			switch (runMode)
 			{
 				case RunMode.EEG:
 					Console.WriteLine("Running on EEG mode!\n");
-					RunEEG();
+					if (args.Length >= 3)
+					{
+						RunEEG(args[1], args[2]);
+					}
+					else
+					{
+						RunEEG();
+					}
 					break;
 				case RunMode.EMG:
 					Console.WriteLine("Running on EMG mode!\n");
@@ -37,8 +44,8 @@ namespace pfcore
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
 					break;
-                default:
-                    throw new Exception("No run mode specified.");
+				default:
+					throw new Exception("No run mode specified.");
 
 			}
 		}
@@ -49,13 +56,21 @@ namespace pfcore
 			return t.ToString();
 		}
 
-		private static void RunEEG()
+		private static void RunEEG(string trainigPath = null, string predictionPath = null)
 		{
 			EEGReader reader = new EEGReader(5005);
-			EEGProcessor processor = new EEGProcessor(reader);
+
+			EEGProcessor processor;
+			if (trainigPath != null && predictionPath != null)
+			{
+				processor = new EEGProcessor(reader, trainigPath, predictionPath);
+			}
+			else
+			{
+				processor = new EEGProcessor(reader, false);
+			}
+
 			processor.Start();
-
-
 			while (true)
 			{
 				processor.Update();
