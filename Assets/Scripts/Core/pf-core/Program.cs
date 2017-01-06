@@ -4,9 +4,9 @@ using Accord.MachineLearning;
 
 namespace pfcore
 {
-	enum RUN_MODE
+	enum RunMode
 	{
-		EEG = 1, EMG = 2, EKG = 3
+		EEG, EMG, EKG
 	}
 
 	class MainClass
@@ -20,22 +20,25 @@ namespace pfcore
 				return;
 			}
 
-			int mode = Int32.Parse(args[0]);
+            RunMode runMode;
+            Enum.TryParse(args[0], true, out runMode);
 
-			switch (mode)
+			switch (runMode)
 			{
-				case (int)RUN_MODE.EEG:
+				case RunMode.EEG:
 					Console.WriteLine("Running on EEG mode!\n");
 					RunEEG();
 					break;
-				case (int)RUN_MODE.EMG:
+				case RunMode.EMG:
 					Console.WriteLine("Running on EMG mode!\n");
 					RunEMG();
 					break;
-				case (int)RUN_MODE.EKG:
+				case RunMode.EKG:
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
 					break;
+                default:
+                    throw new Exception("No run mode specified.");
 
 			}
 		}
