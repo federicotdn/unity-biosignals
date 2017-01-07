@@ -5,6 +5,7 @@ namespace pfcore {
         // Data packet received from Olimexino328
         private const int CHANNEL_COUNT = 6;
         private const int CHANNEL_OFFSET = 4;
+        public const int SAMPLE_RATE = 256; //Hz
 
         public const int PACKET_SIZE = 17;
         public const byte SYNC0_BYTE = 0xA5;
@@ -44,6 +45,22 @@ namespace pfcore {
             switches = buf[16];
 
             timeStamp = DateTime.Now.Ticks;
+        }
+
+        public void Pack(byte[] buf) {
+            buf[0] = sync0;
+            buf[1] = sync1;
+            buf[2] = version;
+            buf[3] = count;
+
+            int dataIdx = 0;
+            for (int i = CHANNEL_OFFSET; i < CHANNEL_OFFSET + (CHANNEL_COUNT * 2); i += 2) {
+                buf[i] = (byte)(channels[dataIdx] >> 8);
+                buf[i + 1] = (byte)channels[dataIdx];
+                dataIdx++;
+            }
+
+            buf[16] = switches;
         }
     }
 }
