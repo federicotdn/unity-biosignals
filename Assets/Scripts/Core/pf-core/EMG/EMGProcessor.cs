@@ -9,25 +9,20 @@ namespace pfcore {
     class EMGProcessor {
         private EMGReader reader;
 
-        private const int FFT_SAMPLE_SIZE = 256;
-        private const double SAMPLE_RATE = 256; // Sample rate for Olimex EMG 
-        private const double FREQ_STEP = SAMPLE_RATE / FFT_SAMPLE_SIZE;
+        public const int FFT_SAMPLE_SIZE = 256;
+        public const double SAMPLE_RATE = 256; // Sample rate for Olimex EMG 
+        public const double FREQ_STEP = SAMPLE_RATE / FFT_SAMPLE_SIZE;
 
-        List<double> readings = new List<double>();
-        List<double> times = new List<double>();
- 
-        private readonly long baseTime;
-
-        //ScatterplotBox valuesPlot;
-        //ScatterplotBox freqsPlot;
+        private List<double> readings = new List<double>();
+        private Complex[] fftResults = new Complex[FFT_SAMPLE_SIZE];
+        public Complex[] FFTResults {
+            get {
+                return fftResults;
+            }
+        }
 
         public EMGProcessor(EMGReader reader) {
             this.reader = reader;
-            baseTime = DateTime.Now.Ticks;
-            //valuesPlot = ScatterplotBox.Show(readings.ToArray());
-
-            //double[] temp = new double[0];
-            //freqsPlot = ScatterplotBox.Show(temp);
         }
 
         public void Start() {
@@ -41,53 +36,15 @@ namespace pfcore {
             EMGPacket packet;
             while (queue.TryDequeue(out packet)) {
                 readings.Add(packet.channels[0] / 1000.0f);
-                Console.WriteLine(packet.channels[0]);
-                times.Add((double)(packet.timeStamp - baseTime) / 10000000.0);
             }
 
-            //valuesPlot.Invoke(new Action<double[], double[]>((double[] xs, double[] ys) => {
-            //    ZedGraphControl zgc = valuesPlot.ScatterplotView.Graph;
-            //    zgc.GraphPane.CurveList.Clear();
-
-            //    zgc.GraphPane.AddCurve("vals", xs, ys, Color.Blue, SymbolType.Circle);
-
-            //    zgc.AxisChange();
-            //    zgc.Invalidate();
-
-            //}), times.ToArray(), readings.ToArray());
+            if (readings.Count >= FFT_SAMPLE_SIZE) {
+                fftResults = RunFFT(readings);
+                readings.Clear();
+            }
 
             while (queue.TryDequeue(out packet)) {
                 /* Discard packets */
-            }
-
-            if (readings.Count > FFT_SAMPLE_SIZE) {
-                Complex[] frequencies = RunFFT(readings);
-
-                //freqsPlot.Invoke(new Action<Complex[]>((Complex[] freqs) => {
-                //    ZedGraphControl zgc = freqsPlot.ScatterplotView.Graph;
-                //    zgc.GraphPane.CurveList.Clear();
-
-                //    double[] freqAmplitudes = new double[freqs.Length];
-                //    for (int i = 0; i < freqs.Length; i++) {
-                //        freqAmplitudes[i] = 20 * Math.Log10(freqs[i].Real) * 100;
-                //    }
-
-                //    double[] ranges = new double[freqs.Length];
-                //    for (int i = 0; i < freqs.Length; i++) {
-                //        ranges[i] = i * FREQ_STEP;
-                //    }
-
-                //    zgc.GraphPane.AddCurve("FFT", ranges, freqAmplitudes, Color.Blue, SymbolType.Circle);
-
-                //    zgc.AxisChange();
-                //    zgc.Invalidate();
-
-                //}), frequencies);
-
-                Console.WriteLine("dft");
-
-                readings.Clear();
-                times.Clear();
             }
         }
 

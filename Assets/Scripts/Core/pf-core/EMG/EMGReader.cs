@@ -11,13 +11,18 @@ namespace pfcore {
 
         private SerialPort serialPort;
 
-        public ConcurrentQueue<EMGPacket> PacketQueue { get; }
+        private ConcurrentQueue<EMGPacket> packetQueue;
+        public ConcurrentQueue<EMGPacket> PacketQueue {
+            get {
+                return packetQueue;
+            }
+        }
         private int maxQueueSize;
 
         public EMGReader(string portName, int maxQueueSize) {
             serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
             serialPort.ReadTimeout = SerialPort.InfiniteTimeout;
-            PacketQueue = new ConcurrentQueue<EMGPacket>();
+            packetQueue = new ConcurrentQueue<EMGPacket>();
             this.maxQueueSize = maxQueueSize;
         }
 
@@ -51,11 +56,11 @@ namespace pfcore {
                 if (readOk) {
                     packet.Unpack(buffer);
 
-                    PacketQueue.Enqueue(packet);
+                    packetQueue.Enqueue(packet);
 
-                    while (PacketQueue.Count > maxQueueSize) {
+                    while (packetQueue.Count > maxQueueSize) {
                         EMGPacket temp;
-                        PacketQueue.TryDequeue(out temp);
+                        packetQueue.TryDequeue(out temp);
                     }
                 }
             }
