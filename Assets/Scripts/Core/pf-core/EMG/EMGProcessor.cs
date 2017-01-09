@@ -10,14 +10,28 @@ namespace pfcore {
         private EMGReader reader;
 
         public const int FFT_SAMPLE_SIZE = 256;
-        public const double SAMPLE_RATE = 256; // Sample rate for Olimex EMG 
-        public const double FREQ_STEP = SAMPLE_RATE / FFT_SAMPLE_SIZE;
+        public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
 
-        private List<double> readings = new List<double>();
-        private Complex[] fftResults = new Complex[FFT_SAMPLE_SIZE];
-        public Complex[] FFTResults {
+        private Thread readerThread;
+
+        private List<EMGPacket> readings = new List<EMGPacket>();
+        public List<EMGPacket> Readings {
+            get {
+                return readings;
+            }
+        }
+
+        private List<Complex> fftResults = new List<Complex>();
+        public List<Complex> FFTResults {
             get {
                 return fftResults;
+            }
+        }
+
+        private Action fftCallback = null;
+        public Action FFTCallback {
+            set {
+                fftCallback = value;
             }
         }
 
@@ -26,8 +40,13 @@ namespace pfcore {
         }
 
         public void Start() {
-            Thread readerThread = new Thread(new ThreadStart(reader.Start));
+            readerThread = new Thread(new ThreadStart(reader.Start));
             readerThread.Start();
+        }
+
+        public void StopAndJoin() {
+            reader.Stop();
+            readerThread.Join();
         }
 
         public void Update() {
@@ -35,11 +54,14 @@ namespace pfcore {
 
             EMGPacket packet;
             while (queue.TryDequeue(out packet)) {
-                readings.Add(packet.channels[0] / 1000.0f);
+                readings.Add(packet);
             }
 
             if (readings.Count >= FFT_SAMPLE_SIZE) {
-                fftResults = RunFFT(readings);
+                RunFFT();
+                if (fftCallback != null) {
+                    fftCallback();
+                }
                 readings.Clear();
             }
 
@@ -48,14 +70,17 @@ namespace pfcore {
             }
         }
 
-        private Complex[] RunFFT(List<double> values) {
-            Complex[] data = new Complex[values.Count];
-            for (int i = 0; i < values.Count; i++) {
-                data[i] = new Complex(values[i], 0);
+        private void RunFFT() {
+            Complex[] data = new Complex[readings.Count];
+            for (int i = 0; i < readings.Count; i++) {
+                data[i] = new Complex(readings[i].channels[0], 0);
             }
 
             FourierTransform.DFT(data, FourierTransform.Direction.Forward);
-            return data;
+
+            fftResults.Clear();
+            fftResults.Capacity = data.Length;
+            fftResults.AddRange(data);
         }
     }
 }

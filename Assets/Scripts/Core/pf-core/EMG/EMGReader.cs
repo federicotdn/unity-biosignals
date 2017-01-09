@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.IO.Ports;
+using System.Threading;
 
 namespace pfcore {
     public class EMGReader {
@@ -9,9 +11,14 @@ namespace pfcore {
         private const int dataBits = 8;
         private const StopBits stopBits = StopBits.One;
 
-        private SerialPort serialPort;
+        private SerialPort serialPort = null;
 
-        private ConcurrentQueue<EMGPacket> packetQueue;
+        private bool running = true;
+
+        private bool fileMode = false;
+        private FileStream fileStream;
+
+        private ConcurrentQueue<EMGPacket> packetQueue = new ConcurrentQueue<EMGPacket>();
         public ConcurrentQueue<EMGPacket> PacketQueue {
             get {
                 return packetQueue;
@@ -22,23 +29,52 @@ namespace pfcore {
         public EMGReader(string portName, int maxQueueSize) {
             serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
             serialPort.ReadTimeout = SerialPort.InfiniteTimeout;
-            packetQueue = new ConcurrentQueue<EMGPacket>();
             this.maxQueueSize = maxQueueSize;
         }
 
+        public EMGReader(FileStream fileStream, int maxQueueSize) {
+            this.fileStream = fileStream;
+            this.maxQueueSize = maxQueueSize;
+            fileMode = true;
+        }
+
+        public void Stop() {
+            running = false;
+        }
+
+        private int GetNextByte() {
+            if (fileMode) {
+                // Emulate Serial Port delay
+                Thread.Sleep(1); //TODO: Use a correct value
+                int value = fileStream.ReadByte();
+
+                if (value == -1) {
+                    // Start from the beggining of file, again
+                    fileStream.Seek(0, SeekOrigin.Begin);
+                    return fileStream.ReadByte();
+                } else {
+                    return value;
+                }
+            } else {
+                return serialPort.ReadByte();
+            }
+        }
+
         public void Start() {
-            serialPort.Open();
+            if (serialPort != null) {
+                serialPort.Open();
+            }
 
             byte[] buffer = new byte[EMGPacket.PACKET_SIZE];
 
-            while (true) {
+            while (running) {
                 bool readOk = true;
                 EMGPacket packet = new EMGPacket();
 
                 for (int i = 0; i < buffer.Length && readOk; i++) {
-                    int val = serialPort.ReadByte();
+                    int val = GetNextByte();
                     if (val == -1) {
-                        throw new Exception("Serial Port: End of stream.");
+                        throw new Exception("End of stream.");
                     }
 
                     byte readByte = (byte)val;
@@ -63,6 +99,10 @@ namespace pfcore {
                         packetQueue.TryDequeue(out temp);
                     }
                 }
+            }
+
+            if (serialPort != null) {
+                serialPort.Close();
             }
         }
     }

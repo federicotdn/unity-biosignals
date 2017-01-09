@@ -2,12 +2,13 @@
 
 using Accord.MachineLearning;
 using System.Threading;
+using System.IO;
 
 namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG
+		EEG, EMG, EKG, EMGWrite
 	}
 
 	class MainClass
@@ -42,6 +43,10 @@ namespace pfcore
 					Console.WriteLine("Running on EMG mode!\n");
 					RunEMG();
 					break;
+                case RunMode.EMGWrite:
+                    Console.WriteLine("Running in EMG Write mode.");
+                    RunEMGWrite();
+                    break;
 				case RunMode.EKG:
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
@@ -78,6 +83,45 @@ namespace pfcore
 		{
 
 		}
+
+        private static void RunEMGWrite() {
+            string filename = DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".emg";
+
+            FileStream outStream = File.OpenWrite(filename);
+
+            EMGReader reader = new EMGReader("COM4", 1000);
+
+            Thread readerThread = new Thread(new ThreadStart(reader.Start));
+            readerThread.Start();
+
+            EMGWriter writer = new EMGWriter(reader, outStream);
+
+            Console.WriteLine("Starting EMG writer, file: " + outStream.Name);
+
+            DateTime start = DateTime.Now;
+            DateTime last = DateTime.Now;
+            while (DateTime.Now.Subtract(start).TotalSeconds < 60) {
+                writer.Update();
+
+                if (DateTime.Now.Subtract(last).TotalSeconds > 1) {
+                    Console.Write((int)DateTime.Now.Subtract(start).TotalSeconds);
+                    Console.Write("... ");
+                    last = DateTime.Now;
+                }
+
+                Thread.Sleep(16);
+            }
+
+            outStream.Close();
+
+            reader.Stop();
+            readerThread.Join();
+
+            Console.WriteLine();
+            Console.WriteLine("EMG write completed. Press Enter to exit.");
+
+            Console.ReadLine();
+        }
 
 		private static void RunEMG()
 		{
