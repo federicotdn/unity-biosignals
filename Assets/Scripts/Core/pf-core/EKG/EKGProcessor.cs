@@ -62,7 +62,7 @@ namespace pfcore
 			}
 		}
 
-		public int getBPM()
+		public int GetBPM()
 		{
 			if (peaks.Count == 0)
 			{

@@ -54,6 +54,7 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 			dy = 0;
 		}
 
+
 		if (!shakeXTimer.Finished) {
 			vx += ax * Time.deltaTime;
 			if (Mathf.Abs(vx) > MaxShakeVel) {
@@ -63,10 +64,10 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 		}
 
 		if (!shakeYTimer.Finished) {
-			if (Mathf.Abs(vy) > 1) {
+			vy += ay * Time.deltaTime;
+			if (Mathf.Abs(vy) > MaxShakeVel) {
 				vy = -vy;
 			}
-			vy += ay * Time.deltaTime;
 			shakeDy = vy * Time.deltaTime;
 		}
 
@@ -81,7 +82,7 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 	}
 
 	void Shake() {
-		Vector3 aux = Random.insideUnitSphere * 5;
+		Vector3 aux = Random.insideUnitSphere;
 		if (shakeXTimer.Finished) {
 			shakeXTimer = new CounterTimer (aux.x);
 			ax = Mathf.Abs(Random.insideUnitSphere.x * ShakeMagnitude) * - Mathf.Sign(ax);

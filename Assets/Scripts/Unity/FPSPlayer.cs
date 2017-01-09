@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using pfcore;
 
 public class FPSPlayer : MonoBehaviour {
 
@@ -14,8 +15,16 @@ public class FPSPlayer : MonoBehaviour {
 	public int MagSize = 12;
 	public int rounds { get; private set; }
 
+	public int BPM {
+		get {
+			return processor.GetBPM ();
+		}
+	}
+
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
+
+	private EKGProcessor processor;
 
 
 	// Use this for initialization
@@ -30,7 +39,9 @@ public class FPSPlayer : MonoBehaviour {
 	}
 
 	void Start () {
-		
+		EKGReader reader = new EKGReader ("", 500);
+		processor = new EKGProcessor (reader);
+		processor.Start ();
 	}
 	
 	// Update is called once per frame
@@ -55,5 +66,7 @@ public class FPSPlayer : MonoBehaviour {
 				LookManager.Instance.Recoil ();
 			}
 		}
+
+		processor.Update ();
 	}
 }
