@@ -184,9 +184,21 @@ namespace pfcore
 				Console.WriteLine("Finished training and predicting.");
 				Console.WriteLine("\nConfusion matrix: \n");
 				Console.WriteLine("  C     O");
+
+				int truePositive = confusionMatrix[0, 0];
+				int falseNegative = confusionMatrix[0, 1];
+				int trueNegative = confusionMatrix[1, 1];
+				int falsePositive = confusionMatrix[1, 0];
+
+				float SE = truePositive / (float)(truePositive + falseNegative);
+				float SP = trueNegative / (float)(trueNegative + falsePositive);
+
 				Console.WriteLine("C " + confusionMatrix[0, 0] + "   " + confusionMatrix[0, 1]);
 				Console.WriteLine("O " + confusionMatrix[1, 0] + "   " + confusionMatrix[1, 1]);
 				Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(expectedOutputs.Length));
+
+				Console.WriteLine("Sensitivity: " + SE);
+				Console.WriteLine("Specificity: " + SP);
 			}
 			else
 			{
