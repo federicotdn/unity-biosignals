@@ -1,7 +1,8 @@
 ﻿using OSC;
 
-namespace pfcore {
-    public class EEGReader
+namespace pfcore
+{
+	public class EEGReader
 	{
 		private OSCServer server;
 		private int port;
@@ -41,10 +42,6 @@ namespace pfcore {
 						data[0] = (float)msg.Data[0];
 						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
 					}
-					//if (msg.Address == "/Marker/1")
-					//{
-					//	Console.WriteLine("Marker");
-					//}
 				}
 			}
 		}

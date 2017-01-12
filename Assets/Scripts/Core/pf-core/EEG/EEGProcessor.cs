@@ -8,7 +8,6 @@ using Accord.MachineLearning.DecisionTrees;
 using Accord.MachineLearning.Bayes;
 using Accord.MachineLearning.VectorMachines.Learning;
 using Accord.Statistics.Distributions.Univariate;
-using System.IO;
 using System.Text;
 
 namespace pfcore
@@ -18,15 +17,27 @@ namespace pfcore
 		EYES_OPENED = 1, EYES_CLOSED = 0, IDLE = 2
 	}
 
+	public struct EEGData
+	{
+		public double[][] features;
+		public int[] outputs;
+
+		public EEGData(double[][] features, int[] outputs)
+		{
+			this.features = features;
+			this.outputs = outputs;
+		}
+	}
+
 	public class EEGProcessor
 	{
 		private EEGReader reader;
-		private List<float> data = new List<float>();
-		private List<TrainingMode> modes = new List<TrainingMode>();
+		public List<float> Data { get; private set; }
+		public List<TrainingMode> Modes { get; private set; }
 		private int currentCount;
 		private SupportVectorMachine svm;
-		private string trainingCSVPath;
-		private string predictionCSVPath;
+
+		private DecisionTree tree;
 
 		private const int IGNORE_COUNT = 25;
 
@@ -57,10 +68,10 @@ namespace pfcore
 				currentCount = 0;
 
 				int i = 0;
-				while (i < IGNORE_COUNT && data.Count > 0 && i < data.Count)
+				while (i < IGNORE_COUNT && Data.Count > 0 && i < Data.Count)
 				{
-					data.RemoveAt(i);
-					modes.RemoveAt(i);
+					Data.RemoveAt(i);
+					Modes.RemoveAt(i);
 					i++;
 				}
 			}
@@ -85,15 +96,6 @@ namespace pfcore
 				}
 				else
 				{
-					if (Online)
-					{
-						Train();
-					}
-					else
-					{
-						SaveToCSV();
-					}
-
 					Console.WriteLine("Finished Training");
 				}
 			}
@@ -101,141 +103,26 @@ namespace pfcore
 
 		public EEGProcessor(EEGReader reader, bool online)
 		{
+			Modes = new List<TrainingMode>();
+			Data = new List<float>();
+
 			this.reader = reader;
 			Online = online;
 			Mode = TrainingMode.IDLE;
+
 		}
 
 		public EEGProcessor(EEGReader reader) : this(reader, false)
 		{
 		}
 
-		public EEGProcessor(EEGReader reader, string trainingPath, string preditctionPath) : this(reader, false)
-		{
-			trainingCSVPath = trainingPath;
-			predictionCSVPath = preditctionPath;
-		}
-
 		public void Start()
 		{
-			if (!Online && trainingCSVPath != null && predictionCSVPath != null)
-			{
-				List<string> lines = ReadCSV(trainingCSVPath);
-
-				double[][] features = new double[lines.Count][];
-				int[] outputs = new int[lines.Count];
-				int i = 0;
-				foreach (string line in lines)
-				{
-					string[] values = line.Split(',');
-					features[i] = new double[2];
-					features[i][0] = double.Parse(values[0]);
-					features[i][1] = double.Parse(values[1]);
-					outputs[i] = int.Parse(values[2]);
-					i++;
-				}
-
-				var tree = Train(features, outputs);
-
-				lines = ReadCSV(predictionCSVPath);
-
-				features = new double[lines.Count][];
-				int[] expectedOutputs = new int[lines.Count];
-				i = 0;
-				foreach (string line in lines)
-				{
-					string[] values = line.Split(',');
-					features[i] = new double[2];
-					features[i][0] = double.Parse(values[0]);
-					features[i][1] = double.Parse(values[1]);
-					expectedOutputs[i] = int.Parse(values[2]);
-					i++;
-				}
-
-				int[] answers = tree.Decide(features);
-
-				int[,] confusionMatrix = new int[2, 2];
-				for (i = 0; i < answers.Length; i++)
-				{
-					if (expectedOutputs[i] == (int)TrainingMode.EYES_CLOSED)
-					{
-						if (answers[i] == (int)TrainingMode.EYES_CLOSED)
-						{
-							confusionMatrix[0, 0]++;
-						}
-						else
-						{
-							confusionMatrix[0, 1]++;
-						}
-					}
-					else
-					{
-						if (answers[i] == (int)TrainingMode.EYES_OPENED)
-						{
-							confusionMatrix[1, 1]++;
-						}
-						else
-						{
-							confusionMatrix[1, 0]++;
-						}
-					}
-				}
-
-				Console.WriteLine("Finished training and predicting.");
-				Console.WriteLine("\nConfusion matrix: \n");
-				Console.WriteLine("  C     O");
-
-				int truePositive = confusionMatrix[0, 0];
-				int falseNegative = confusionMatrix[0, 1];
-				int trueNegative = confusionMatrix[1, 1];
-				int falsePositive = confusionMatrix[1, 0];
-
-				float SE = truePositive / (float)(truePositive + falseNegative);
-				float SP = trueNegative / (float)(trueNegative + falsePositive);
-
-				Console.WriteLine("C " + confusionMatrix[0, 0] + "   " + confusionMatrix[0, 1]);
-				Console.WriteLine("O " + confusionMatrix[1, 0] + "   " + confusionMatrix[1, 1]);
-				Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(expectedOutputs.Length));
-
-				Console.WriteLine("Sensitivity: " + SE);
-				Console.WriteLine("Specificity: " + SP);
-			}
-			else
+			if (Online)
 			{
 				Thread readerThread = new Thread(new ThreadStart(reader.Start));
 				readerThread.Start();
 				currentCount = 0;
-
-				Thread readLineThread = new Thread(new ThreadStart(readInput));
-				readLineThread.Start();
-			}
-		}
-
-		private void readInput()
-		{
-			while (true)
-			{
-				ConsoleKeyInfo k = Console.ReadKey();
-				if (k.Key == ConsoleKey.Spacebar)
-				{
-					if (!Training)
-					{
-						Training = true;
-					}
-
-					if (Mode == TrainingMode.EYES_CLOSED)
-					{
-						Mode = TrainingMode.EYES_OPENED;
-					}
-					else
-					{
-						Mode = TrainingMode.EYES_CLOSED;
-					}
-				}
-				else if (k.Key == ConsoleKey.F)
-				{
-					Training = false;
-				}
 			}
 		}
 
@@ -250,8 +137,8 @@ namespace pfcore
 				{
 					if (Mode != TrainingMode.IDLE && currentCount >= IGNORE_COUNT)
 					{
-						data.Add(packet.Data[0]);
-						modes.Add(mode);
+						Data.Add(packet.Data[0]);
+						Modes.Add(mode);
 					}
 
 
@@ -260,43 +147,14 @@ namespace pfcore
 						currentCount++;
 					}
 				}
-				else if (svm != null)
-				{
-					data.Add(packet.Data[0]);
-					double[][] features = new double[data.Count / 2][];
-					int i = 0;
-					while (data.Count > 2)
-					{
-						double[] feature = new double[2];
-						feature[0] = data[0];
-						feature[1] = data[1];
-						features[i++] = feature;
-						data.RemoveAt(0);
-						data.RemoveAt(1);
-					}
-
-					bool[] answers = svm.Decide(features);
-					foreach (bool val in answers)
-					{
-						if (val)
-						{
-							Console.WriteLine("Open");
-						}
-						else
-						{
-							Console.WriteLine("Closed");
-						}
-					}
-				}
-
 
 			}
 		}
 
-		private DecisionTree Train(double[][] features, int[] outputs)
+		public void Train(EEGData eegData)
 		{
 
-			DecisionTree tree = new DecisionTree(
+			tree = new DecisionTree(
 				inputs: new List<DecisionVariable>
 					{
 						DecisionVariable.Continuous("X"),
@@ -305,82 +163,24 @@ namespace pfcore
 				classes: 2);
 
 			C45Learning teacher = new C45Learning(tree);
-			teacher.Learn(features, outputs);
-
-			return tree;
+			teacher.Learn(eegData.features, eegData.outputs);
 
 			//var learner = new NaiveBayesLearning<NormalDistribution>();
 
 			//var nb = learner.Learn(features, outputs);
 			//return nb;
-
-			//var teacher = new LinearCoordinateDescent();
-
-			//// Teach the vector machine
-			//SupportVectorMachine svm = teacher.Learn(features, outputs);
-
-			//return svm;
 		}
-		private void Train()
+
+		public int[] Predict(double[][] features)
 		{
-			LinearCoordinateDescent teacher = new LinearCoordinateDescent();
-
-			double[][] features = new double[data.Count / 2][];
-			int[] outputs = new int[data.Count / 2];
-
-			for (int i = 0; i < data.Count; i += 2)
+			if (tree == null)
 			{
-				if (modes[i] == modes[i + 1])
-				{
-					double[] feature = new double[2];
-					feature[0] = data[i];
-					feature[1] = data[i + 1];
-					features[i / 2] = feature;
-					outputs[i / 2] = (int)Mode;
-				}
-				else
-				{
-					i--;
-				}
+				throw new Exception("Train must be called first!");
 			}
-
-			// Teach the vector machine
-
-			svm = teacher.Learn(features, outputs);
-			data.Clear();
+			return tree.Decide(features);
 		}
 
-		private void SaveToCSV()
-		{
-			StringBuilder csv = new StringBuilder();
 
-			for (int i = 0; i < data.Count; i += 2)
-			{
-				if (i + 1 < modes.Count && modes[i] == modes[i + 1])
-				{
-					string newLine = string.Format("{0},{1},{2}", data[i], data[i + 1], (int)modes[i]);
-					csv.AppendLine(newLine);
-				}
-			}
-
-			string filePath = Directory.GetCurrentDirectory();
-			filePath += "/" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
-			Console.WriteLine("Saving to: " + filePath);
-			File.WriteAllText(filePath, csv.ToString());
-		}
-
-		private List<string> ReadCSV(string path)
-		{
-			StreamReader r = new StreamReader(File.OpenRead(path));
-			List<string> lines = new List<string>();
-			while (!r.EndOfStream)
-			{
-				var line = r.ReadLine();
-				lines.Add(line);
-			}
-			r.Close();
-			return lines;
-		}
 
 	}
 }
