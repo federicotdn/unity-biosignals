@@ -17,6 +17,6 @@ public class FPSUI : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		Rounds.text = player.rounds.ToString();
-		BPMPText.text = player.BPM.ToString ();
+		BPMPText.text = EKGManager.Instance.BPM.ToString();
 	}
 }

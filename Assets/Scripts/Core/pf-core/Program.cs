@@ -78,7 +78,23 @@ namespace pfcore
 
 		private static void RunEKG()
 		{
+			EKGReader reader = new EKGReader("/dev/tty.SLAB_USBtoUART", 500);
+			EKGProcessor processor = new EKGProcessor(reader, 30);
+			processor.Start();
 
+			int previousBPM = 0;
+
+			while (true)
+			{
+				processor.Update();
+				int bpm = processor.GetBPM();
+				if (previousBPM != bpm)
+				{
+					previousBPM = bpm;
+					Console.WriteLine(bpm);
+				}
+
+			}
 		}
 
 		private static void RunEMGWrite()

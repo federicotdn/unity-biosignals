@@ -11,11 +11,14 @@ public class Zombie : MonoBehaviour {
 	public float Health = 100;
 	public List<AudioClip> GrowlClips;
 	public List<AudioClip> HitClips;
+	public float attackCooldown = 1;
 
 	public AudioSource AudioSrc;
 
 	private AudioClip hitClip;
 	private AudioClip growlClip;
+	private CounterTimer coolDownTimer;
+	private bool attacking;
 
 	// Use this for initialization
 	void Start () {
@@ -31,7 +34,15 @@ public class Zombie : MonoBehaviour {
 		if (Health > 0) {
 			Agent.destination = Target.position;
 			animator.SetFloat ("Speed", Agent.speed);
+
+			Debug.Log (Agent.remainingDistance);
+
+			if (!attacking && Agent.remainingDistance <= (Agent.stoppingDistance + 0.1)) {
+				StartCoroutine (Attack ());
+			}
 		}
+
+
 	}
 
 	public void Hit(float damage) {
@@ -41,6 +52,14 @@ public class Zombie : MonoBehaviour {
 			AudioSrc.PlayOneShot (hitClip);
 			Agent.Stop ();
 		}
+	}
+
+	private IEnumerator Attack() {
+		attacking = true;
+		animator.SetTrigger ("Attack");
+		yield return new WaitForSeconds (attackCooldown);	
+		Debug.Log ("Attack");
+		attacking = false;
 	}
 
 }

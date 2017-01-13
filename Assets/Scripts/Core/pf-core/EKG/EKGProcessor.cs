@@ -10,25 +10,22 @@ namespace pfcore
 	class EKGProcessor
 	{
 		private EKGReader reader;
-		private readonly long baseTime;
-
 		private Queue<long> peaks = new Queue<long>();
-
 		private bool previousPeak;
+		private Thread readerThread;
 
+		private int windowSize;
 
-		private const long windowSize = 10;
-
-		public EKGProcessor(EKGReader reader)
+		public EKGProcessor(EKGReader reader, int windowSize)
 		{
 			this.reader = reader;
-			baseTime = DateTime.Now.Ticks;
+			this.windowSize = windowSize;
 		}
 
 		public void Start()
 		{
-			Thread thread = new Thread(new ThreadStart(reader.Start));
-			thread.Start();
+			readerThread = new Thread(new ThreadStart(reader.Start));
+			readerThread.Start();
 		}
 
 		public void Update()
@@ -37,15 +34,12 @@ namespace pfcore
 			EKGPacket packet;
 			while (queue.TryDequeue(out packet))
 			{
-				if (!previousPeak)
+				if (packet.Peak && !previousPeak)
 				{
-					previousPeak = true;
 					peaks.Enqueue(packet.timeStamp);
 				}
-				else
-				{
-					previousPeak = false;
-				}
+
+				previousPeak = packet.Peak;
 
 				// Discard old packages
 				while (peaks.Count > 0 && TimeSpan.FromTicks(DateTime.Now.Ticks - peaks.Peek()).TotalSeconds > windowSize)
@@ -62,9 +56,15 @@ namespace pfcore
 			}
 		}
 
+		public void StopAndJoin()
+		{
+			reader.Stop();
+			readerThread.Join();
+		}
+
 		public int GetBPM()
 		{
-			if (peaks.Count == 0)
+			if (peaks.Count < 10)
 			{
 				return 0;
 			}
