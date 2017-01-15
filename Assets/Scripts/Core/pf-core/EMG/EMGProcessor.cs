@@ -7,15 +7,38 @@ using Accord.Math;
 
 namespace pfcore {
     class EMGProcessor {
+
+        public enum Mode {
+            IDLE,
+            DETRENDING,
+            TRAINING,
+            PREDICTING
+        }
+
         private EMGReader reader;
 
         public const int FFT_SAMPLE_SIZE = 256;
         public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
 
         private Thread readerThread;
+        private Mode mode = Mode.IDLE;
+        public Mode CurrentMode {
+            get {
+                return mode;
+            }
+        }
 
-        private List<EMGPacket> readings = new List<EMGPacket>();
-        public List<EMGPacket> Readings {
+        private float mean = 0.0f;
+        public float Mean {
+            get {
+                return mean;
+            }
+        }
+        private int sampleCount = 0;
+
+        private List<EMGPacket> rawReadings = new List<EMGPacket>();
+        private List<EMGReading> readings = new List<EMGReading>();
+        public List<EMGReading> Readings {
             get {
                 return readings;
             }
@@ -28,10 +51,10 @@ namespace pfcore {
             }
         }
 
-        private Action fftCallback = null;
-        public Action FFTCallback {
+        private Action processorCallback = null;
+        public Action ProcessorCallback {
             set {
-                fftCallback = value;
+                processorCallback = value;
             }
         }
 
@@ -49,19 +72,45 @@ namespace pfcore {
             readerThread.Join();
         }
 
+        public void ChangeMode(Mode mode) {
+            this.mode = mode;
+
+            if (mode == Mode.DETRENDING) {
+                mean = 0.0f;
+                sampleCount = 0;
+            }
+        }
+
         public void Update() {
             ConcurrentQueue<EMGPacket> queue = reader.PacketQueue;
 
             EMGPacket packet;
             while (queue.TryDequeue(out packet)) {
-                readings.Add(packet);
+                rawReadings.Add(packet);
             }
 
-            if (readings.Count >= FFT_SAMPLE_SIZE) {
-                RunFFT();
-                if (fftCallback != null) {
-                    fftCallback();
+            if (rawReadings.Count >= FFT_SAMPLE_SIZE) {
+                switch (mode) {
+                    case Mode.TRAINING:
+                        Train();
+                        break;
+                    case Mode.PREDICTING:
+                        Predict();
+                        break;
+                    case Mode.DETRENDING:
+                        Detrend();
+                        break;
+                    case Mode.IDLE:
+                    default:
+                        Idle();
+                        break;
                 }
+
+                if (processorCallback != null) {
+                    processorCallback();
+                }
+
+                rawReadings.Clear();
                 readings.Clear();
             }
 
@@ -70,13 +119,34 @@ namespace pfcore {
             }
         }
 
-        private void RunFFT() {
-            Complex[] data = new Complex[readings.Count];
-            for (int i = 0; i < readings.Count; i++) {
-                data[i] = new Complex(readings[i].channels[0], 0);
+        private void Train() {
+            
+        }
+
+        private void Predict() {
+
+        }
+
+        private void Detrend() {
+            foreach (EMGPacket packet in rawReadings) {
+                mean = ((mean * sampleCount) + packet.channels[0]) / (sampleCount + 1);
+                sampleCount++;
+            }
+        }
+
+        private void Idle() {
+            readings.Clear();
+            readings.Capacity = rawReadings.Count;
+            foreach (EMGPacket packet in rawReadings) {
+                readings.Add(new EMGReading(packet.channels[0] - mean, packet.timeStamp));
             }
 
-            FourierTransform.DFT(data, FourierTransform.Direction.Forward);
+            Complex[] data = new Complex[FFT_SAMPLE_SIZE];
+            for (int i = 0; i < FFT_SAMPLE_SIZE; i++) {
+                data[i] = new Complex(rawReadings[i].channels[0] - mean, 0);
+            }
+
+            FourierTransform.FFT(data, FourierTransform.Direction.Forward);
 
             fftResults.Clear();
             fftResults.Capacity = data.Length;

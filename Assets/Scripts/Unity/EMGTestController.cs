@@ -6,6 +6,7 @@ using pfcore;
 using System.Numerics;
 using System;
 using System.IO;
+using UnityEngine.UI;
 
 public class EMGTestController : MonoBehaviour {
 
@@ -18,6 +19,9 @@ public class EMGTestController : MonoBehaviour {
 
     public WMG_Axis_Graph readingsGraph;
     public WMG_Axis_Graph fftGraph;
+
+    public Text modeLabel;
+    public Text meanLabel;
 
     public WMG_Series readingsSeries;
     public WMG_Series fftSeries;
@@ -60,11 +64,7 @@ public class EMGTestController : MonoBehaviour {
 
         Debug.Log("Now reading EMG data.");
 
-        //fftSeries = fftGraph.addSeries();
-        //readingsSeries = readingsGraph.addSeries();
-        //readingsSeries.pointValues.SetList(new List<Vector2>());
-
-        processor.FFTCallback = OnFFT;
+        processor.ProcessorCallback = OnFFT;
         started = true;
     }
 
@@ -92,16 +92,12 @@ public class EMGTestController : MonoBehaviour {
         fftSeries.pointValues.SetList(vals);
 
         List<Vector2> readings = new List<Vector2>(readingsSeries.pointValues.list);
-        float avg = 0;
 
         for (int i = 0; i < processor.Readings.Count; i++) {
-            EMGPacket packet = processor.Readings[i];
-            Vector2 val = new Vector2((float)(packet.timeStamp - baseTime) * 100, packet.channels[0]);
-            avg += packet.channels[0];
+            EMGReading reading = processor.Readings[i];
+            Vector2 val = new Vector2((float)(reading.timeStamp - baseTime) * 100, reading.value);
             readings.Add(val);
         }
-
-        avg /= readings.Count;
 
         int count = readings.Count;
         if (count > readingsXAxisSize) {
@@ -117,6 +113,27 @@ public class EMGTestController : MonoBehaviour {
             return;
         }
 
+        if (Input.GetKeyUp(KeyCode.D)) {
+            processor.ChangeMode(EMGProcessor.Mode.DETRENDING);
+        } else if (Input.GetKeyUp(KeyCode.I)) {
+            processor.ChangeMode(EMGProcessor.Mode.IDLE);
+        }
+
+        modeLabel.text = processor.CurrentMode.ToString();
+        meanLabel.text = processor.Mean.ToString();
+
         processor.Update();
+    }
+
+    public void YAxisAutoSizeEnabled(bool enabled) {
+        fftGraph.yAxis.MaxAutoGrow = enabled;
+        fftGraph.yAxis.MaxAutoShrink = enabled;
+        fftGraph.yAxis.MinAutoGrow = enabled;
+        fftGraph.yAxis.MinAutoShrink = enabled;
+
+        readingsGraph.yAxis.MaxAutoGrow = enabled;
+        readingsGraph.yAxis.MaxAutoShrink = enabled;
+        readingsGraph.yAxis.MinAutoGrow = enabled;
+        readingsGraph.yAxis.MinAutoShrink = enabled;
     }
 }
