@@ -44,8 +44,6 @@ namespace pfcore {
 
         private int GetNextByte() {
             if (fileMode) {
-                // Emulate Serial Port delay
-                Thread.Sleep(1); //TODO: Use a correct value
                 int value = fileStream.ReadByte();
 
                 if (value == -1) {
@@ -90,8 +88,13 @@ namespace pfcore {
                 }
 
                 if (readOk) {
-                    packet.Unpack(buffer);
 
+                    if (fileMode) {
+                        // Emulate serial port delay
+                        Thread.Sleep(1);
+                    }
+
+                    packet.Unpack(buffer);
                     packetQueue.Enqueue(packet);
 
                     while (packetQueue.Count > maxQueueSize) {

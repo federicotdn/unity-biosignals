@@ -39,6 +39,7 @@
     <Compile Include="EMG\EMGPacket.cs" />
     <Compile Include="EMG\EMGProcessor.cs" />
     <Compile Include="EMG\EMGReader.cs" />
+    <Compile Include="EMG\EMGReading.cs" />
     <Compile Include="EMG\EMGWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
