@@ -3,17 +3,24 @@ namespace pfcore
 {
 	public class MaskUtils
 	{
-		public static float[] applyGaussianMask(float[] values, float sigma, int size)
+		public static float[] ApplyGaussianMask(float[] values, float sigma, int size)
 		{
-			float[] mask = buildGaussianMask(size, sigma);
+			float[] mask = BuildGaussianMask(size, sigma);
+			return ApplyMask(values, mask);
+		}
+
+		private static float[] ApplyMask(float[] values, float[] mask)
+		{
 			float[] ans = new float[values.Length];
+
+			int size = mask.Length;
 
 			for (int i = 0; i < ans.Length; i++)
 			{
 				float sum = 0;
 				for (int j = 0; j < size; j++)
 				{
-					sum += mask[j] * getValue(values, i - (size / 2) + j);
+					sum += mask[j] * GetValue(values, i - (size / 2) + j);
 				}
 				sum /= size;
 				ans[i] = sum;
@@ -22,7 +29,7 @@ namespace pfcore
 			return ans;
 		}
 
-		private static float getValue(float[] values, int index)
+		private static float GetValue(float[] values, int index)
 		{
 			if (index < 0)
 			{
@@ -38,7 +45,7 @@ namespace pfcore
 			}
 		}
 
-		private static float[] buildGaussianMask(int size, float sigma)
+		private static float[] BuildGaussianMask(int size, float sigma)
 		{
 			float[] mask = new float[size];
 			for (int i = -size / 2; i <= size / 2; i++)
