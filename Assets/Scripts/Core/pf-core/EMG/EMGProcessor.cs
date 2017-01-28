@@ -4,9 +4,21 @@ using System.Threading;
 using System.Numerics;
 
 using Accord.Math;
+using Accord.MachineLearning.DecisionTrees;
+using Accord.MachineLearning.DecisionTrees.Learning;
 
 namespace pfcore {
     class EMGProcessor {
+
+        private struct TrainingValue {
+            public double[] features;
+            public MuscleState muscleState;
+
+            public TrainingValue(MuscleState muscleState) {
+                this.muscleState = muscleState;
+                features = new double[FEATURE_COUNT];
+            }
+        }
 
         public enum Mode {
             IDLE,
@@ -15,10 +27,43 @@ namespace pfcore {
             PREDICTING
         }
 
+        public enum MuscleState {
+            RELAXED,
+            TENSE,
+            NONE
+        }
+
         private EMGReader reader;
 
         public const int FFT_SAMPLE_SIZE = 256;
         public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
+
+        public const int FEATURE_COUNT = 16;
+
+        private DecisionTree decisionTree;
+        private List<TrainingValue> trainingData;
+        private MuscleState currentMuscleState = MuscleState.NONE;
+        public MuscleState CurrentMuscleState {
+            set {
+                currentMuscleState = value;
+            }
+            get {
+                return currentMuscleState;
+            }
+        }
+
+        public int TrainingDataLength {
+            get {
+                return trainingData.Count;
+            }
+        }
+
+        private MuscleState predictedMuscleState = MuscleState.NONE;
+        public MuscleState PredictedMuscleState {
+            get {
+                return predictedMuscleState;
+            }
+        }
 
         private Thread readerThread;
         private Mode mode = Mode.IDLE;
@@ -60,6 +105,14 @@ namespace pfcore {
 
         public EMGProcessor(EMGReader reader) {
             this.reader = reader;
+
+            List<DecisionVariable> decisionVariables = new List<DecisionVariable>(FEATURE_COUNT);
+            for (int i = 0; i < FEATURE_COUNT; i++) {
+                decisionVariables.Add(DecisionVariable.Continuous(i.ToString()));
+            }
+
+            decisionTree = new DecisionTree(decisionVariables, FEATURE_COUNT);
+            trainingData = new List<TrainingValue>();
         }
 
         public void Start() {
@@ -72,8 +125,14 @@ namespace pfcore {
             readerThread.Join();
         }
 
-        public void ChangeMode(Mode mode) {
-            this.mode = mode;
+        public void ChangeMode(Mode newMode) {
+            if (mode == Mode.TRAINING) {
+                EndTraining();
+            } else if (mode == Mode.PREDICTING) {
+                predictedMuscleState = MuscleState.NONE;
+            }
+
+            this.mode = newMode;
 
             if (mode == Mode.DETRENDING) {
                 mean = 0.0f;
@@ -90,6 +149,8 @@ namespace pfcore {
             }
 
             if (rawReadings.Count >= FFT_SAMPLE_SIZE) {
+                Idle();
+
                 switch (mode) {
                     case Mode.TRAINING:
                         Train();
@@ -100,9 +161,7 @@ namespace pfcore {
                     case Mode.DETRENDING:
                         Detrend();
                         break;
-                    case Mode.IDLE:
                     default:
-                        Idle();
                         break;
                 }
 
@@ -120,11 +179,50 @@ namespace pfcore {
         }
 
         private void Train() {
-            
+            TrainingValue value = new TrainingValue(currentMuscleState);
+            value.features = GetFFTMagnitudes(FEATURE_COUNT);
+
+            trainingData.Add(value);
+        }
+
+        private double[] GetFFTMagnitudes(int bins) {
+            int binSize = (fftResults.Count / 2) / bins; // Use second half of FFT results
+            int startIndex = fftResults.Count / 2;
+
+            double[] results = new double[bins];
+
+            for (int i = 0; i < bins; i++) {
+                Complex avg = Complex.Zero;
+                for (int j = 0; j < binSize; j++) {
+                    int valueIdx = startIndex + (i * binSize) + j;
+                    avg += fftResults[valueIdx];
+                }
+                avg /= binSize;
+
+                results[i] = avg.Magnitude;
+            }
+
+            return results;
+        }
+
+        private void EndTraining() {
+            double[][] featuresArray = new double[trainingData.Count][];
+            int[] labels = new int[trainingData.Count];
+
+            for (int i = 0; i < featuresArray.Length; i++) {
+                featuresArray[i] = trainingData[i].features;
+                labels[i] = (int)trainingData[i].muscleState;
+            }
+
+            C45Learning teacher = new C45Learning(decisionTree);
+            teacher.Learn(featuresArray, labels);
+
+            trainingData.Clear();
         }
 
         private void Predict() {
-
+            int result = decisionTree.Decide(GetFFTMagnitudes(FEATURE_COUNT));
+            predictedMuscleState = (MuscleState)result;
         }
 
         private void Detrend() {
@@ -137,6 +235,7 @@ namespace pfcore {
         private void Idle() {
             readings.Clear();
             readings.Capacity = rawReadings.Count;
+
             foreach (EMGPacket packet in rawReadings) {
                 readings.Add(new EMGReading(packet.channels[0] - mean, packet.timeStamp));
             }

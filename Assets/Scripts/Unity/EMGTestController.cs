@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 using pfcore;
-using System.Numerics;
 using System;
 using System.IO;
 using UnityEngine.UI;
+using System.Numerics;
 
 public class EMGTestController : MonoBehaviour {
 
@@ -19,12 +18,16 @@ public class EMGTestController : MonoBehaviour {
 
     public WMG_Axis_Graph readingsGraph;
     public WMG_Axis_Graph fftGraph;
+    public WMG_Axis_Graph postFFTGraph;
 
     public Text modeLabel;
     public Text meanLabel;
+    public Text predictionLabel;
+    public Text trainingInfoLabel;
 
     public WMG_Series readingsSeries;
     public WMG_Series fftSeries;
+    public WMG_Series postFFTSeries;
 
     private EMGReader reader;
     private EMGProcessor processor;
@@ -64,7 +67,7 @@ public class EMGTestController : MonoBehaviour {
 
         Debug.Log("Now reading EMG data.");
 
-        processor.ProcessorCallback = OnFFT;
+        processor.ProcessorCallback = OnProcessed;
         started = true;
     }
 
@@ -82,15 +85,38 @@ public class EMGTestController : MonoBehaviour {
         Debug.Log("STOPPED");
     }
 
-    void OnFFT() {
-        List<Vector2> vals = new List<Vector2>(processor.FFTResults.Count);
-        for (int i = 0; i < processor.FFTResults.Count; i++) {
-            Vector2 val = new Vector2((float)(i * EMGProcessor.FREQ_STEP), (float)processor.FFTResults[i].Real);
+    private void OnProcessed() {
+        //RAW FFT
+
+        List<Complex> fftResults = processor.FFTResults;
+
+        List<Vector2> vals = new List<Vector2>(fftResults.Count);
+        for (int i = 0; i < fftResults.Count; i++) {
+            Vector2 val = new Vector2((float)(i * EMGProcessor.FREQ_STEP), (float)fftResults[i].Magnitude);
             vals.Add(val);
         }
 
         fftSeries.pointValues.SetList(vals);
 
+        //Averaged FFT
+        int bins = 16;
+        int binSize = (fftResults.Count / 2) / bins; // Use only second half of FFT results
+        int startIndex = fftResults.Count / 2;
+        List<Vector2> postFFTVals = new List<Vector2>(bins);
+        for (int i = 0; i < bins; i++) {
+            Complex avg = Complex.Zero;
+            for (int j = 0; j < binSize; j++) {
+                int valueIdx = startIndex + (i * binSize) + j;
+                avg += fftResults[valueIdx];
+            }
+            avg /= binSize;
+
+            postFFTVals.Add(new Vector2(i, (float)avg.Magnitude));
+        }
+
+        postFFTSeries.pointValues.SetList(postFFTVals);  
+
+        //Readings sliding history
         List<Vector2> readings = new List<Vector2>(readingsSeries.pointValues.list);
 
         for (int i = 0; i < processor.Readings.Count; i++) {
@@ -108,7 +134,7 @@ public class EMGTestController : MonoBehaviour {
 
     }
 
-	void Update () {
+    void Update() {
         if (!started) {
             return;
         }
@@ -117,10 +143,26 @@ public class EMGTestController : MonoBehaviour {
             processor.ChangeMode(EMGProcessor.Mode.DETRENDING);
         } else if (Input.GetKeyUp(KeyCode.I)) {
             processor.ChangeMode(EMGProcessor.Mode.IDLE);
+        } else if (Input.GetKeyUp(KeyCode.T)) {
+            if (processor.CurrentMuscleState != EMGProcessor.MuscleState.NONE) {
+                processor.ChangeMode(EMGProcessor.Mode.TRAINING);
+            } else {
+                Debug.Log("Unable to start Training mode: no MuscleState set yet.");
+            }
+        } else if (Input.GetKeyUp(KeyCode.P)) {
+            processor.ChangeMode(EMGProcessor.Mode.PREDICTING);
+        }
+
+        if (Input.GetKeyUp(KeyCode.UpArrow)) {
+            processor.CurrentMuscleState = EMGProcessor.MuscleState.TENSE;
+        } else if (Input.GetKeyUp(KeyCode.DownArrow)) {
+            processor.CurrentMuscleState = EMGProcessor.MuscleState.RELAXED;
         }
 
         modeLabel.text = processor.CurrentMode.ToString();
         meanLabel.text = processor.Mean.ToString();
+        predictionLabel.text = "Prediction: " + processor.PredictedMuscleState.ToString();
+        trainingInfoLabel.text = "Count: " + processor.TrainingDataLength.ToString() + "\nMuscleState: " + processor.CurrentMuscleState.ToString();
 
         processor.Update();
     }
@@ -135,5 +177,10 @@ public class EMGTestController : MonoBehaviour {
         readingsGraph.yAxis.MaxAutoShrink = enabled;
         readingsGraph.yAxis.MinAutoGrow = enabled;
         readingsGraph.yAxis.MinAutoShrink = enabled;
+
+        postFFTGraph.yAxis.MaxAutoGrow = enabled;
+        postFFTGraph.yAxis.MaxAutoShrink = enabled;
+        postFFTGraph.yAxis.MinAutoGrow = enabled;
+        postFFTGraph.yAxis.MinAutoShrink = enabled;
     }
 }
