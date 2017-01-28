@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Collections.Generic;
-using Accord.MachineLearning.VectorMachines;
 using Accord.MachineLearning.DecisionTrees.Learning;
 using Accord.MachineLearning.DecisionTrees;
-using Accord.MachineLearning.Bayes;
-using Accord.MachineLearning.VectorMachines.Learning;
-using Accord.Statistics.Distributions.Univariate;
-using System.Text;
+
+using System.Numerics;
+
+using Accord.Math;
 
 namespace pfcore
 {
@@ -16,6 +14,19 @@ namespace pfcore
 	{
 		EYES_OPENED = 1, EYES_CLOSED = 0, IDLE = 2
 	}
+
+	public struct EEGReading
+	{
+		public float value;
+		public long timeStamp;
+
+		public EEGReading(float value, long timeStamp)
+		{
+			this.value = value;
+			this.timeStamp = timeStamp;
+		}
+	}
+
 
 	public struct EEGData
 	{
@@ -31,17 +42,27 @@ namespace pfcore
 
 	public class EEGProcessor
 	{
-		private EEGReader reader;
-		public List<float> Data { get; private set; }
+		public List<float> Alpha { get; private set; }
+		public List<float> Beta { get; private set; }
+		public List<float> RawEEG { get; private set; }
 		public List<TrainingMode> Modes { get; private set; }
-		private int currentCount;
-		private SupportVectorMachine svm;
+		public List<TrainingMode> RawModes { get; private set; }
+		public List<Complex> FFTResults { get; private set; }
 
-		private DecisionTree tree;
+		public List<EEGReading> AlphaReadings { get; private set; }
+		private List<EEGPacket> AlphaPackets = new List<EEGPacket>();
 
-		private const int IGNORE_COUNT = 25;
+		public const int FFT_SAMPLE_SIZE = 256;
+		public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
 
-		private TrainingMode mode;
+		private List<float> readingsMean = new List<float>();
+
+		public Action ProcessorCallback;
+
+		EEGReader reader;
+		DecisionTree tree;
+
+		TrainingMode mode;
 		public TrainingMode Mode
 		{
 			get
@@ -65,15 +86,6 @@ namespace pfcore
 						Console.WriteLine("Switched to IDLE");
 						break;
 				}
-				currentCount = 0;
-
-				int i = 0;
-				while (i < IGNORE_COUNT && Data.Count > 0 && i < Data.Count)
-				{
-					Data.RemoveAt(i);
-					Modes.RemoveAt(i);
-					i++;
-				}
 			}
 		}
 
@@ -91,7 +103,6 @@ namespace pfcore
 				training = value;
 				if (training)
 				{
-					currentCount = 0;
 					Console.WriteLine("Started Training");
 				}
 				else
@@ -104,7 +115,12 @@ namespace pfcore
 		public EEGProcessor(EEGReader reader, bool online)
 		{
 			Modes = new List<TrainingMode>();
-			Data = new List<float>();
+			RawModes = new List<TrainingMode>();
+			AlphaReadings = new List<EEGReading>();
+			Alpha = new List<float>();
+			Beta = new List<float>();
+			RawEEG = new List<float>();
+			FFTResults = new List<Complex>();
 
 			this.reader = reader;
 			Online = online;
@@ -122,7 +138,6 @@ namespace pfcore
 			{
 				Thread readerThread = new Thread(new ThreadStart(reader.Start));
 				readerThread.Start();
-				currentCount = 0;
 			}
 		}
 
@@ -135,17 +150,38 @@ namespace pfcore
 			{
 				if (Training)
 				{
-					if (Mode != TrainingMode.IDLE && currentCount >= IGNORE_COUNT)
+					if (true)
 					{
-						Data.Add(packet.Data[0]);
-						Modes.Add(mode);
+						switch (packet.Type)
+						{
+							case DataType.ALPHA:
+								Alpha.Add(packet.Data[0]);
+								AlphaPackets.Add(packet);
+								Modes.Add(mode);
+								break;
+							case DataType.BETA:
+								Beta.Add(packet.Data[0]);
+								break;
+							case DataType.RAW:
+								RawEEG.AddRange(packet.Data);
+								RawModes.Add(mode);
+								break;
+
+						}
+
+						if (RawEEG.Count / 4 > FFT_SAMPLE_SIZE)
+						{
+							if (ProcessorCallback != null)
+							{
+								RunFFT();
+								ProcessorCallback();
+								AlphaPackets.Clear();
+								RawEEG.Clear();
+							}
+
+						}
 					}
 
-
-					if (Mode != TrainingMode.IDLE)
-					{
-						currentCount++;
-					}
 				}
 
 			}
@@ -180,7 +216,35 @@ namespace pfcore
 			return tree.Decide(features);
 		}
 
+		private void RunFFT()
+		{
+			AlphaReadings.Clear();
+			AlphaReadings.Capacity = AlphaPackets.Count;
+			foreach (EEGPacket packet in AlphaPackets)
+			{
+				AlphaReadings.Add(new EEGReading(packet.Data[0], packet.timestamp));
+			}
 
+
+			readingsMean.Clear();
+
+			for (int i = 0; i + 3 < RawEEG.Count; i += 4)
+			{
+				readingsMean.Add((RawEEG[i] + RawEEG[i + 1] + RawEEG[i + 2] + RawEEG[i + 3]) / 4);
+			}
+
+			Complex[] data = new Complex[FFT_SAMPLE_SIZE];
+			for (int i = 0; i < FFT_SAMPLE_SIZE; i++)
+			{
+				data[i] = new Complex(readingsMean[i], 0);
+			}
+
+			FourierTransform.FFT(data, FourierTransform.Direction.Forward);
+
+			FFTResults.Clear();
+			FFTResults.Capacity = data.Length;
+			FFTResults.AddRange(data);
+		}
 
 	}
 }

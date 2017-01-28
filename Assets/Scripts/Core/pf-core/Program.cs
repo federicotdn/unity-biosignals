@@ -8,7 +8,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite
+		EEG, EMG, EKG, EMGWrite, EEGSession
 	}
 
 	class MainClass
@@ -30,13 +30,17 @@ namespace pfcore
 			{
 				case RunMode.EEG:
 					Console.WriteLine("Running on EEG mode!\n");
+					RunEEG();
+					break;
+				case RunMode.EEGSession:
+					Console.WriteLine("Running on EEG Session mode!\n");
 					if (args.Length >= 3)
 					{
-						RunEEG(args[1], args[2]);
+						RunEEGSession(args[1], args[2]);
 					}
 					else
 					{
-						RunEEG();
+						RunEEGSession();
 					}
 					break;
 				case RunMode.EMG:
@@ -58,22 +62,36 @@ namespace pfcore
 #endif
 		}
 
-		private static void RunEEG(string trainigPath = null, string predictionPath = null)
+		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
 		{
 			EEGReader reader = new EEGReader(5005);
 
-			EEGProcessor processor = new EEGProcessor(reader, false);
 			EEGSessionRecorder sessionRecorder;
 			if (trainigPath != null && predictionPath != null)
 			{
+				EEGProcessor processor = new EEGProcessor(reader, false);
 				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
 			}
 			else
 			{
+				EEGProcessor processor = new EEGProcessor(reader, true);
 				sessionRecorder = new EEGSessionRecorder(processor);
 			}
 
 			sessionRecorder.Start();
+		}
+
+		private static void RunEEG()
+		{
+			EEGReader reader = new EEGReader(5005);
+
+			EEGProcessor processor = new EEGProcessor(reader, false);
+
+			processor.Start();
+			while (true)
+			{
+				processor.Update();
+			}
 		}
 
 		private static void RunEKG()

@@ -1,4 +1,5 @@
 ﻿using OSC;
+using System;
 
 namespace pfcore
 {
@@ -35,12 +36,25 @@ namespace pfcore
 				}
 				else
 				{
+
 					OSCMessage msg = (OSCMessage)p;
 					if (msg.Address == "/muse/elements/alpha_absolute")
 					{
 						float[] data = new float[1];
 						data[0] = (float)msg.Data[0];
-						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data));
+						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data, DateTime.Now.Ticks));
+					}
+					else if (msg.Address == "/muse/elements/beta_absolute")
+					{
+						float[] data = new float[1];
+						data[0] = (float)msg.Data[0];
+						PacketQueue.Enqueue(new EEGPacket(DataType.BETA, data, DateTime.Now.Ticks));
+					}
+					else if (msg.Address == "/muse/eeg")
+					{
+						float[] data = new float[5];
+						Array.Copy(msg.Data.ToArray(), 0, data, 0, 4);
+						PacketQueue.Enqueue(new EEGPacket(DataType.RAW, data, DateTime.Now.Ticks));
 					}
 				}
 			}

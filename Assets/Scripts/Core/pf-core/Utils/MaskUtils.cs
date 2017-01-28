@@ -9,6 +9,12 @@ namespace pfcore
 			return ApplyMask(values, mask);
 		}
 
+		public static float[] ApplyMeanMask(float[] values, int size)
+		{
+			float[] mask = BuildMeanMask(size);
+			return ApplyMask(values, mask);
+		}
+
 		private static float[] ApplyMask(float[] values, float[] mask)
 		{
 			float[] ans = new float[values.Length];
@@ -53,6 +59,16 @@ namespace pfcore
 				mask[i + size / 2] = (float)((1 / (Math.Sqrt(2 * Math.PI) * sigma)) * Math.Exp(-(i * i) / (2 * sigma * sigma)));
 			}
 
+			return mask;
+		}
+
+		private static float[] BuildMeanMask(int size)
+		{
+			float[] mask = new float[size];
+			for (int i = 0; i < size; i++)
+			{
+				mask[i] = 1;
+			}
 			return mask;
 		}
 	}

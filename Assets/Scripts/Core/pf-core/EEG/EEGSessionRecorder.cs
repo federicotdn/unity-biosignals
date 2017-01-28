@@ -12,6 +12,7 @@ namespace pfcore
 		private EEGData trainingData;
 		private EEGData predictionData;
 
+
 		public EEGSessionRecorder(EEGProcessor processor)
 		{
 			this.processor = processor;
@@ -90,6 +91,8 @@ namespace pfcore
 				Thread readLineThread = new Thread(new ThreadStart(readInput));
 				readLineThread.Start();
 
+
+				processor.Start();
 				while (true)
 				{
 					processor.Update();
@@ -133,21 +136,40 @@ namespace pfcore
 			StringBuilder csv = new StringBuilder();
 
 			List<TrainingMode> modes = processor.Modes;
-			List<float> data = processor.Data;
 
-			for (int i = 0; i < data.Count; i += 2)
+			string baseFilePath = Directory.GetCurrentDirectory();
+			baseFilePath += "/" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now);
+
+			csv.AppendLine("Alpha, Beta, Eyes");
+
+			int size = Math.Min(processor.Alpha.Count, processor.Beta.Count);
+			for (int i = 0; i < size; i++)
 			{
-				if (i + 1 < modes.Count && modes[i] == modes[i + 1])
-				{
-					string newLine = string.Format("{0},{1},{2}", data[i], data[i + 1], (int)modes[i]);
-					csv.AppendLine(newLine);
-				}
+				string newLine = string.Format("{0},{1},{2}", processor.Alpha[i], processor.Beta[i], (int)modes[i]);
+				csv.AppendLine(newLine);
 			}
 
-			string filePath = Directory.GetCurrentDirectory();
-			filePath += "/" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".csv";
-			Console.WriteLine("Saving to: " + filePath);
-			File.WriteAllText(filePath, csv.ToString());
+
+			string bandPowersPath = baseFilePath + "-band-powers.csv";
+			Console.WriteLine("Saving band powers to: " + bandPowersPath);
+			File.WriteAllText(bandPowersPath, csv.ToString());
+
+			csv = new StringBuilder();
+
+			csv.AppendLine("EEG1, EEG2, EEG3, EEG4, EEG5, Eyes");
+
+			for (int i = 0; i < processor.RawModes.Count; i++)
+			{
+				int rawIndex = i * 5;
+				string newLine = string.Format("{0},{1},{2},{3},{4},{5}", processor.RawEEG[rawIndex], processor.RawEEG[rawIndex + 1],
+											   processor.RawEEG[rawIndex + 2], processor.RawEEG[rawIndex + 3],
+											   processor.RawEEG[rawIndex + 4], (int)processor.RawModes[i]);
+				csv.AppendLine(newLine);
+			}
+
+			string rawPath = baseFilePath + "-raw.csv";
+			Console.WriteLine("Saving raw EEG to: " + rawPath);
+			File.WriteAllText(rawPath, csv.ToString());
 		}
 
 		private List<string> ReadCSV(string path)
@@ -160,14 +182,22 @@ namespace pfcore
 				lines.Add(line);
 			}
 			r.Close();
+			float aux;
+			float.TryParse(lines[0].Split(',')[0], out aux);
+			if (Math.Abs(aux) < 0.00001)
+			{
+				lines.RemoveAt(0);
+			}
 			return lines;
 		}
 
 		private EEGData getData(List<string> lines)
 		{
+			lines.RemoveAt(0);
 			double[][] features = new double[lines.Count][];
 			int[] outputs = new int[lines.Count];
 			int i = 0;
+
 			foreach (string line in lines)
 			{
 				string[] values = line.Split(',');
@@ -180,7 +210,5 @@ namespace pfcore
 
 			return new EEGData(features, outputs);
 		}
-
-
 	}
 }
