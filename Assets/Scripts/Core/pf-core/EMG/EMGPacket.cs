@@ -8,6 +8,7 @@ namespace pfcore {
         public const int SAMPLE_RATE = 256; //Hz
 
         public const int PACKET_SIZE = 17;
+        public const int PACKET_SIZE_W_HINT = PACKET_SIZE + 1;
         public const byte SYNC0_BYTE = 0xA5;
         public const byte SYNC1_BYTE = 0x5A;
         public const byte VERSION_BYTE = 2;
@@ -21,6 +22,7 @@ namespace pfcore {
         // 17 bytes total
 
         public long timeStamp;
+        public MuscleState muscleStateHint = MuscleState.NONE;
 
         public EMGPacket() {
             channels = new UInt16[CHANNEL_COUNT];
@@ -45,6 +47,10 @@ namespace pfcore {
             switches = buf[16];
 
             timeStamp = DateTime.Now.Ticks;
+
+            if (buf.Length == PACKET_SIZE_W_HINT) {
+                muscleStateHint = (MuscleState)buf[17];
+            }
         }
 
         public void Pack(byte[] buf) {
@@ -61,6 +67,10 @@ namespace pfcore {
             }
 
             buf[16] = switches;
+
+            if (buf.Length == PACKET_SIZE_W_HINT) {
+                buf[17] = (byte)muscleStateHint;
+            }
         }
     }
 }
