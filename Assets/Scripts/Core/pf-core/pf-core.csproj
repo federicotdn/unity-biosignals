@@ -36,6 +36,7 @@
     <Compile Include="EKG\EKGPacket.cs" />
     <Compile Include="EKG\EKGProcessor.cs" />
     <Compile Include="EKG\EKGReader.cs" />
+    <Compile Include="EMG\EMGAnalysis.cs" />
     <Compile Include="EMG\EMGFileReader.cs" />
     <Compile Include="EMG\EMGPacket.cs" />
     <Compile Include="EMG\EMGProcessor.cs" />

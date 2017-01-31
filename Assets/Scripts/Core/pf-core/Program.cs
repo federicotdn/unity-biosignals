@@ -8,7 +8,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EEGSession
+		EEG, EMG, EKG, EEGSession, EMGAnalysis
 	}
 
 	class MainClass
@@ -51,6 +51,10 @@ namespace pfcore
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
 					break;
+                case RunMode.EMGAnalysis:
+                    Console.WriteLine("Running EMG Analysis on file.");
+                    RunEMGAnalysis(args[1]);
+                    break;
 				default:
 					throw new Exception("No run mode specified.");
 
@@ -111,7 +115,15 @@ namespace pfcore
 			}
 		}
 
-		private static void RunEMG()
+        private static void RunEMGAnalysis(string filename) {
+            EMGAnalysis analysis = new EMGAnalysis(filename);
+            analysis.PrintResults();
+            Console.WriteLine("Press any key to exit.");
+            Console.Read();
+        }
+
+
+        private static void RunEMG()
 		{
 			EMGSerialReader reader = new EMGSerialReader("COM4", 1000);
 			EMGProcessor processor = new EMGProcessor(reader);

@@ -5,6 +5,7 @@ namespace pfcore {
     class EMGFileReader : EMGReader {
         private FileStream fileStream;
         private bool loopFile = false;
+        private bool emulateSerialDelay = true;
 
         public EMGFileReader(FileStream fileStream, int maxQueueSize) : base(maxQueueSize) {
             this.fileStream = fileStream;
@@ -12,6 +13,10 @@ namespace pfcore {
 
         public void EnableFileLoop() {
             loopFile = true;
+        }
+
+        public void DisableSerialDelay() {
+            emulateSerialDelay = false;
         }
 
         private int GetNextByte() {
@@ -44,13 +49,15 @@ namespace pfcore {
                 }
 
                 if (readOk) {
-                    Thread.Sleep(2);
-
+                    if (emulateSerialDelay) {
+                        Thread.Sleep(2);
+                    }
+                    
                     packet.Unpack(buffer);
                     packetQueue.Enqueue(packet);
                 }
 
-                while (packetQueue.Count > maxQueueSize) {
+                while (maxQueueSize != -1 && packetQueue.Count > maxQueueSize) {
                     EMGPacket temp;
                     packetQueue.TryDequeue(out temp);
                 }

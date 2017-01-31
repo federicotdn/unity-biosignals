@@ -10,7 +10,7 @@ using System.IO;
 
 namespace pfcore {
     class EMGProcessor {
-        private struct TrainingValue {
+        public struct TrainingValue {
             public double[] features;
             public MuscleState muscleState;
 
@@ -188,12 +188,12 @@ namespace pfcore {
 
         private void Train() {
             TrainingValue value = new TrainingValue(currentMuscleState);
-            value.features = GetFFTMagnitudes(FEATURE_COUNT);
+            value.features = GetFFTMagnitudes(fftResults, FEATURE_COUNT);
 
             trainingData.Add(value);
         }
 
-        private double[] GetFFTMagnitudes(int bins) {
+        public static double[] GetFFTMagnitudes(List<Complex> fftResults, int bins) {
             int binSize = (fftResults.Count / 2) / bins; // Use second half of FFT results
             int startIndex = fftResults.Count / 2;
 
@@ -214,6 +214,11 @@ namespace pfcore {
         }
 
         private void EndTraining() {
+            TrainTree(trainingData, decisionTree);
+            trainingData.Clear();
+        }
+
+        public static void TrainTree(List<TrainingValue> trainingData, DecisionTree tree) {
             double[][] featuresArray = new double[trainingData.Count][];
             int[] labels = new int[trainingData.Count];
 
@@ -222,14 +227,12 @@ namespace pfcore {
                 labels[i] = (int)trainingData[i].muscleState;
             }
 
-            C45Learning teacher = new C45Learning(decisionTree);
+            C45Learning teacher = new C45Learning(tree);
             teacher.Learn(featuresArray, labels);
-
-            trainingData.Clear();
         }
 
         private void Predict() {
-            int result = decisionTree.Decide(GetFFTMagnitudes(FEATURE_COUNT));
+            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, FEATURE_COUNT));
             predictedMuscleState = (MuscleState)result;
         }
 
