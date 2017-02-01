@@ -11,7 +11,7 @@ public class CrossHair : MonoBehaviour {
 	public Image bottom;
 	public float minSeparation = 20;
 	public float maxSeparation = 50;
-	public Camera camera;
+	public new Camera camera;
 
 	// Use this for initialization
 	void Start () {

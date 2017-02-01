@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using UnityEngine.UI;
 using System.Numerics;
+using UnityEngine.SceneManagement;
 
 public class EMGTestController : MonoBehaviour {
 
@@ -41,7 +42,18 @@ public class EMGTestController : MonoBehaviour {
 
     private long baseTime;
 
-	void Start () {
+    void Awake() {
+        SceneManager.activeSceneChanged += OnSceneChanged;
+    }
+    void OnDestroy() {
+        SceneManager.activeSceneChanged -= OnSceneChanged;
+    }
+
+    void OnSceneChanged(Scene a, Scene b) {
+        /* Empty */
+    }
+
+    void Start () {
         if (!useFile) {
             reader = new EMGSerialReader(SerialPort, maxQueueSize);
         } else {
