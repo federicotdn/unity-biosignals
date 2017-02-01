@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Accord.MachineLearning.DecisionTrees;
+using Accord.Math;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Threading;
 
 namespace pfcore {
     class EMGAnalysis {
         private string filename;
+        private const float TRAINING_COUNT_PCTG = 0.75f;
 
         public EMGAnalysis(string filename) {
             this.filename = filename;
@@ -28,14 +32,93 @@ namespace pfcore {
             Console.WriteLine("(" + (packets.Count / EMGPacket.SAMPLE_RATE) + " seconds of data)");
             Console.WriteLine("(" + (packets.Count / EMGProcessor.FFT_SAMPLE_SIZE) + " training values)");
 
+            float mean = 0;
+            int count = 0;
+
             foreach (EMGPacket packet in packets) {
                 if (packet.muscleStateHint == MuscleState.NONE) {
                     Console.WriteLine("ERROR: One or more packets are missing a MuscleState hint.");
                     return;
+                } else if (packet.muscleStateHint == MuscleState.RELAXED) {
+                    mean += packet.channels[0];
+                    count++;
                 }
             }
 
+            mean /= count;
+            Console.WriteLine("Mean for Relaxed packets: " + mean);
 
+            Console.WriteLine("--------------------------------");
+
+            int trainingCount = (int)(TRAINING_COUNT_PCTG * packets.Count);
+            trainingCount -= trainingCount % EMGProcessor.FFT_SAMPLE_SIZE;
+
+            int predictionCount = packets.Count - trainingCount;
+
+            Console.WriteLine("Training packets count: " + trainingCount);
+            Console.WriteLine("Prediction packets count: " + predictionCount);
+
+            List<EMGPacket> trainingPackets = packets.GetRange(0, trainingCount);
+            List<EMGPacket> predictionPackets = packets.GetRange(packets.Count - predictionCount, predictionCount);
+
+            List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, mean);
+            List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, mean);
+
+            Console.WriteLine("Training values count: " + trainingValues.Count);
+            Console.WriteLine("Prediction values count: " + predictionValues.Count);
+
+            Console.WriteLine("--------------------------------");
+
+            DecisionTree tree = EMGProcessor.CreateDecisionTree();
+            EMGProcessor.TrainTree(trainingValues, tree);
+
+            int[,] confMat = new int[2, 2];
+
+            foreach (TrainingValue predValue in predictionValues) {
+                int result = tree.Decide(predValue.features);
+                MuscleState muscleState = (MuscleState)result;
+
+                int i = (predValue.muscleState == MuscleState.TENSE) ? 1 : 0;
+                int j = (muscleState == MuscleState.TENSE) ? 1 : 0;
+
+                confMat[i, j]++;
+            }
+
+            Console.WriteLine("Confusion matrix:");
+            Console.WriteLine("   R     T");
+            Console.WriteLine("R  {0}    {1}", confMat[0, 0], confMat[0, 1]);
+            Console.WriteLine("T  {0}    {1}", confMat[1, 0], confMat[1, 1]);
+
+            double sensitivity = (double)confMat[0, 0] / (confMat[0, 0] + confMat[0, 1]);
+            double specificity = (double)confMat[1, 1] / (confMat[1, 0] + confMat[1, 1]);
+
+            Console.WriteLine("Sensitivity: " + sensitivity);
+            Console.WriteLine("Specificity: " + specificity);
+        }
+
+        private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, float mean) {
+            List<TrainingValue> values = new List<TrainingValue>(EMGProcessor.FFT_SAMPLE_SIZE);
+            Complex[] data = new Complex[EMGProcessor.FFT_SAMPLE_SIZE];
+            int packetIndex = 0;
+
+            foreach (EMGPacket packet in packets) {
+                data[packetIndex] = new Complex(packet.channels[0] - mean, 0);
+                packetIndex++;
+
+                if (packetIndex == EMGProcessor.FFT_SAMPLE_SIZE) {
+                    FourierTransform.FFT(data, FourierTransform.Direction.Forward);
+                    List<Complex> fftResults = new List<Complex>(data);
+
+                    TrainingValue trainingValue = new TrainingValue(packet.muscleStateHint);
+                    trainingValue.features = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
+
+                    values.Add(trainingValue);
+
+                    packetIndex = 0;
+                }
+            }
+
+            return values;
         }
 
         private List<EMGPacket> ReadPackets() {
@@ -49,19 +132,11 @@ namespace pfcore {
             readerThread.Start();
 
             EMGPacket packet;
-
-            while (reader.Running) {
-                while (reader.TryDequeue(out packet)) {
-                    packets.Add(packet);
-                }
-            }
+            readerThread.Join();
 
             while (reader.TryDequeue(out packet)) {
                 packets.Add(packet);
             }
-
-            reader.Stop();
-            readerThread.Join();
 
             return packets;
         }

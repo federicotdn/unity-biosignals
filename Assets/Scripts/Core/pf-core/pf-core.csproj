@@ -44,6 +44,7 @@
     <Compile Include="EMG\EMGSerialReader.cs" />
     <Compile Include="EMG\EMGReading.cs" />
     <Compile Include="EMG\MuscleState.cs" />
+    <Compile Include="EMG\TrainingValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EEG\EEGPacket.cs" />

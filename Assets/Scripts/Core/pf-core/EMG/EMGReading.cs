@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace pfcore {
+﻿namespace pfcore {
     struct EMGReading {
         public float value;
         public long timeStamp;
