@@ -10,16 +10,6 @@ using System.IO;
 
 namespace pfcore {
     class EMGProcessor {
-        public struct TrainingValue {
-            public double[] features;
-            public MuscleState muscleState;
-
-            public TrainingValue(MuscleState muscleState) {
-                this.muscleState = muscleState;
-                features = new double[FEATURE_COUNT];
-            }
-        }
-
         public enum Mode {
             IDLE,
             DETRENDING,
@@ -32,8 +22,6 @@ namespace pfcore {
 
         public const int FFT_SAMPLE_SIZE = 256;
         public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
-
-        public const int FEATURE_COUNT = 16;
 
         private DecisionTree decisionTree;
         private List<TrainingValue> trainingData;
@@ -108,13 +96,17 @@ namespace pfcore {
         public EMGProcessor(EMGReader reader) {
             this.reader = reader;
 
-            List<DecisionVariable> decisionVariables = new List<DecisionVariable>(FEATURE_COUNT);
-            for (int i = 0; i < FEATURE_COUNT; i++) {
+            decisionTree = CreateDecisionTree();
+            trainingData = new List<TrainingValue>();
+        }
+
+        public static DecisionTree CreateDecisionTree() {
+            List<DecisionVariable> decisionVariables = new List<DecisionVariable>(TrainingValue.FEATURE_COUNT);
+            for (int i = 0; i < TrainingValue.FEATURE_COUNT; i++) {
                 decisionVariables.Add(DecisionVariable.Continuous(i.ToString()));
             }
 
-            decisionTree = new DecisionTree(decisionVariables, FEATURE_COUNT);
-            trainingData = new List<TrainingValue>();
+            return new DecisionTree(decisionVariables, TrainingValue.FEATURE_COUNT);
         }
 
         public void Start() {
@@ -188,7 +180,7 @@ namespace pfcore {
 
         private void Train() {
             TrainingValue value = new TrainingValue(currentMuscleState);
-            value.features = GetFFTMagnitudes(fftResults, FEATURE_COUNT);
+            value.features = GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
 
             trainingData.Add(value);
         }
@@ -232,7 +224,7 @@ namespace pfcore {
         }
 
         private void Predict() {
-            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, FEATURE_COUNT));
+            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT));
             predictedMuscleState = (MuscleState)result;
         }
 

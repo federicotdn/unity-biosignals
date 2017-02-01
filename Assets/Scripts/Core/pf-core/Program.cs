@@ -149,13 +149,13 @@ namespace pfcore
 
 			while (true)
 			{
-				long dtTicks = DateTime.Now.Ticks - ticks;
+				//long dtTicks = DateTime.Now.Ticks - ticks;
 
-				float dt = (float)dtTicks / 10000000;
+				//float dt = (float)dtTicks / 10000000;
 
 				processor.Update();
 
-				ticks = DateTime.Now.Ticks;
+				//ticks = DateTime.Now.Ticks;
 
 				Thread.Sleep(16);
 			}
