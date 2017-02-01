@@ -22,6 +22,7 @@ namespace pfcore {
 
         public const int FFT_SAMPLE_SIZE = 256;
         public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
+        public const int SKIPS_AFTER_TRANSITION = 3;
 
         private DecisionTree decisionTree;
         private List<TrainingValue> trainingData;

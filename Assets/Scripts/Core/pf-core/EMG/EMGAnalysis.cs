@@ -61,8 +61,8 @@ namespace pfcore {
             List<EMGPacket> trainingPackets = packets.GetRange(0, trainingCount);
             List<EMGPacket> predictionPackets = packets.GetRange(packets.Count - predictionCount, predictionCount);
 
-            List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, mean);
-            List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, mean);
+            List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, mean, true);
+            List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, mean, false);
 
             Console.WriteLine("Training values count: " + trainingValues.Count);
             Console.WriteLine("Prediction values count: " + predictionValues.Count);
@@ -91,31 +91,51 @@ namespace pfcore {
 
             double sensitivity = (double)confMat[0, 0] / (confMat[0, 0] + confMat[0, 1]);
             double specificity = (double)confMat[1, 1] / (confMat[1, 0] + confMat[1, 1]);
+            double accuracy = confMat[0, 0] + confMat[1, 1];
+            accuracy /= predictionValues.Count;
 
             Console.WriteLine("Sensitivity: " + sensitivity);
             Console.WriteLine("Specificity: " + specificity);
+            Console.WriteLine("Accuracy: " + accuracy);
         }
 
-        private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, float mean) {
+        private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, float mean, bool enableSkip) {
             List<TrainingValue> values = new List<TrainingValue>(EMGProcessor.FFT_SAMPLE_SIZE);
-            Complex[] data = new Complex[EMGProcessor.FFT_SAMPLE_SIZE];
-            int packetIndex = 0;
+            
+            int skipsRemaining = 0;
 
-            foreach (EMGPacket packet in packets) {
-                data[packetIndex] = new Complex(packet.channels[0] - mean, 0);
-                packetIndex++;
-
-                if (packetIndex == EMGProcessor.FFT_SAMPLE_SIZE) {
-                    FourierTransform.FFT(data, FourierTransform.Direction.Forward);
-                    List<Complex> fftResults = new List<Complex>(data);
-
-                    TrainingValue trainingValue = new TrainingValue(packet.muscleStateHint);
-                    trainingValue.features = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
-
-                    values.Add(trainingValue);
-
-                    packetIndex = 0;
+            for (int i = 0; i < packets.Count / EMGProcessor.FFT_SAMPLE_SIZE; i++) {
+                if (enableSkip && skipsRemaining > 0) {
+                    skipsRemaining--;
+                    continue;
                 }
+
+                Complex[] data = new Complex[EMGProcessor.FFT_SAMPLE_SIZE];
+                int start = i * EMGProcessor.FFT_SAMPLE_SIZE;
+                int end = start + EMGProcessor.FFT_SAMPLE_SIZE;
+                MuscleState startMuscleState = packets[start].muscleStateHint;
+
+                for (int j = start; j < end; j++) {
+                    EMGPacket packet = packets[j];
+                    if (packet.muscleStateHint != startMuscleState) {
+                        skipsRemaining += EMGProcessor.SKIPS_AFTER_TRANSITION;
+                        break;
+                    }
+
+                    data[j - start] = new Complex(packet.channels[0] - mean, 0);
+                }
+
+                if (enableSkip && skipsRemaining > 0) {
+                    continue;
+                }
+
+                FourierTransform.FFT(data, FourierTransform.Direction.Forward);
+                List<Complex> fftResults = new List<Complex>(data);
+
+                TrainingValue trainingValue = new TrainingValue(packets[start].muscleStateHint);
+                trainingValue.features = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
+
+                values.Add(trainingValue);
             }
 
             return values;
