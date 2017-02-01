@@ -1,14 +1,11 @@
 ﻿using System;
-
-using Accord.MachineLearning;
 using System.Threading;
-using System.IO;
 
 namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EEGSession, EMGAnalysis
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession, EMGAnalysis
 	}
 
 	class MainClass
@@ -30,7 +27,30 @@ namespace pfcore
 			{
 				case RunMode.EEG:
 					Console.WriteLine("Running on EEG mode!\n");
-					RunEEG();
+					if (args.Length >= 2)
+					{
+						RunEEG(args[1]);
+					}
+					else
+					{
+						RunEEG();
+					}
+					break;
+				case RunMode.EMG:
+					Console.WriteLine("Running on EMG mode!\n");
+					RunEMG();
+					break;
+				case RunMode.EKG:
+					Console.WriteLine("Running on EKG mode!\n");
+					RunEKG();
+					break;
+				case RunMode.EEGWrite:
+					Console.WriteLine("Running on EEGWrite mode!\n");
+					RunEEGWrite();
+					break;
+				case RunMode.EEGTrain:
+					Console.WriteLine("Running on EEGTrain mode!\n");
+					RunEEGTrain(args[1], args[2]);
 					break;
 				case RunMode.EEGSession:
 					Console.WriteLine("Running on EEG Session mode!\n");
@@ -43,18 +63,10 @@ namespace pfcore
 						RunEEGSession();
 					}
 					break;
-				case RunMode.EMG:
-					Console.WriteLine("Running on EMG mode!\n");
-					RunEMG();
+				case RunMode.EMGAnalysis:
+					Console.WriteLine("Running EMG Analysis on file.");
+					RunEMGAnalysis(args[1]);
 					break;
-				case RunMode.EKG:
-					Console.WriteLine("Running on EKG mode!\n");
-					RunEKG();
-					break;
-                case RunMode.EMGAnalysis:
-                    Console.WriteLine("Running EMG Analysis on file.");
-                    RunEMGAnalysis(args[1]);
-                    break;
 				default:
 					throw new Exception("No run mode specified.");
 
@@ -62,36 +74,39 @@ namespace pfcore
 #endif
 		}
 
-		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
+		private static void RunEEG(string filepath = null)
 		{
-			EEGReader reader = new EEGReader(5005);
-
-			EEGSessionRecorder sessionRecorder;
-			if (trainigPath != null && predictionPath != null)
+			EEGReader reader;
+			if (filepath != null)
 			{
-				EEGProcessor processor = new EEGProcessor(reader, false);
-				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
+				reader = new EEGFileReader(filepath, true);
 			}
 			else
 			{
-				EEGProcessor processor = new EEGProcessor(reader, true);
-				sessionRecorder = new EEGSessionRecorder(processor);
+				reader = new EEGOSCReader(5005);
 			}
 
-			sessionRecorder.Start();
-		}
-
-		private static void RunEEG()
-		{
-			EEGReader reader = new EEGReader(5005);
-
-			EEGProcessor processor = new EEGProcessor(reader, false);
+			EEGProcessor processor = new EEGProcessor(reader);
 
 			processor.Start();
 			while (true)
 			{
 				processor.Update();
 			}
+		}
+
+		private static void RunEEGWrite()
+		{
+			EEGReader reader = new EEGOSCReader(5005);
+			EEGWriter writer = new EEGWriter(reader);
+			writer.Start();
+
+		}
+
+		private static void RunEEGTrain(string trainingSet, string predictionSet)
+		{
+			EEGAnalysis analysis = new EEGAnalysis(trainingSet, predictionSet);
+			analysis.Start();
 		}
 
 		private static void RunEKG()
@@ -115,15 +130,16 @@ namespace pfcore
 			}
 		}
 
-        private static void RunEMGAnalysis(string filename) {
-            EMGAnalysis analysis = new EMGAnalysis(filename);
-            analysis.PrintResults();
-            Console.WriteLine("Press any key to exit.");
-            Console.Read();
-        }
+		private static void RunEMGAnalysis(string filename)
+		{
+			EMGAnalysis analysis = new EMGAnalysis(filename);
+			analysis.PrintResults();
+			Console.WriteLine("Press any key to exit.");
+			Console.Read();
+		}
 
 
-        private static void RunEMG()
+		private static void RunEMG()
 		{
 			EMGSerialReader reader = new EMGSerialReader("COM4", 1000);
 			EMGProcessor processor = new EMGProcessor(reader);
@@ -144,5 +160,26 @@ namespace pfcore
 				Thread.Sleep(16);
 			}
 		}
+
+		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
+		{
+			EEGReader reader = new EEGOSCReader(5005);
+
+			EEGSessionRecorder sessionRecorder;
+			if (trainigPath != null && predictionPath != null)
+			{
+				EEGProcessor processor = new EEGProcessor(reader);
+				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
+			}
+			else
+			{
+				EEGProcessor processor = new EEGProcessor(reader);
+				sessionRecorder = new EEGSessionRecorder(processor);
+			}
+
+			sessionRecorder.Start();
+		}
 	}
 }
+
+

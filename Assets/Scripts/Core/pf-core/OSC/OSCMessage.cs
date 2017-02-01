@@ -4,6 +4,7 @@ using System.Text;
 
 namespace OSC
 {
+	[Serializable]
 	public class OSCMessage : OSCPacket
 	{
 		public String Address { get; private set; }
@@ -55,6 +56,9 @@ namespace OSC
 					case ('b'):
 						byte[] blob = UnpackBlob(data, ref index);
 						Data.Add(blob);
+						break;
+					case ('t'):
+						Console.WriteLine("timetag");
 						break;
 					default:
 						throw new Exception("Unsupported data type.");

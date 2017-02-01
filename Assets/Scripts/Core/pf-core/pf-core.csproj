@@ -56,8 +56,13 @@
     <Compile Include="OSC\OSCBundle.cs" />
     <Compile Include="OSC\Extensions.cs" />
     <Compile Include="Utils\ConcurrentQueue.cs" />
-    <Compile Include="EEG\EEGSessionRecorder.cs" />
     <Compile Include="Utils\MaskUtils.cs" />
+    <Compile Include="EEG\EEGWriter.cs" />
+    <Compile Include="EEG\EEGFileReader.cs" />
+    <Compile Include="EEG\EEGOSCReader.cs" />
+    <Compile Include="EEG\EEGTrainer.cs" />
+    <Compile Include="EEG\EEGSessionRecorder.cs" />
+    <Compile Include="EEG\EEGAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord, Version=3.3.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">

@@ -3,61 +3,17 @@ using System;
 
 namespace pfcore
 {
-	public class EEGReader
+	public abstract class EEGReader
 	{
-		private OSCServer server;
-		private int port;
-		public ConcurrentQueue<EEGPacket> PacketQueue { get; }
+		protected ConcurrentQueue<OSCPacket> PacketQueue = new ConcurrentQueue<OSCPacket>();
 
-		public EEGReader(int port)
+		public abstract void Start();
+
+		public bool Finished { get; protected set; }
+
+		public bool TryDequeue(out OSCPacket packet)
 		{
-			PacketQueue = new ConcurrentQueue<EEGPacket>();
-			this.port = port;
-		}
-
-		public void Start()
-		{
-			server = new OSCServer(port);
-			server.PacketReceivedEvent += OnPacketReceived;
-		}
-
-		private void OnPacketReceived(OSCServer s, OSCPacket packet)
-		{
-			ProcessPacket(packet);
-		}
-
-		private void ProcessPacket(OSCPacket packet)
-		{
-			foreach (OSCPacket p in packet.Data)
-			{
-				if (p.IsBundle())
-				{
-					ProcessPacket(p);
-				}
-				else
-				{
-
-					OSCMessage msg = (OSCMessage)p;
-					if (msg.Address == "/muse/elements/alpha_absolute")
-					{
-						float[] data = new float[1];
-						data[0] = (float)msg.Data[0];
-						PacketQueue.Enqueue(new EEGPacket(DataType.ALPHA, data, DateTime.Now.Ticks));
-					}
-					else if (msg.Address == "/muse/elements/beta_absolute")
-					{
-						float[] data = new float[1];
-						data[0] = (float)msg.Data[0];
-						PacketQueue.Enqueue(new EEGPacket(DataType.BETA, data, DateTime.Now.Ticks));
-					}
-					else if (msg.Address == "/muse/eeg")
-					{
-						float[] data = new float[5];
-						Array.Copy(msg.Data.ToArray(), 0, data, 0, 4);
-						PacketQueue.Enqueue(new EEGPacket(DataType.RAW, data, DateTime.Now.Ticks));
-					}
-				}
-			}
+			return PacketQueue.TryDequeue(out packet);
 		}
 	}
 }
