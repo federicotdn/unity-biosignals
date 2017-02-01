@@ -29,16 +29,21 @@ public class EMGTestController : MonoBehaviour {
     public WMG_Series fftSeries;
     public WMG_Series postFFTSeries;
 
+    public Button startWriteButton;
+    public Button stopWriteButton;
+
     private EMGReader reader;
     private EMGProcessor processor;
 
     private bool started = false;
+    private bool recording = false;
+    private FileStream outFileStream = null;
 
     private long baseTime;
 
 	void Start () {
         if (!useFile) {
-            reader = new EMGReader(SerialPort, maxQueueSize);
+            reader = new EMGSerialReader(SerialPort, maxQueueSize);
         } else {
             Debug.Log("Setting up file mode.");
 
@@ -50,7 +55,9 @@ public class EMGTestController : MonoBehaviour {
                 return;
             }
              
-            reader = new EMGReader(stream, maxQueueSize);
+            EMGFileReader fileReader = new EMGFileReader(stream, maxQueueSize);
+            fileReader.EnableFileLoop();
+            reader = fileReader;
         }
 
         processor = new EMGProcessor(reader);
@@ -73,6 +80,10 @@ public class EMGTestController : MonoBehaviour {
 
     void OnApplicationQuit() {
         StopReading();
+
+        if (outFileStream != null) {
+            outFileStream.Close();
+        }
     }
 
     public void StopReading() {
@@ -144,7 +155,7 @@ public class EMGTestController : MonoBehaviour {
         } else if (Input.GetKeyUp(KeyCode.I)) {
             processor.ChangeMode(EMGProcessor.Mode.IDLE);
         } else if (Input.GetKeyUp(KeyCode.T)) {
-            if (processor.CurrentMuscleState != EMGProcessor.MuscleState.NONE) {
+            if (processor.CurrentMuscleState != MuscleState.NONE) {
                 processor.ChangeMode(EMGProcessor.Mode.TRAINING);
             } else {
                 Debug.Log("Unable to start Training mode: no MuscleState set yet.");
@@ -154,9 +165,9 @@ public class EMGTestController : MonoBehaviour {
         }
 
         if (Input.GetKeyUp(KeyCode.UpArrow)) {
-            processor.CurrentMuscleState = EMGProcessor.MuscleState.TENSE;
+            processor.CurrentMuscleState = MuscleState.TENSE;
         } else if (Input.GetKeyUp(KeyCode.DownArrow)) {
-            processor.CurrentMuscleState = EMGProcessor.MuscleState.RELAXED;
+            processor.CurrentMuscleState = MuscleState.RELAXED;
         }
 
         modeLabel.text = processor.CurrentMode.ToString();
@@ -182,5 +193,40 @@ public class EMGTestController : MonoBehaviour {
         postFFTGraph.yAxis.MaxAutoShrink = enabled;
         postFFTGraph.yAxis.MinAutoGrow = enabled;
         postFFTGraph.yAxis.MinAutoShrink = enabled;
+    }
+
+    public void StartRecording() {
+        if (recording) {
+            return;
+        }
+
+        startWriteButton.interactable = false;
+        stopWriteButton.interactable = true;
+
+        string filename = DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".emg";
+        string filepath = Application.dataPath + "/../DataSets/EMG/";
+
+        outFileStream = File.OpenWrite(filepath + filename);
+        Debug.Log("Writing file to: " + filepath + filename);
+
+        recording = true;
+        processor.OutFileStream = outFileStream;
+        processor.ChangeMode(EMGProcessor.Mode.WRITING);
+    }
+
+    public void StopRecording() {
+        if (!recording) {
+            return;
+        }
+
+        startWriteButton.interactable = true;
+        stopWriteButton.interactable = false;
+
+        Debug.Log("Session recorded.");
+
+        processor.ChangeMode(EMGProcessor.Mode.IDLE);
+        outFileStream.Close();
+        outFileStream = null;
+        recording = false;
     }
 }

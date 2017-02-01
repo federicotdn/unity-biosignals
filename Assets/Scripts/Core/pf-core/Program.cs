@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using Accord.MachineLearning;
 using System.Threading;
-using System.IO;
 
 namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession, EMGAnalysis
 	}
 
 	class MainClass
@@ -44,10 +40,6 @@ namespace pfcore
 					Console.WriteLine("Running on EMG mode!\n");
 					RunEMG();
 					break;
-				case RunMode.EMGWrite:
-					Console.WriteLine("Running in EMG Write mode.");
-					RunEMGWrite();
-					break;
 				case RunMode.EKG:
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
@@ -70,6 +62,10 @@ namespace pfcore
 					{
 						RunEEGSession();
 					}
+					break;
+				case RunMode.EMGAnalysis:
+					Console.WriteLine("Running EMG Analysis on file.");
+					RunEMGAnalysis(args[1]);
 					break;
 				default:
 					throw new Exception("No run mode specified.");
@@ -109,79 +105,8 @@ namespace pfcore
 
 		private static void RunEEGTrain(string trainingSet, string predictionSet)
 		{
-			EEGReader reader;
-			reader = new EEGFileReader(trainingSet, false);
-			EEGProcessor processor = new EEGProcessor(reader);
-
-
-			processor.Start();
-			while (!processor.Finished)
-			{
-				processor.Update();
-			}
-
-			List<EEGTrainingValue> trainingData = processor.TrainingValues;
-			EEGTrainer trainer = new EEGTrainer();
-			trainer.Train(trainingData);
-
-
-			reader = new EEGFileReader(predictionSet, false);
-			processor = new EEGProcessor(reader);
-
-			processor.Start();
-			while (!processor.Finished)
-			{
-				processor.Update();
-			}
-
-			List<EEGTrainingValue> predictionData = processor.TrainingValues;
-			int[] outputs = trainer.Predict(predictionData);
-
-			int[,] confusionMatrix = new int[2, 2];
-			for (int i = 0; i < outputs.Length; i++)
-			{
-				if (predictionData[i].Status == EyesStatus.CLOSED)
-				{
-					if (outputs[i] == (int)EyesStatus.CLOSED)
-					{
-						confusionMatrix[0, 0]++;
-					}
-					else
-					{
-						confusionMatrix[0, 1]++;
-					}
-				}
-				else
-				{
-					if (outputs[i] == (int)EyesStatus.OPEN)
-					{
-						confusionMatrix[1, 1]++;
-					}
-					else
-					{
-						confusionMatrix[1, 0]++;
-					}
-				}
-			}
-
-			Console.WriteLine("Finished training and predicting.");
-			Console.WriteLine("\nConfusion matrix: \n");
-			Console.WriteLine("  C     O");
-
-			int truePositive = confusionMatrix[0, 0];
-			int falseNegative = confusionMatrix[0, 1];
-			int trueNegative = confusionMatrix[1, 1];
-			int falsePositive = confusionMatrix[1, 0];
-
-			float SE = truePositive / (float)(truePositive + falseNegative);
-			float SP = trueNegative / (float)(trueNegative + falsePositive);
-
-			Console.WriteLine("C " + confusionMatrix[0, 0] + "   " + confusionMatrix[0, 1]);
-			Console.WriteLine("O " + confusionMatrix[1, 0] + "   " + confusionMatrix[1, 1]);
-			Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(predictionData.Count));
-
-			Console.WriteLine("Sensitivity: " + SE);
-			Console.WriteLine("Specificity: " + SP);
+			EEGAnalysis analysis = new EEGAnalysis(trainingSet, predictionSet);
+			analysis.Start();
 		}
 
 		private static void RunEKG()
@@ -205,51 +130,18 @@ namespace pfcore
 			}
 		}
 
-		private static void RunEMGWrite()
+		private static void RunEMGAnalysis(string filename)
 		{
-			string filename = DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".emg";
-
-			FileStream outStream = File.OpenWrite(filename);
-
-			EMGReader reader = new EMGReader("COM4", 1000);
-
-			Thread readerThread = new Thread(new ThreadStart(reader.Start));
-			readerThread.Start();
-
-			EMGWriter writer = new EMGWriter(reader, outStream);
-
-			Console.WriteLine("Starting EMG writer, file: " + outStream.Name);
-
-			DateTime start = DateTime.Now;
-			DateTime last = DateTime.Now;
-			while (DateTime.Now.Subtract(start).TotalSeconds < 60)
-			{
-				writer.Update();
-
-				if (DateTime.Now.Subtract(last).TotalSeconds > 1)
-				{
-					Console.Write((int)DateTime.Now.Subtract(start).TotalSeconds);
-					Console.Write("... ");
-					last = DateTime.Now;
-				}
-
-				Thread.Sleep(16);
-			}
-
-			outStream.Close();
-
-			reader.Stop();
-			readerThread.Join();
-
-			Console.WriteLine();
-			Console.WriteLine("EMG write completed. Press Enter to exit.");
-
-			Console.ReadLine();
+			EMGAnalysis analysis = new EMGAnalysis(filename);
+			analysis.PrintResults();
+			Console.WriteLine("Press any key to exit.");
+			Console.Read();
 		}
+
 
 		private static void RunEMG()
 		{
-			EMGReader reader = new EMGReader("COM4", 1000);
+			EMGSerialReader reader = new EMGSerialReader("COM4", 1000);
 			EMGProcessor processor = new EMGProcessor(reader);
 			processor.Start();
 

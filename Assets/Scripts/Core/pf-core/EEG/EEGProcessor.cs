@@ -38,7 +38,6 @@ namespace pfcore
 		}
 	}
 
-
 	public struct EEGData
 	{
 		public double[][] features;
@@ -67,8 +66,10 @@ namespace pfcore
 		public List<Complex> TP10FFT { get; private set; }
 		public List<EyesStatus> RawStatus { get; private set; }
 
+		public const int SAMPLING_RATE = 256;
 		public const int FFT_SAMPLE_SIZE = 256;
-		public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
+		public const double FREQ_STEP = SAMPLING_RATE / (float)FFT_SAMPLE_SIZE;
+		private const int SKIP = 2;
 
 		private List<float> readingsMean = new List<float>();
 
@@ -76,6 +77,16 @@ namespace pfcore
 		private List<float> af7 = new List<float>();
 		private List<float> af8 = new List<float>();
 		private List<float> tp10 = new List<float>();
+		private EyesStatus prevStatus = EyesStatus.OPEN;
+
+		bool alphaSet;
+		double alpha1;
+		double alpha2;
+
+		public bool Training;
+
+		private int ignore = SKIP;
+		private int alphaIgnore = SKIP * 10;
 
 		public Action ProcessorCallback;
 
@@ -99,6 +110,24 @@ namespace pfcore
 					af8.Clear();
 					tp9.Clear();
 					tp10.Clear();
+
+					if (Training && TrainingValues.Count >= SKIP)
+					{
+						for (int i = 0; i < SKIP; i++)
+						{
+							TrainingValues.RemoveAt(TrainingValues.Count - 1);
+						}
+
+						if (AlphaTrainingValues.Count >= SKIP * 10)
+						{
+							for (int i = 0; i < SKIP * 10; i++)
+							{
+								AlphaTrainingValues.RemoveAt(AlphaTrainingValues.Count - 1);
+							}
+						}
+						ignore = SKIP;
+						alphaIgnore = SKIP * 10;
+					}
 
 					switch (status)
 					{
@@ -182,7 +211,15 @@ namespace pfcore
 			feature[1] = PSD(AF7FFT, FREQ_STEP);
 			feature[2] = PSD(AF8FFT, FREQ_STEP);
 			feature[3] = PSD(TP10FFT, FREQ_STEP);
-			TrainingValues.Add(new EEGTrainingValue(feature, Status));
+
+			if (!Training || (Training && ignore == 0))
+			{
+				TrainingValues.Add(new EEGTrainingValue(feature, Status));
+			}
+			else if (Training && ignore != 0)
+			{
+				ignore--;
+			}
 		}
 
 		private static double PSD(List<Complex> fft, double step)
@@ -235,6 +272,33 @@ namespace pfcore
 					if (msg.Address == "/muse/elements/alpha_absolute")
 					{
 						Alpha.Add((float)msg.Data[0]);
+						if (!Training || (Training && alphaIgnore == 0))
+						{
+							if (alphaSet)
+							{
+								alpha2 = (float)msg.Data[0];
+								alphaSet = false;
+
+								if (prevStatus == Status)
+								{
+									double[] features = new double[2];
+									features[0] = alpha1;
+									features[1] = alpha2;
+									AlphaTrainingValues.Add(new EEGTrainingValue(features, Status));
+								}
+							}
+							else
+							{
+								alpha1 = (float)msg.Data[0];
+								alphaSet = true;
+							}
+						}
+						else if (Training && alphaIgnore != 0)
+						{
+							alphaIgnore--;
+						}
+
+						prevStatus = Status;
 						AlphaStatus.Add(status);
 					}
 					else if (msg.Address == "/muse/elements/beta_absolute")

@@ -6,11 +6,11 @@ using System.Numerics;
 using Accord.Math;
 using Accord.MachineLearning.DecisionTrees;
 using Accord.MachineLearning.DecisionTrees.Learning;
+using System.IO;
 
 namespace pfcore {
     class EMGProcessor {
-
-        private struct TrainingValue {
+        public struct TrainingValue {
             public double[] features;
             public MuscleState muscleState;
 
@@ -24,13 +24,8 @@ namespace pfcore {
             IDLE,
             DETRENDING,
             TRAINING,
-            PREDICTING
-        }
-
-        public enum MuscleState {
-            RELAXED,
-            TENSE,
-            NONE
+            PREDICTING,
+            WRITING
         }
 
         private EMGReader reader;
@@ -49,6 +44,13 @@ namespace pfcore {
             }
             get {
                 return currentMuscleState;
+            }
+        }
+
+        private FileStream outFileStream = null;
+        public FileStream OutFileStream {
+            set {
+                outFileStream = value;
             }
         }
 
@@ -130,9 +132,11 @@ namespace pfcore {
                 EndTraining();
             } else if (mode == Mode.PREDICTING) {
                 predictedMuscleState = MuscleState.NONE;
+            } else if (mode == Mode.WRITING) {
+                outFileStream = null;
             }
 
-            this.mode = newMode;
+            mode = newMode;
 
             if (mode == Mode.DETRENDING) {
                 mean = 0.0f;
@@ -141,10 +145,9 @@ namespace pfcore {
         }
 
         public void Update() {
-            ConcurrentQueue<EMGPacket> queue = reader.PacketQueue;
-
             EMGPacket packet;
-            while (queue.TryDequeue(out packet)) {
+            while (reader.TryDequeue(out packet)) {
+                packet.muscleStateHint = currentMuscleState;
                 rawReadings.Add(packet);
             }
 
@@ -161,6 +164,9 @@ namespace pfcore {
                     case Mode.DETRENDING:
                         Detrend();
                         break;
+                    case Mode.WRITING:
+                        Write();
+                        break;
                     default:
                         break;
                 }
@@ -173,19 +179,21 @@ namespace pfcore {
                 readings.Clear();
             }
 
-            while (queue.TryDequeue(out packet)) {
-                /* Discard packets */
+            if (mode != Mode.WRITING) {
+                while (reader.TryDequeue(out packet)) {
+                    /* Discard packets */
+                }
             }
         }
 
         private void Train() {
             TrainingValue value = new TrainingValue(currentMuscleState);
-            value.features = GetFFTMagnitudes(FEATURE_COUNT);
+            value.features = GetFFTMagnitudes(fftResults, FEATURE_COUNT);
 
             trainingData.Add(value);
         }
 
-        private double[] GetFFTMagnitudes(int bins) {
+        public static double[] GetFFTMagnitudes(List<Complex> fftResults, int bins) {
             int binSize = (fftResults.Count / 2) / bins; // Use second half of FFT results
             int startIndex = fftResults.Count / 2;
 
@@ -206,6 +214,11 @@ namespace pfcore {
         }
 
         private void EndTraining() {
+            TrainTree(trainingData, decisionTree);
+            trainingData.Clear();
+        }
+
+        public static void TrainTree(List<TrainingValue> trainingData, DecisionTree tree) {
             double[][] featuresArray = new double[trainingData.Count][];
             int[] labels = new int[trainingData.Count];
 
@@ -214,14 +227,12 @@ namespace pfcore {
                 labels[i] = (int)trainingData[i].muscleState;
             }
 
-            C45Learning teacher = new C45Learning(decisionTree);
+            C45Learning teacher = new C45Learning(tree);
             teacher.Learn(featuresArray, labels);
-
-            trainingData.Clear();
         }
 
         private void Predict() {
-            int result = decisionTree.Decide(GetFFTMagnitudes(FEATURE_COUNT));
+            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, FEATURE_COUNT));
             predictedMuscleState = (MuscleState)result;
         }
 
@@ -250,6 +261,18 @@ namespace pfcore {
             fftResults.Clear();
             fftResults.Capacity = data.Length;
             fftResults.AddRange(data);
+        }
+
+        private void Write() {
+            if (outFileStream == null) {
+                throw new Exception("WRITE mode: outFileStream is null");
+            }
+
+            byte[] buffer = new byte[EMGPacket.PACKET_SIZE_W_HINT];
+            foreach (EMGPacket packet in rawReadings) {
+                packet.Pack(buffer);
+                outFileStream.Write(buffer, 0, buffer.Length);
+            }
         }
     }
 }

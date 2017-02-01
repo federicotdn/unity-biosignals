@@ -13,20 +13,24 @@ namespace pfcore
 		{
 		}
 
-
-
 		public void Train(List<EEGTrainingValue> trainingData)
 		{
-
-			tree = new DecisionTree(
-				inputs: new List<DecisionVariable>
-					{
+			List<DecisionVariable> trainingVariables = new List<DecisionVariable> {
 						DecisionVariable.Continuous("X"),
 						DecisionVariable.Continuous("Y"),
-						DecisionVariable.Continuous("Z"),
-						DecisionVariable.Continuous("W")
-					},
-				classes: 2);
+			};
+
+			if (trainingData[0].Features.Length >= 3)
+			{
+				trainingVariables.Add(DecisionVariable.Continuous("Z"));
+			}
+
+			if (trainingData[0].Features.Length == 4)
+			{
+				trainingVariables.Add(DecisionVariable.Continuous("W"));
+			}
+
+			tree = new DecisionTree(inputs: trainingVariables, classes: 2);
 
 			double[][] featuresArray = new double[trainingData.Count][];
 			int[] outputs = new int[trainingData.Count];
