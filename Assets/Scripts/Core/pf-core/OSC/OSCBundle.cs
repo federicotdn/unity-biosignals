@@ -3,12 +3,15 @@ using System.Text;
 using System.Collections.Generic;
 namespace OSC
 {
+	[Serializable]
 	public class OSCBundle : OSCPacket
 	{
-		public UInt64 timeTag { get; private set; }
+		public long TimeStamp { get; private set; }
 
 		public OSCBundle(byte[] data)
 		{
+			TimeStamp = DateTime.Now.Ticks;
+
 			int index = 0;
 
 			String bundleTag = Encoding.ASCII.GetString(data.SubArray(0, 8));
@@ -20,7 +23,8 @@ namespace OSC
 
 			index += 8;
 
-			timeTag = UnpackUInt64(data, ref index);
+			// Discard timetag
+			UnpackUInt64(data, ref index);
 
 			Data = new List<object>();
 

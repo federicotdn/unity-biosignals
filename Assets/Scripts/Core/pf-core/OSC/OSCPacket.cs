@@ -4,9 +4,11 @@ using System.Text;
 
 namespace OSC
 {
+	[Serializable]
 	public abstract class OSCPacket
 	{
 		public List<Object> Data { get; protected set; }
+		public byte Extra;
 
 		public abstract bool IsBundle();
 

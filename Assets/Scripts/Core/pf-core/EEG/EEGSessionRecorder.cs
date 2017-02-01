@@ -9,8 +9,8 @@ namespace pfcore
 	public class EEGSessionRecorder
 	{
 		private EEGProcessor processor;
-		private EEGData trainingData;
-		private EEGData predictionData;
+		private List<EEGTrainingValue> trainingData;
+		private List<EEGTrainingValue> predictionData;
 
 
 		public EEGSessionRecorder(EEGProcessor processor)
@@ -34,18 +34,20 @@ namespace pfcore
 
 		public void Start()
 		{
-			if (trainingData.features != null && predictionData.features != null)
+			if (trainingData != null && predictionData != null)
 			{
-				processor.Train(trainingData);
+				EEGTrainer trainer = new EEGTrainer();
 
-				int[] answers = processor.Predict(predictionData.features);
+				trainer.Train(trainingData);
+
+				int[] answers = trainer.Predict(predictionData);
 
 				int[,] confusionMatrix = new int[2, 2];
 				for (int i = 0; i < answers.Length; i++)
 				{
-					if (predictionData.outputs[i] == (int)TrainingMode.EYES_CLOSED)
+					if (predictionData[i].Status == EyesStatus.CLOSED)
 					{
-						if (answers[i] == (int)TrainingMode.EYES_CLOSED)
+						if (answers[i] == (int)EyesStatus.CLOSED)
 						{
 							confusionMatrix[0, 0]++;
 						}
@@ -56,7 +58,7 @@ namespace pfcore
 					}
 					else
 					{
-						if (answers[i] == (int)TrainingMode.EYES_OPENED)
+						if (answers[i] == (int)EyesStatus.OPEN)
 						{
 							confusionMatrix[1, 1]++;
 						}
@@ -81,7 +83,7 @@ namespace pfcore
 
 				Console.WriteLine("C " + confusionMatrix[0, 0] + "   " + confusionMatrix[0, 1]);
 				Console.WriteLine("O " + confusionMatrix[1, 0] + "   " + confusionMatrix[1, 1]);
-				Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(predictionData.outputs.Length));
+				Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(predictionData.Count));
 
 				Console.WriteLine("Sensitivity: " + SE);
 				Console.WriteLine("Specificity: " + SP);
@@ -107,23 +109,17 @@ namespace pfcore
 				ConsoleKeyInfo k = Console.ReadKey();
 				if (k.Key == ConsoleKey.Spacebar)
 				{
-					if (!processor.Training)
+					if (processor.Status == EyesStatus.CLOSED)
 					{
-						processor.Training = true;
-					}
-
-					if (processor.Mode == TrainingMode.EYES_CLOSED)
-					{
-						processor.Mode = TrainingMode.EYES_OPENED;
+						processor.Status = EyesStatus.OPEN;
 					}
 					else
 					{
-						processor.Mode = TrainingMode.EYES_CLOSED;
+						processor.Status = EyesStatus.CLOSED;
 					}
 				}
 				else if (k.Key == ConsoleKey.F)
 				{
-					processor.Training = false;
 					SaveToCSV();
 					Environment.Exit(0);
 				}
@@ -135,40 +131,59 @@ namespace pfcore
 		{
 			StringBuilder csv = new StringBuilder();
 
-			List<TrainingMode> modes = processor.Modes;
+			//List<TrainingMode> modes = processor.Modes;
+
+			//string baseFilePath = Directory.GetCurrentDirectory();
+			//baseFilePath += "/" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now);
+
+			//csv.AppendLine("Alpha, Beta, Eyes");
+
+			//int size = Math.Min(processor.Alpha.Count, processor.Beta.Count);
+			//for (int i = 0; i < size; i++)
+			//{
+			//	string newLine = string.Format("{0},{1},{2}", processor.Alpha[i], processor.Beta[i], (int)modes[i]);
+			//	csv.AppendLine(newLine);
+			//}
+
+
+			//string bandPowersPath = baseFilePath + "-band-powers.csv";
+			//Console.WriteLine("Saving band powers to: " + bandPowersPath);
+			//File.WriteAllText(bandPowersPath, csv.ToString());
+
+			//csv = new StringBuilder();
+
+			//csv.AppendLine("EEG1, EEG2, EEG3, EEG4, EEG5, Eyes");
+
+			//for (int i = 0; i < processor.RawModes.Count; i++)
+			//{
+			//	int rawIndex = i * 5;
+			//	string newLine = string.Format("{0},{1},{2},{3},{4},{5}", processor.RawEEG[rawIndex], processor.RawEEG[rawIndex + 1],
+			//								   processor.RawEEG[rawIndex + 2], processor.RawEEG[rawIndex + 3],
+			//								   processor.RawEEG[rawIndex + 4], (int)processor.RawModes[i]);
+			//	csv.AppendLine(newLine);
+			//}
+
+			//string rawPath = baseFilePath + "-raw.csv";
+			//Console.WriteLine("Saving raw EEG to: " + rawPath);
+			//File.WriteAllText(rawPath, csv.ToString());
+
+			//StringBuilder csv = new StringBuilder();
+
 
 			string baseFilePath = Directory.GetCurrentDirectory();
 			baseFilePath += "/" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now);
 
-			csv.AppendLine("Alpha, Beta, Eyes");
+			csv.AppendLine("TP9, AF7, AF8, TP10, Mode");
 
 			int size = Math.Min(processor.Alpha.Count, processor.Beta.Count);
-			for (int i = 0; i < size; i++)
+			foreach (EEGTrainingValue val in processor.TrainingValues)
 			{
-				string newLine = string.Format("{0},{1},{2}", processor.Alpha[i], processor.Beta[i], (int)modes[i]);
+				string newLine = string.Format("{0},{1},{2},{3},{4}", val.Features[0], val.Features[1], val.Features[2], val.Features[3], (int)val.Status);
 				csv.AppendLine(newLine);
 			}
 
-
-			string bandPowersPath = baseFilePath + "-band-powers.csv";
-			Console.WriteLine("Saving band powers to: " + bandPowersPath);
-			File.WriteAllText(bandPowersPath, csv.ToString());
-
-			csv = new StringBuilder();
-
-			csv.AppendLine("EEG1, EEG2, EEG3, EEG4, EEG5, Eyes");
-
-			for (int i = 0; i < processor.RawModes.Count; i++)
-			{
-				int rawIndex = i * 5;
-				string newLine = string.Format("{0},{1},{2},{3},{4},{5}", processor.RawEEG[rawIndex], processor.RawEEG[rawIndex + 1],
-											   processor.RawEEG[rawIndex + 2], processor.RawEEG[rawIndex + 3],
-											   processor.RawEEG[rawIndex + 4], (int)processor.RawModes[i]);
-				csv.AppendLine(newLine);
-			}
-
-			string rawPath = baseFilePath + "-raw.csv";
-			Console.WriteLine("Saving raw EEG to: " + rawPath);
+			string rawPath = baseFilePath + "-4feature.csv";
+			Console.WriteLine("Saving 4 feature EEG data to: " + rawPath);
 			File.WriteAllText(rawPath, csv.ToString());
 		}
 
@@ -191,24 +206,23 @@ namespace pfcore
 			return lines;
 		}
 
-		private EEGData getData(List<string> lines)
+		private List<EEGTrainingValue> getData(List<string> lines)
 		{
-			lines.RemoveAt(0);
-			double[][] features = new double[lines.Count][];
-			int[] outputs = new int[lines.Count];
-			int i = 0;
+			List<EEGTrainingValue> data = new List<EEGTrainingValue>();
 
 			foreach (string line in lines)
 			{
 				string[] values = line.Split(',');
-				features[i] = new double[2];
-				features[i][0] = double.Parse(values[0]);
-				features[i][1] = double.Parse(values[1]);
-				outputs[i] = int.Parse(values[2]);
-				i++;
+
+				double[] features = new double[4];
+				features[0] = double.Parse(values[0]);
+				features[1] = double.Parse(values[1]);
+				features[2] = double.Parse(values[2]);
+				features[3] = double.Parse(values[3]);
+				data.Add(new EEGTrainingValue(features, (EyesStatus)int.Parse(values[4])));
 			}
 
-			return new EEGData(features, outputs);
+			return data;
 		}
 	}
 }

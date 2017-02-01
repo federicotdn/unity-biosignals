@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using Accord.MachineLearning;
 using System.Threading;
@@ -8,7 +9,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGSession
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession
 	}
 
 	class MainClass
@@ -30,17 +31,13 @@ namespace pfcore
 			{
 				case RunMode.EEG:
 					Console.WriteLine("Running on EEG mode!\n");
-					RunEEG();
-					break;
-				case RunMode.EEGSession:
-					Console.WriteLine("Running on EEG Session mode!\n");
-					if (args.Length >= 3)
+					if (args.Length >= 2)
 					{
-						RunEEGSession(args[1], args[2]);
+						RunEEG(args[1]);
 					}
 					else
 					{
-						RunEEGSession();
+						RunEEG();
 					}
 					break;
 				case RunMode.EMG:
@@ -55,6 +52,25 @@ namespace pfcore
 					Console.WriteLine("Running on EKG mode!\n");
 					RunEKG();
 					break;
+				case RunMode.EEGWrite:
+					Console.WriteLine("Running on EEGWrite mode!\n");
+					RunEEGWrite();
+					break;
+				case RunMode.EEGTrain:
+					Console.WriteLine("Running on EEGTrain mode!\n");
+					RunEEGTrain(args[1], args[2]);
+					break;
+				case RunMode.EEGSession:
+					Console.WriteLine("Running on EEG Session mode!\n");
+					if (args.Length >= 3)
+					{
+						RunEEGSession(args[1], args[2]);
+					}
+					else
+					{
+						RunEEGSession();
+					}
+					break;
 				default:
 					throw new Exception("No run mode specified.");
 
@@ -62,36 +78,110 @@ namespace pfcore
 #endif
 		}
 
-		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
+		private static void RunEEG(string filepath = null)
 		{
-			EEGReader reader = new EEGReader(5005);
-
-			EEGSessionRecorder sessionRecorder;
-			if (trainigPath != null && predictionPath != null)
+			EEGReader reader;
+			if (filepath != null)
 			{
-				EEGProcessor processor = new EEGProcessor(reader, false);
-				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
+				reader = new EEGFileReader(filepath, true);
 			}
 			else
 			{
-				EEGProcessor processor = new EEGProcessor(reader, true);
-				sessionRecorder = new EEGSessionRecorder(processor);
+				reader = new EEGOSCReader(5005);
 			}
 
-			sessionRecorder.Start();
-		}
-
-		private static void RunEEG()
-		{
-			EEGReader reader = new EEGReader(5005);
-
-			EEGProcessor processor = new EEGProcessor(reader, false);
+			EEGProcessor processor = new EEGProcessor(reader);
 
 			processor.Start();
 			while (true)
 			{
 				processor.Update();
 			}
+		}
+
+		private static void RunEEGWrite()
+		{
+			EEGReader reader = new EEGOSCReader(5005);
+			EEGWriter writer = new EEGWriter(reader);
+			writer.Start();
+
+		}
+
+		private static void RunEEGTrain(string trainingSet, string predictionSet)
+		{
+			EEGReader reader;
+			reader = new EEGFileReader(trainingSet, false);
+			EEGProcessor processor = new EEGProcessor(reader);
+
+
+			processor.Start();
+			while (!processor.Finished)
+			{
+				processor.Update();
+			}
+
+			List<EEGTrainingValue> trainingData = processor.TrainingValues;
+			EEGTrainer trainer = new EEGTrainer();
+			trainer.Train(trainingData);
+
+
+			reader = new EEGFileReader(predictionSet, false);
+			processor = new EEGProcessor(reader);
+
+			processor.Start();
+			while (!processor.Finished)
+			{
+				processor.Update();
+			}
+
+			List<EEGTrainingValue> predictionData = processor.TrainingValues;
+			int[] outputs = trainer.Predict(predictionData);
+
+			int[,] confusionMatrix = new int[2, 2];
+			for (int i = 0; i < outputs.Length; i++)
+			{
+				if (predictionData[i].Status == EyesStatus.CLOSED)
+				{
+					if (outputs[i] == (int)EyesStatus.CLOSED)
+					{
+						confusionMatrix[0, 0]++;
+					}
+					else
+					{
+						confusionMatrix[0, 1]++;
+					}
+				}
+				else
+				{
+					if (outputs[i] == (int)EyesStatus.OPEN)
+					{
+						confusionMatrix[1, 1]++;
+					}
+					else
+					{
+						confusionMatrix[1, 0]++;
+					}
+				}
+			}
+
+			Console.WriteLine("Finished training and predicting.");
+			Console.WriteLine("\nConfusion matrix: \n");
+			Console.WriteLine("  C     O");
+
+			int truePositive = confusionMatrix[0, 0];
+			int falseNegative = confusionMatrix[0, 1];
+			int trueNegative = confusionMatrix[1, 1];
+			int falsePositive = confusionMatrix[1, 0];
+
+			float SE = truePositive / (float)(truePositive + falseNegative);
+			float SP = trueNegative / (float)(trueNegative + falsePositive);
+
+			Console.WriteLine("C " + confusionMatrix[0, 0] + "   " + confusionMatrix[0, 1]);
+			Console.WriteLine("O " + confusionMatrix[1, 0] + "   " + confusionMatrix[1, 1]);
+			Console.WriteLine("\nAAC: " + (confusionMatrix[0, 0] + confusionMatrix[1, 1]) / (float)(predictionData.Count));
+
+			Console.WriteLine("Sensitivity: " + SE);
+			Console.WriteLine("Specificity: " + SP);
 		}
 
 		private static void RunEKG()
@@ -178,5 +268,26 @@ namespace pfcore
 				Thread.Sleep(16);
 			}
 		}
+
+		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
+		{
+			EEGReader reader = new EEGOSCReader(5005);
+
+			EEGSessionRecorder sessionRecorder;
+			if (trainigPath != null && predictionPath != null)
+			{
+				EEGProcessor processor = new EEGProcessor(reader);
+				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
+			}
+			else
+			{
+				EEGProcessor processor = new EEGProcessor(reader);
+				sessionRecorder = new EEGSessionRecorder(processor);
+			}
+
+			sessionRecorder.Start();
+		}
 	}
 }
+
+
