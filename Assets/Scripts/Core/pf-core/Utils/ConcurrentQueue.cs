@@ -25,6 +25,12 @@ namespace pfcore {
             Monitor.Exit(queue);
         }
 
+        public void Clear() {
+            Monitor.Enter(queue);
+            queue.Clear();
+            Monitor.Exit(queue);
+        }
+
         public bool TryDequeue(out T elem) {
             bool locked = Monitor.TryEnter(queue);
             if (!locked || queue.Count == 0) {

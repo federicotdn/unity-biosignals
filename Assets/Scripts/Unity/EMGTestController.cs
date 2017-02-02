@@ -12,11 +12,6 @@ public class EMGTestController : MonoBehaviour {
 
     public int readingsXAxisSize = 1000;
 
-    public string SerialPort = "COM5";
-    public int maxQueueSize = 1000;
-    public bool useFile = false;
-    public string filePath = "";
-
     public WMG_Axis_Graph readingsGraph;
     public WMG_Axis_Graph fftGraph;
     public WMG_Axis_Graph postFFTGraph;
@@ -33,7 +28,7 @@ public class EMGTestController : MonoBehaviour {
     public Button startWriteButton;
     public Button stopWriteButton;
 
-    private EMGReader reader;
+    private EMGManager manager;
     private EMGProcessor processor;
 
     private bool started = false;
@@ -54,25 +49,10 @@ public class EMGTestController : MonoBehaviour {
     }
 
     void Start () {
-        if (!useFile) {
-            reader = new EMGSerialReader(SerialPort, maxQueueSize);
-        } else {
-            Debug.Log("Setting up file mode.");
+        manager = EMGManager.Instance;
+        manager.Setup();
 
-            FileStream stream;
-            try {
-                stream = File.OpenRead(Application.dataPath + "/../DataSets/EMG/" + filePath);
-            } catch (Exception e) {
-                Debug.Log("Unable to open file: " + e);
-                return;
-            }
-             
-            EMGFileReader fileReader = new EMGFileReader(stream, maxQueueSize);
-            fileReader.EnableFileLoop();
-            reader = fileReader;
-        }
-
-        processor = new EMGProcessor(reader);
+        processor = manager.Processor;
 	}
 	
     public void StartReading() {
@@ -122,19 +102,12 @@ public class EMGTestController : MonoBehaviour {
         fftSeries.pointValues.SetList(vals);
 
         //Averaged FFT
-        int bins = 16;
-        int binSize = (fftResults.Count / 2) / bins; // Use only second half of FFT results
-        int startIndex = fftResults.Count / 2;
-        List<Vector2> postFFTVals = new List<Vector2>(bins);
-        for (int i = 0; i < bins; i++) {
-            Complex avg = Complex.Zero;
-            for (int j = 0; j < binSize; j++) {
-                int valueIdx = startIndex + (i * binSize) + j;
-                avg += fftResults[valueIdx];
-            }
-            avg /= binSize;
+        List<Vector2> postFFTVals = new List<Vector2>();
+        double[] averagedFFT = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
 
-            postFFTVals.Add(new Vector2(i, (float)avg.Magnitude));
+        int j = 0;
+        foreach (double val in averagedFFT) {
+            postFFTVals.Add(new Vector2(j++, (float)val));
         }
 
         postFFTSeries.pointValues.SetList(postFFTVals);  

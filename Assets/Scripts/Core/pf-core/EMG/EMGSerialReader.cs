@@ -29,7 +29,7 @@ namespace pfcore {
                 for (int i = 0; i < buffer.Length && readOk; i++) {
                     int val = serialPort.ReadByte();
                     if (val == -1) {
-                        throw new Exception("End of stream.");
+                        running = false;
                     }
 
                     byte readByte = (byte)val;

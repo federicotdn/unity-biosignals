@@ -22,5 +22,9 @@
         public bool TryDequeue(out EMGPacket packet) {
             return packetQueue.TryDequeue(out packet);
         }
+
+        public void ClearQueue() {
+            packetQueue.Clear();
+        }
     }
 }

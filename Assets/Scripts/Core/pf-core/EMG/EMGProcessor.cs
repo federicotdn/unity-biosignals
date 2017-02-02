@@ -9,7 +9,7 @@ using Accord.MachineLearning.DecisionTrees.Learning;
 using System.IO;
 
 namespace pfcore {
-    class EMGProcessor {
+    public class EMGProcessor {
         public enum Mode {
             IDLE,
             DETRENDING,
@@ -173,9 +173,8 @@ namespace pfcore {
             }
 
             if (mode != Mode.WRITING) {
-                while (reader.TryDequeue(out packet)) {
-                    /* Discard packets */
-                }
+                /* Discard packets received during processing */
+                reader.ClearQueue();
             }
         }
 

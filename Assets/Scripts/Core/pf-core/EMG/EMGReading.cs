@@ -1,5 +1,5 @@
 ﻿namespace pfcore {
-    struct EMGReading {
+    public struct EMGReading {
         public float value;
         public long timeStamp;
 

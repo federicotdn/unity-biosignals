@@ -1,6 +1,6 @@
 ﻿namespace pfcore {
     public struct TrainingValue {
-        public const int FEATURE_COUNT = 16;
+        public const int FEATURE_COUNT = 8;
 
         public double[] features;
         public MuscleState muscleState;

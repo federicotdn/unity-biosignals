@@ -48,15 +48,11 @@ namespace pfcore
 				}
 			}
 
-			// Do stuff
+            /* Discard packets received during processing */
+            queue.Clear();
+        }
 
-			while (queue.TryDequeue(out packet))
-			{
-				/* Discard packets */
-			}
-		}
-
-		public void StopAndJoin()
+        public void StopAndJoin()
 		{
 			reader.Stop();
 			readerThread.Join();
