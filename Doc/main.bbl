@@ -1,0 +1,39 @@
+\begin{thebibliography}{1}
+  \providebibliographyfont{name}{}%
+  \providebibliographyfont{lastname}{}%
+  \providebibliographyfont{title}{\emph}%
+  \providebibliographyfont{jtitle}{\btxtitlefont}%
+  \providebibliographyfont{etal}{\emph}%
+  \providebibliographyfont{journal}{}%
+  \providebibliographyfont{volume}{}%
+  \providebibliographyfont{ISBN}{\MakeUppercase}%
+  \providebibliographyfont{ISSN}{\MakeUppercase}%
+  \providebibliographyfont{url}{\url}%
+  \providebibliographyfont{numeral}{}%
+  \expandafter\btxselectlanguage\expandafter {\btxfallbacklanguage}
+
+\expandafter\btxselectlanguage\expandafter {\btxfallbacklanguage}
+\bibitem {force}
+\btxtitlefont {\btxifchangecase {Star wars the force trainer review: How does
+  it work}{Star Wars The Force Trainer Review: How does it work}}.
+\newblock
+  \url{http://hubpages.com/games-hobbies/Star-Wars-The-Force-Trainer-How-does-it-work}.
+\newblock feb 2016.
+
+\bibitem {hawking}
+\btxnamefont {\btxlastnamefont {Hawking}, Stephen}\btxauthorcolon\
+  \btxtitlefont {\btxifchangecase {My computer}{My Computer}}.
+\newblock \url{http://www.hawking.org.uk/the-computer.html}.
+\newblock feb 2016.
+
+\bibitem {mindflix}
+\btxnamefont {\btxlastnamefont {Jacobson}, Daniel}, \btxnamefont {Ruslan
+  \btxlastnamefont {Meshenberg}}, \btxnamefont {Leslie \btxlastnamefont
+  {Posada}}\btxandcomma {} \btxandlong {}\ \btxnamefont {Tom \btxlastnamefont
+  {Richards}}\btxauthorcolon\ \btxtitlefont {\btxifchangecase {Netflix hack day
+  - winter 2017}{Netflix Hack Day - Winter 2017}}.
+\newblock
+  \url{http://techblog.netflix.com/2017/01/netflix-hack-day-winter-2017.html}.
+\newblock feb 2016.
+
+\end{thebibliography}

@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: main.aux
+The style file: babplain.bst
+Database file #1: bibliography.bib
+Warning--to sort, need author or key in force
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--empty language in force
+You've used 3 entries,
+            2788 wiz_defined-function locations,
+            644 strings with 6313 characters,
+and the built_in function-call counts, 954 in all, are:
+= -- 76
+> -- 31
+< -- 0
++ -- 13
+- -- 10
+* -- 80
+:= -- 136
+add.period$ -- 9
+call.type$ -- 3
+change.case$ -- 14
+chr.to.int$ -- 0
+cite$ -- 5
+duplicate$ -- 43
+empty$ -- 105
+format.name$ -- 19
+if$ -- 201
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 0
+newline$ -- 31
+num.names$ -- 4
+pop$ -- 42
+preamble$ -- 1
+purify$ -- 11
+quote$ -- 0
+skip$ -- 20
+stack$ -- 0
+substring$ -- 15
+swap$ -- 16
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 12
+warning$ -- 2
+while$ -- 4
+width$ -- 4
+write$ -- 44
+(There were 2 warnings)

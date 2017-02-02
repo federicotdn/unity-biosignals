@@ -1,0 +1,52 @@
+\documentclass[12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\selectlanguage{spanish}
+\usepackage{url}
+\usepackage[document]{ragged2e}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{babelbib}
+\graphicspath{ {images/} }
+
+\title{
+	{\Huge Proyecto Final}\\
+	{\Huge Interpretación de bioseñales para uso en aplicaciones interactivas}
+	{\large Instituto Tecnológico de Buenos Aires}\\~\\
+	{\includegraphics{itba.png}}
+}
+
+\author{{Federico Tedin} {Javier Fraire}}
+\date{Febrero 2017}
+
+\makeindex
+
+\begin{document}
+\maketitle
+
+\chapter*{Resumen}
+\justifying
+Las bioseñales consisten en señales producidas por tejidos vivos. Algunos ejemplos de bioseñales, en seres humanos, son: EEG (Electroencefalografía) la cual consiste en la actividad bioeléctrica cerebral, EMG (Electromiografía), la cual contempla la actividad eléctrica generada por los músculos del cuerpo, y ECG (Electrocardiograma), la cual representa la actividad eléctrica del corazón.
+
+Dichas señales, luego de ser leídas, fueron procesadas para eliminar ruido y para extraer las características de interés. Con las características extraídas se utilizaron clasificadores para determinar si el usuario realizó una determinada acción. En este caso, se utilizó para deteterminar si el usuario estaba con los ojos abiertos o cerrados, y para determinar si el usuario estaba haciendo fuerza con la mano o no.
+
+Con la información obtenida de los clasificadores se realizaron alteraciones en universos 3D dandolé una mayor inmersión a los usuarios.
+
+
+\tableofcontents
+
+\chapter{Estado del Arte}
+\input{chapters/estado-del-arte}
+
+\chapter{Marco Teórico}
+\input{chapters/marco-teorico}
+
+\chapter{Implementación}
+\input{chapters/implementacion}
+
+\addcontentsline{toc}{chapter}{Bibliografía}
+\bibliography{bibliography}{}
+\bibliographystyle{babplain}
+ 
+\end{document}
