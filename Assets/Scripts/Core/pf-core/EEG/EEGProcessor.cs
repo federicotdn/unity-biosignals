@@ -230,7 +230,7 @@ namespace pfcore
 			double ans = 0;
 			for (int i = minIndex; i <= maxIndex; i++)
 			{
-				ans += fft[i].Magnitude;
+				ans += fft[i].Magnitude * fft[i].Magnitude;
 			}
 
 			return ans;
