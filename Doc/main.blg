@@ -7,45 +7,45 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Warning--empty language in emg-fireball
 Warning--empty journal in emg-fireball
 Warning--empty year in emg-fireball
-You've used 4 entries,
+You've used 5 entries,
             2788 wiz_defined-function locations,
-            652 strings with 6594 characters,
-and the built_in function-call counts, 1409 in all, are:
-= -- 120
-> -- 44
+            656 strings with 6721 characters,
+and the built_in function-call counts, 1681 in all, are:
+= -- 145
+> -- 51
 < -- 1
-+ -- 18
-- -- 14
-* -- 124
-:= -- 208
-add.period$ -- 11
-call.type$ -- 4
-change.case$ -- 19
++ -- 21
+- -- 16
+* -- 141
+:= -- 249
+add.period$ -- 14
+call.type$ -- 5
+change.case$ -- 23
 chr.to.int$ -- 0
-cite$ -- 7
-duplicate$ -- 70
-empty$ -- 139
-format.name$ -- 25
-if$ -- 298
+cite$ -- 8
+duplicate$ -- 83
+empty$ -- 172
+format.name$ -- 28
+if$ -- 360
 int.to.chr$ -- 0
-int.to.str$ -- 4
+int.to.str$ -- 5
 missing$ -- 4
-newline$ -- 35
-num.names$ -- 8
-pop$ -- 43
+newline$ -- 40
+num.names$ -- 10
+pop$ -- 56
 preamble$ -- 1
-purify$ -- 15
+purify$ -- 18
 quote$ -- 0
-skip$ -- 39
+skip$ -- 46
 stack$ -- 0
-substring$ -- 40
-swap$ -- 28
+substring$ -- 45
+swap$ -- 32
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 16
+type$ -- 20
 warning$ -- 3
-while$ -- 10
-width$ -- 5
-write$ -- 55
+while$ -- 12
+width$ -- 6
+write$ -- 65
 (There were 3 warnings)

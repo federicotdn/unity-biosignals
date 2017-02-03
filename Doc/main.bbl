@@ -49,4 +49,12 @@
 \newblock {\latintext
   \btxurlfont{http://www.hawking.org.uk/the-computer.html}}.
 
+\bibitem {peak-finding}
+\btxnamefont {\btxlastnamefont {O'Haver}, Tom}\btxauthorcolon\ \btxtitlefont
+  {\btxifchangecase {Peak finding and measurement}{Peak Finding and
+  Measurement}}.
+\newblock
+  \url{http://terpconnect.umd.edu/~toh/spectrum/PeakFindingandMeasurement.htm}.
+\newblock feb 2016.
+
 \end{thebibliography}

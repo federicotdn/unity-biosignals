@@ -1,3 +1,27 @@
+Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará brevemente sobre el procesamiento de las señales. Luego se introducirán los conceptos de extracción de características y clasificación. Finalmente, se explicará como funcionan algunos sensores y se introducirá información teórica sobre la información que se obtiene de los mismos.
+
+\section{Procesamiento de señales}
+
+Las señales obtenidas de los sensores poseen ruido debido a que el \emph{hardware} no es 100\% confiable. Para eliminar el ruido se utilizan tantos filtros por \emph{hardware}, que los aplica el propio sensor, y filtros por \emph{software}. Dentro de los filtros de \emph{software} se encuentra el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran originar por ruido propio del sensor. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
+
+$$ g(x) = \frac{1}{\sqrt{2 * \pi} * \sigma } * e^{-\frac{x^{2}}{2 * \sigma^{2}}} $$
+
+Una vez que se redujo el ruido, se pueden aplicar otros filtros o utilizarla directamente. Muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $\mu V$ (microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un EMG, puede significar un impuslo de fuerza. En un EEG, puede significar un pestañeo.
+
+Otro procesamiento que se le puede aplicar es la transformada discreta de \emph{Fourier}. La transformada de \emph{Fourier} transforma una función que se encuentra en el dominio del tiempo a una función que se encuentra en el dominio de la frecuencia. La transformada de \emph{Fourier} se define de la siguiente manera:
+
+$$ x_{k} = \sum_{n=0}^{N-1} x_{n}e^{-\frac{2 \pi i}{N}kn} \qquad k = 0,..., N - 1 $$
+
+Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le aplica un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplica el filtro pasa banda,  se cuenta con las frecuencias de interés y se continuá con el procesamiento. Una alternativa es calcular la Densidad Espectral de Potencia (DEP). Esta se define como:
+
+$$ P = \int_{-\inf}^{+inf} S_{xx} (f) df \qquad  \textrm{donde}$$
+
+$$ S_{xx} = |X(f)|^{2} \qquad \textbf{y} \qquad X(f) \textrm{ es la Transformada de \emph{Fourier}} $$
+
+Esta potencia puede ser utilizada luego como una característica de interés. Se discutirá más adelante. Otra alternativa  es, por ejemplo, calcular el promedio de las frecuencias. Las posibilidades aquí son muchas y dependen de lo que se esté buscando.
+
+\section{Extracción de Características de Interés y Clasificación}
+
 \section{EEG}
 
 \section{EMG}
