@@ -3,48 +3,49 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: main.aux
 The style file: babplain.bst
 Database file #1: bibliography.bib
-Warning--to sort, need author or key in force
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-Warning--empty language in force
-You've used 3 entries,
+Warning--empty language in emg-fireball
+Warning--empty journal in emg-fireball
+Warning--empty year in emg-fireball
+You've used 4 entries,
             2788 wiz_defined-function locations,
-            644 strings with 6313 characters,
-and the built_in function-call counts, 954 in all, are:
-= -- 76
-> -- 31
-< -- 0
-+ -- 13
-- -- 10
-* -- 80
-:= -- 136
-add.period$ -- 9
-call.type$ -- 3
-change.case$ -- 14
+            652 strings with 6594 characters,
+and the built_in function-call counts, 1409 in all, are:
+= -- 120
+> -- 44
+< -- 1
++ -- 18
+- -- 14
+* -- 124
+:= -- 208
+add.period$ -- 11
+call.type$ -- 4
+change.case$ -- 19
 chr.to.int$ -- 0
-cite$ -- 5
-duplicate$ -- 43
-empty$ -- 105
-format.name$ -- 19
-if$ -- 201
+cite$ -- 7
+duplicate$ -- 70
+empty$ -- 139
+format.name$ -- 25
+if$ -- 298
 int.to.chr$ -- 0
-int.to.str$ -- 3
-missing$ -- 0
-newline$ -- 31
-num.names$ -- 4
-pop$ -- 42
+int.to.str$ -- 4
+missing$ -- 4
+newline$ -- 35
+num.names$ -- 8
+pop$ -- 43
 preamble$ -- 1
-purify$ -- 11
+purify$ -- 15
 quote$ -- 0
-skip$ -- 20
+skip$ -- 39
 stack$ -- 0
-substring$ -- 15
-swap$ -- 16
-text.length$ -- 0
+substring$ -- 40
+swap$ -- 28
+text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 12
-warning$ -- 2
-while$ -- 4
-width$ -- 4
-write$ -- 44
-(There were 2 warnings)
+type$ -- 16
+warning$ -- 3
+while$ -- 10
+width$ -- 5
+write$ -- 55
+(There were 3 warnings)

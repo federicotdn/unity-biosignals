@@ -13,12 +13,15 @@
   \expandafter\btxselectlanguage\expandafter {\btxfallbacklanguage}
 
 \expandafter\btxselectlanguage\expandafter {\btxfallbacklanguage}
-\bibitem {force}
-\btxtitlefont {\btxifchangecase {Star wars the force trainer review: How does
-  it work}{Star Wars The Force Trainer Review: How does it work}}.
-\newblock
-  \url{http://hubpages.com/games-hobbies/Star-Wars-The-Force-Trainer-How-does-it-work}.
-\newblock feb 2016.
+\bibitem {emg-fireball}
+\btxnamefont {\btxlastnamefont {Duck Gun~Park}, Hee\btxfnamespacelong
+  Chan\btxfnamespacelong Kim}\btxauthorcolon\ \btxjtitlefont {\btxifchangecase
+  {{Muscleman: Wireless input device for a fighting action game based on the
+  EMG signal and acceleration of the human forearm}}{{Muscleman: Wireless input
+  device for a fighting action game based on the EMG signal and acceleration of
+  the human forearm}}}.
+\newblock {\latintext
+  \btxurlfont{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.714.4700&rep=rep1&type=pdf}}.
 
 \bibitem {hawking}
 \btxnamefont {\btxlastnamefont {Hawking}, Stephen}\btxauthorcolon\
@@ -35,5 +38,15 @@
 \newblock
   \url{http://techblog.netflix.com/2017/01/netflix-hack-day-winter-2017.html}.
 \newblock feb 2016.
+
+\bibitem {emg-flight}
+\btxnamefont {\btxlastnamefont {Kevin R.~Wheeler}, Charles\btxfnamespacelong
+  C.\btxfnamespacelong Jorgensen}\btxauthorcolon\ \btxjtitlefont
+  {\btxifchangecase {{Gestures as Input: Neuroelectric Joysticks and
+  Keyboards}}{{Gestures as Input: Neuroelectric Joysticks and Keyboards}}}.
+\newblock \btxjournalfont {Pervasive Computing}, \btxpageslong {}\ 56--61,
+  2003.
+\newblock {\latintext
+  \btxurlfont{http://www.hawking.org.uk/the-computer.html}}.
 
 \end{thebibliography}
