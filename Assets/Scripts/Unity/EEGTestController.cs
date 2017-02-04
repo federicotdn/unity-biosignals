@@ -37,7 +37,7 @@ public class EEGTestController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		if (useFile) {
-			//reader = new EEGFileReader (filepath);
+			reader = new EEGFileReader (filepath, false);
 		} else {
 			reader = new EEGOSCReader (port);
 		}
