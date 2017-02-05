@@ -40,14 +40,14 @@ namespace pfcore
 
 				trainer.Train(trainingData);
 
-				int[] answers = trainer.Predict(predictionData);
+				List<EyesStatus> answers = trainer.Predict(predictionData);
 
 				int[,] confusionMatrix = new int[2, 2];
-				for (int i = 0; i < answers.Length; i++)
+				for (int i = 0; i < answers.Count; i++)
 				{
 					if (predictionData[i].Status == EyesStatus.CLOSED)
 					{
-						if (answers[i] == (int)EyesStatus.CLOSED)
+						if (answers[i] == EyesStatus.CLOSED)
 						{
 							confusionMatrix[0, 0]++;
 						}
@@ -58,7 +58,7 @@ namespace pfcore
 					}
 					else
 					{
-						if (answers[i] == (int)EyesStatus.OPEN)
+						if (answers[i] == EyesStatus.OPEN)
 						{
 							confusionMatrix[1, 1]++;
 						}

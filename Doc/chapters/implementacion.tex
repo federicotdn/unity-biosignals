@@ -15,7 +15,7 @@ En el caso de EEG, se decidió utilizar el \emph{Muse Brainsensing Headband}. Es
 	\label{fig:muse-electrodes}
 \end{figure}
 
-El dispositivo tiene una frecuencia de muestreo de $ 256 HZ$. Además cuenta con acelerómetro y giroscopio lo que permite medir la orientación del usuario. También cuenta con un puerto micro USB y \emph{bluetooth}. Permite acceder a la información bruta de cada electrodo por lo que se obtienen cinco valores. Cuatro de de los electrodos frontales y de las orejas, y el restante se obtiene de los tres electrodos de referencia. También brinda algunas facilidades como realizar la Transformada de \emph{Fourier},  calcular la potencia de las bandas ($\alpha$, $\beta$, $\delta$, $\theta$ y $\gamma$), entre otros.
+El dispositivo tiene una frecuencia de muestreo de $ 256 \, HZ$. Además cuenta con acelerómetro y giroscopio lo que permite medir la orientación del usuario. También cuenta con un puerto micro USB y \emph{bluetooth}. Permite acceder a la información bruta de cada electrodo por lo que se obtienen cinco valores. Cuatro de de los electrodos frontales y de las orejas, y el restante se obtiene de los tres electrodos de referencia. También brinda algunas facilidades como realizar la Transformada de \emph{Fourier},  calcular la potencia de las bandas ($\alpha$, $\beta$, $\delta$, $\theta$ y $\gamma$), entre otros.
 
 Para los desarrolladores, cuenta con \emph{SDK} para \emph{Windows} y \emph{Unity} y cuenta con aplicaciones multiplataforma para poder acceder a los datos. Una forma de acceder a los datos es a través de \emph{OSC} (\emph{Open Sound Control}. \emph{OSC} es un protocolo que corre sobre UDP y permite el \emph{stream} continuo de datos.
 
@@ -36,7 +36,7 @@ En un principio, se utilizó un \emph{framework} para procesar los paquetes \emp
  \begin{enumerate}
  \item Obtener una ventana $25$ muestras (pues envía $10$ muestras por segundo y el sensor obtiene $256$ muestras por segundo) y aplicar la función de ventana $Hann$.
  \item Obtener la Transformada de \emph{Fourier} de la ventana.
- \item Aplicar un filtro pasa banda para utilizar únicamente las frecuencias de interés ( $ 8Hz \leq f \leq 13 Hz$).
+ \item Aplicar un filtro pasa banda para utilizar únicamente las frecuencias de interés ( $ 8 \, Hz \leq f \leq 13 \, Hz$).
  \item Realizar la DEP sobre esos valores. A diferencia de solo integrar, el dispositivo aplica $log_{10}$  a cada valor antes de realizar la integral.
  \end{enumerate}
 
@@ -50,12 +50,12 @@ El vector de características se confeccionó utilizando dos valores de \emph{Al
 
 En la etapa de entrenamiento se le asignaba un estado a cada uno de estos vectores. La precisión obtenida con este método fue de entre un $65\%$ y un $70\%$. Esto se debe a que aún cuando el usuario se encontraba con los ojos abiertos, \emph{Alpha} alcanzaban valores tan altos como cuando el usuario se encontraba con los ojos cerrados debido a ruidos del sensor y a el hecho de que las bioseñales varían mucho. Se podía observar que el clasificador era muy preciso en detectar ojos cerrados pero muy impreciso en detectar ojos abiertos. La precisión en ojos cerrados era de un $99\%$ y en ojos abiertos de un $25\%$.
 
-Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que, al contar con más muestras, además de obtener picos anómalos, se obtienen los valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian con más valores. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. El dispositivo utiliza una frecuencia de $10Hz$ para los valores de potencia de \emph{Alpha} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
+Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que, al contar con más muestras, además de obtener picos anómalos, se obtienen los valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian con más valores. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. El dispositivo utiliza una frecuencia de $10 \: Hz$ para los valores de potencia de \emph{Alpha} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
 
  \begin{enumerate}
  \item Obtener una ventana $256$ muestras, es decir, un segundo.
  \item Obtener la Transformada de \emph{Fourier} de la ventana.
- \item Quedarse únicamente con las frecuencias $8Hz-13Hz$.
+ \item Quedarse únicamente con las frecuencias $8 \, Hz-13 \, Hz$.
  \item Realizar la DEP sobre esos valores.
  \end{enumerate}
  
@@ -69,7 +69,7 @@ Este procedimiento se aplica por cada uno de los cuatro electrodos. Por lo que c
 
 Con este vector de características, se alcanzó una precisión de hasta un $ 85 \%$. Esto se debe a que, si bien empeoro la precisión de detectar ojos cerrados, incrementó notablemente la de ojos abiertos.
  
- En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran los valores de transición. Cuando se le indica al usuario que abra o cierre los ojos, se descartan dos segundos antes y después de la transición de estados.
+En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran los valores de transición. Cuando se le indica al usuario que abra o cierre los ojos, se descartan dos segundos antes y después de la transición de estados. Esto se debe a que los valores que corresponden a la transición no son significativos. Los que realmente importan son cuando se está en un estado u otro.
  
 
 \section{Desarrollo de universos 3D interactivos}

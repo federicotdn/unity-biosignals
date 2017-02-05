@@ -54,10 +54,10 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 			dy = 0;
 		}
 
-		float magnitude = Mathf.Max((EKGManager.Instance.BPM - 60), 0) / 30.0f;
-		float periodDivider = Mathf.Lerp (0.9f, 1, 1 - magnitude);
-		shakeDx = Mathf.Sin (Time.timeSinceLevelLoad * periodDivider) * Time.deltaTime * ShakeMagnitude * magnitude;
-		shakeDy = Mathf.Sin (((Time.timeSinceLevelLoad) * periodDivider) + Mathf.PI) * Time.deltaTime * ShakeMagnitude * magnitude;
+//		float magnitude = Mathf.Max((EKGManager.Instance.BPM - 60), 0) / 30.0f;
+//		float periodDivider = Mathf.Lerp (0.9f, 1, 1 - magnitude);
+//		shakeDx = Mathf.Sin (Time.timeSinceLevelLoad * periodDivider) * Time.deltaTime * ShakeMagnitude * magnitude;
+//		shakeDy = Mathf.Sin (((Time.timeSinceLevelLoad) * periodDivider) + Mathf.PI) * Time.deltaTime * ShakeMagnitude * magnitude;
 
 //		if (!shakeXTimer.Finished) {
 //			vx += ax * Time.deltaTime;
@@ -76,7 +76,7 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 //
 //		}
 
-		Shake ();
+//		Shake ();
 	}
 
 	public void Recoil() {

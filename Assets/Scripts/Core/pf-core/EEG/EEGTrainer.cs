@@ -45,7 +45,7 @@ namespace pfcore
 			teacher.Learn(featuresArray, outputs);
 		}
 
-		public int[] Predict(List<EEGTrainingValue> predictionData)
+		public List<EyesStatus> Predict(List<EEGTrainingValue> predictionData)
 		{
 			if (tree == null)
 			{
@@ -59,7 +59,15 @@ namespace pfcore
 				featuresArray[i] = predictionData[i].Features;
 			}
 
-			return tree.Decide(featuresArray);
+			int[] answers = tree.Decide(featuresArray);
+
+			List<EyesStatus> status = new List<EyesStatus>();
+			foreach (int val in answers)
+			{
+				status.Add((EyesStatus)val);
+			}
+
+			return status;
 		}
 	}
 }

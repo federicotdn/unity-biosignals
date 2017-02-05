@@ -57,6 +57,7 @@ namespace pfcore
 		public List<EyesStatus> AlphaStatus { get; private set; }
 		public List<Complex> FFTResults { get; private set; }
 		public List<EEGTrainingValue> TrainingValues { get; private set; }
+		public List<EEGTrainingValue> TrainingValuesWindow { get; private set; }
 		public List<EEGTrainingValue> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
@@ -150,6 +151,7 @@ namespace pfcore
 			Beta = new List<float>();
 			TrainingValues = new List<EEGTrainingValue>();
 			AlphaTrainingValues = new List<EEGTrainingValue>();
+			TrainingValuesWindow = new List<EEGTrainingValue>();
 
 			FFTResults = new List<Complex>();
 			TP9FFT = new List<Complex>();
@@ -185,6 +187,7 @@ namespace pfcore
 					af8.Clear();
 					tp9.Clear();
 					tp10.Clear();
+					TrainingValuesWindow.Clear();
 				}
 			}
 
@@ -214,7 +217,9 @@ namespace pfcore
 
 			if (!Training || (Training && ignore == 0))
 			{
-				TrainingValues.Add(new EEGTrainingValue(feature, Status));
+				EEGTrainingValue trainingValue = new EEGTrainingValue(feature, Status);
+				TrainingValues.Add(trainingValue);
+				TrainingValuesWindow.Add(trainingValue);
 			}
 			else if (Training && ignore != 0)
 			{
