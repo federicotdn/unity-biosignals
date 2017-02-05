@@ -133,8 +133,8 @@ namespace pfcore {
                 List<Complex> fftResults = new List<Complex>(data);
 
                 TrainingValue trainingValue = new TrainingValue(packets[start].muscleStateHint);
-                trainingValue.features = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
 
+                EMGProcessor.FillTrainingValue(ref trainingValue, fftResults);
                 values.Add(trainingValue);
             }
 

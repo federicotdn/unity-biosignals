@@ -14,7 +14,6 @@ public class EMGTestController : MonoBehaviour {
 
     public WMG_Axis_Graph readingsGraph;
     public WMG_Axis_Graph fftGraph;
-    public WMG_Axis_Graph postFFTGraph;
 
     public Text modeLabel;
     public Text meanLabel;
@@ -23,7 +22,6 @@ public class EMGTestController : MonoBehaviour {
 
     public WMG_Series readingsSeries;
     public WMG_Series fftSeries;
-    public WMG_Series postFFTSeries;
 
     public Button startWriteButton;
     public Button stopWriteButton;
@@ -101,17 +99,6 @@ public class EMGTestController : MonoBehaviour {
 
         fftSeries.pointValues.SetList(vals);
 
-        //Averaged FFT
-        List<Vector2> postFFTVals = new List<Vector2>();
-        double[] averagedFFT = EMGProcessor.GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
-
-        int j = 0;
-        foreach (double val in averagedFFT) {
-            postFFTVals.Add(new Vector2(j++, (float)val));
-        }
-
-        postFFTSeries.pointValues.SetList(postFFTVals);  
-
         //Readings sliding history
         List<Vector2> readings = new List<Vector2>(readingsSeries.pointValues.list);
 
@@ -173,11 +160,6 @@ public class EMGTestController : MonoBehaviour {
         readingsGraph.yAxis.MaxAutoShrink = enabled;
         readingsGraph.yAxis.MinAutoGrow = enabled;
         readingsGraph.yAxis.MinAutoShrink = enabled;
-
-        postFFTGraph.yAxis.MaxAutoGrow = enabled;
-        postFFTGraph.yAxis.MaxAutoShrink = enabled;
-        postFFTGraph.yAxis.MinAutoGrow = enabled;
-        postFFTGraph.yAxis.MinAutoShrink = enabled;
     }
 
     public void StartRecording() {

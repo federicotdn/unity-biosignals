@@ -180,29 +180,36 @@ namespace pfcore {
 
         private void Train() {
             TrainingValue value = new TrainingValue(currentMuscleState);
-            value.features = GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
-
+            FillTrainingValue(ref value, fftResults);
             trainingData.Add(value);
         }
 
-        public static double[] GetFFTMagnitudes(List<Complex> fftResults, int bins) {
-            int binSize = (fftResults.Count / 2) / bins; // Use second half of FFT results
-            int startIndex = fftResults.Count / 2;
+        public static void FillTrainingValue(ref TrainingValue value, List<Complex> fftResults) {
+            float freqRange = TrainingValue.HIGHER_FREQ - TrainingValue.LOWER_FREQ;
+            float freqStep = freqRange / TrainingValue.FEATURE_COUNT;
+            float lower = TrainingValue.LOWER_FREQ;
+            float higher = lower + freqStep; 
 
-            double[] results = new double[bins];
+            for (int i = 0; i < TrainingValue.FEATURE_COUNT; i++) {
+                value.features[i] = PSD(fftResults, EMGPacket.SAMPLE_RATE, lower, higher);
+                lower += freqStep;
+                higher += freqStep;
+            }
+        }
 
-            for (int i = 0; i < bins; i++) {
-                Complex avg = Complex.Zero;
-                for (int j = 0; j < binSize; j++) {
-                    int valueIdx = startIndex + (i * binSize) + j;
-                    avg += fftResults[valueIdx];
-                }
-                avg /= binSize;
+        public static double PSD(List<Complex> fftResults, float sampleFreq, float freqLow, float freqHigh) {
+            float freqStep = sampleFreq / fftResults.Count;
 
-                results[i] = avg.Magnitude;
+            int startIndex = (int)(freqLow / freqStep);
+            int stopIndex = (int)(freqHigh / freqStep) + 1;
+
+            double result = 0;
+
+            for (int i = startIndex; i < stopIndex; i++) {
+                result += fftResults[i].Magnitude;
             }
 
-            return results;
+            return result;
         }
 
         private void EndTraining() {
@@ -224,7 +231,10 @@ namespace pfcore {
         }
 
         private void Predict() {
-            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT));
+            TrainingValue tmp = new TrainingValue();
+            FillTrainingValue(ref tmp, fftResults);
+
+            int result = decisionTree.Decide(tmp.features);
             predictedMuscleState = (MuscleState)result;
         }
 
