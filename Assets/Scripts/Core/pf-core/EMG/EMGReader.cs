@@ -9,6 +9,13 @@
             }
         }
 
+        protected bool hasError = false;
+        public bool HasError {
+            get {
+                return hasError;
+            }
+        }
+
         public EMGReader(int maxQueueSize) {
             this.maxQueueSize = maxQueueSize;
         }

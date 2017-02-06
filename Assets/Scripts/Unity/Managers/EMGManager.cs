@@ -55,6 +55,14 @@ public class EMGManager : MonoBehaviorSingleton<EMGManager> {
         }
 
         processor.Start();
+
+        if (reader.HasError) {
+            Debug.LogError("Error occured when starting reader.");
+            processor.StopAndJoin();
+            processor = null;
+            return;
+        }
+
         reading = true;
     }
 
