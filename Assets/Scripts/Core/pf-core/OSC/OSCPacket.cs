@@ -8,7 +8,7 @@ namespace OSC
 	public abstract class OSCPacket
 	{
 		public List<Object> Data { get; protected set; }
-		public byte Extra;
+
 
 		public abstract bool IsBundle();
 
@@ -23,6 +23,8 @@ namespace OSC
 				return new OSCMessage(data);
 			}
 		}
+
+		public abstract byte[] Pack();
 
 		protected static UInt64 UnpackUInt64(byte[] bytes, ref int index)
 		{
@@ -59,6 +61,55 @@ namespace OSC
 			return ans;
 		}
 
+		protected static byte[] PackUInt64(UInt64 val)
+		{
+			byte[] data = BitConverter.GetBytes(val);
+			int aux = 0;
+			if (BitConverter.IsLittleEndian) data = FixEndianness(data, ref aux, data.Length);
+			return data;
+		}
+
+		protected static byte[] PackInt32(Int32 val)
+		{
+			byte[] data = BitConverter.GetBytes(val);
+			int aux = 0;
+			if (BitConverter.IsLittleEndian) data = FixEndianness(data, ref aux, data.Length);
+			return data;
+		}
+
+		protected static byte[] PackFloat(float val)
+		{
+			byte[] data = BitConverter.GetBytes(val);
+			int aux = 0;
+			if (BitConverter.IsLittleEndian) data = FixEndianness(data, ref aux, data.Length);
+			return data;
+		}
+
+		protected static byte[] PackBlob(byte[] bytes)
+		{
+			int len = bytes.Length + 4;
+			len = len + (4 - len % 4);
+
+			byte[] msg = new byte[len];
+			byte[] size = PackInt32(bytes.Length);
+			size.CopyTo(msg, 0);
+			bytes.CopyTo(msg, 4);
+			return msg;
+		}
+
+		protected static byte[] PackString(String val)
+		{
+			int len = val.Length + (4 - val.Length % 4);
+			if (len <= val.Length) len = len + 4;
+
+			byte[] msg = new byte[len];
+
+			var bytes = Encoding.ASCII.GetBytes(val);
+			bytes.CopyTo(msg, 0);
+
+			return msg;
+		}
+
 		protected static String UnpackString(byte[] bytes, ref int index)
 		{
 			String s = null;
@@ -86,6 +137,14 @@ namespace OSC
 				return subArray;
 			}
 			return bytes;
+		}
+
+		protected static int AlignedStringLength(string val)
+		{
+			int len = val.Length + (4 - val.Length % 4);
+			if (len <= val.Length) len += 4;
+
+			return len;
 		}
 	}
 }

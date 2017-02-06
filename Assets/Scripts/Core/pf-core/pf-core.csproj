@@ -32,6 +32,10 @@
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>EEGTrain /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2.eeg /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Prediction-2-v2.eeg</StartArguments>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="EKG\EKGPacket.cs" />
     <Compile Include="EKG\EKGProcessor.cs" />
@@ -63,6 +67,7 @@
     <Compile Include="EEG\EEGTrainer.cs" />
     <Compile Include="EEG\EEGSessionRecorder.cs" />
     <Compile Include="EEG\EEGAnalysis.cs" />
+    <Compile Include="EEG\EEGConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord, Version=3.3.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
 
+
 namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession, EMGAnalysis
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession, EMGAnalysis, EEGConvert
 	}
 
 	class MainClass
@@ -66,6 +67,10 @@ namespace pfcore
 				case RunMode.EMGAnalysis:
 					Console.WriteLine("Running EMG Analysis on file.");
 					RunEMGAnalysis(args[1]);
+					break;
+				case RunMode.EEGConvert:
+					Console.WriteLine("Running EEG Convert");
+					RunEEGConvert(args[1]);
 					break;
 				default:
 					throw new Exception("No run mode specified.");
@@ -135,7 +140,7 @@ namespace pfcore
 			EMGAnalysis analysis = new EMGAnalysis(filename);
 			analysis.PrintResults();
 			Console.WriteLine("Press any key to exit.");
-            Console.ReadKey();
+			Console.ReadKey();
 		}
 
 
@@ -178,6 +183,13 @@ namespace pfcore
 			}
 
 			sessionRecorder.Start();
+		}
+
+		private static void RunEEGConvert(string filepath)
+		{
+			EEGConverter converter = new EEGConverter(filepath);
+			converter.Run();
+
 		}
 	}
 }

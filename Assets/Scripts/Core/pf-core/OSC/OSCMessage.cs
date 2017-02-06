@@ -9,6 +9,7 @@ namespace OSC
 	{
 		public String Address { get; private set; }
 
+		public byte Extra;
 
 		public OSCMessage(byte[] data)
 		{
@@ -27,6 +28,7 @@ namespace OSC
 
 
 			bool commaParsed = false;
+
 			foreach (char type in types)
 			{
 				switch (type)
@@ -57,8 +59,9 @@ namespace OSC
 						byte[] blob = UnpackBlob(data, ref index);
 						Data.Add(blob);
 						break;
-					case ('t'):
-						Console.WriteLine("timetag");
+					case ('x'):
+						int extra = UnpackInt32(data, ref index);
+						Extra = (byte)extra;
 						break;
 					default:
 						throw new Exception("Unsupported data type.");
@@ -114,6 +117,81 @@ namespace OSC
 				throw new Exception("No null terminator after type string");
 
 			return types;
+		}
+
+		public override byte[] Pack()
+		{
+			List<byte[]> parts = new List<byte[]>();
+
+			List<object> currentList = Data;
+
+			string typeString = ",";
+			int i = 0;
+			while (i < currentList.Count)
+			{
+				var arg = currentList[i];
+
+				string type = (arg != null) ? arg.GetType().ToString() : "null";
+				switch (type)
+				{
+					case "System.Int32":
+						typeString += "i";
+						parts.Add(PackInt32((int)arg));
+						break;
+					case "System.Single":
+						typeString += "f";
+						parts.Add(PackFloat((float)arg));
+
+						break;
+					case "System.String":
+						typeString += "s";
+						parts.Add(PackString((string)arg));
+						break;
+					case "System.Byte[]":
+						typeString += "b";
+						parts.Add(PackBlob((byte[])arg));
+						break;
+					case "System.UInt64":
+						typeString += "t";
+						parts.Add(PackUInt64((UInt64)arg));
+						break;
+					default:
+						throw new Exception("Unable to transmit values of type " + type);
+				}
+
+				i++;
+			}
+
+			// Add info about the eye status
+			typeString += "x";
+			parts.Add(PackInt32(Extra));
+
+			int addressLen = (Address.Length == 0 || Address == null) ? 0 : AlignedStringLength(Address);
+			int typeLen = AlignedStringLength(typeString);
+
+			int total = addressLen + typeLen;
+
+			foreach (byte[] b in parts)
+			{
+				total += b.Length;
+			}
+
+			byte[] output = new byte[total];
+			i = 0;
+
+			Encoding.ASCII.GetBytes(Address).CopyTo(output, i);
+			i += addressLen;
+
+			Encoding.ASCII.GetBytes(typeString).CopyTo(output, i);
+			i += typeLen;
+
+			foreach (byte[] part in parts)
+			{
+				part.CopyTo(output, i);
+				i += part.Length;
+			}
+
+			return output;
 		}
 	}
 }

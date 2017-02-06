@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using OSC;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace pfcore
 {
@@ -65,9 +64,14 @@ namespace pfcore
 
 					Console.WriteLine("Saving to raw packets to: " + baseFilePath);
 
-					FileStream stream = File.Create(baseFilePath);
-					BinaryFormatter bin = new BinaryFormatter();
-					bin.Serialize(stream, packets);
+					FileStream stream = File.OpenWrite(baseFilePath);
+					foreach (OSCPacket packet in packets)
+					{
+						byte[] bytes = packet.Pack();
+						stream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
+						stream.Write(bytes, 0, bytes.Length);
+					}
+					stream.Close();
 
 					return;
 				}
@@ -90,12 +94,11 @@ namespace pfcore
 
 				while (reader.TryDequeue(out packet))
 				{
-					packet.Extra = (byte)status;
 					if (packet.IsBundle())
 					{
-						foreach (OSCPacket p in packet.Data)
+						foreach (OSCMessage p in packet.Data)
 						{
-							p.Extra = packet.Extra;
+							p.Extra = (byte)status;
 						}
 					}
 					packets.Add(packet);

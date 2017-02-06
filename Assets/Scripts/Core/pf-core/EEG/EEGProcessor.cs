@@ -230,7 +230,7 @@ namespace pfcore
 		private static double PSD(List<Complex> fft, double step)
 		{
 			int minIndex = (int)(8 / step);
-			int maxIndex = (int)(12 / step);
+			int maxIndex = (int)Math.Ceiling(12 / step);
 
 			double ans = 0;
 			for (int i = minIndex; i <= maxIndex; i++)
@@ -260,7 +260,6 @@ namespace pfcore
 		{
 			foreach (OSCPacket p in packet.Data)
 			{
-				p.Extra = packet.Extra;
 				if (p.IsBundle())
 				{
 					ProcessPacket(p);

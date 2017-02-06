@@ -22,7 +22,7 @@ namespace pfcore
 
 		private void OnPacketReceived(OSCServer s, OSCPacket packet)
 		{
-			packet.Extra = (byte)EyesStatus.NONE;
+			((OSCMessage)packet.Data[0]).Extra = (byte)EyesStatus.NONE;
 			PacketQueue.Enqueue(packet);
 		}
 	}
