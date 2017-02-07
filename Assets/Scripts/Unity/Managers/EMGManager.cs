@@ -1,7 +1,5 @@
 ﻿using pfcore;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -23,6 +21,8 @@ public class EMGManager : MonoBehaviorSingleton<EMGManager> {
 
     private EMGReader reader = null;
     private bool reading = false;
+
+    public const float EMG_TICK_DURATION = EMGProcessor.FFT_SAMPLE_SIZE / EMGPacket.SAMPLE_RATE;
 
 	public void Setup() {
         if (!useFile) {
