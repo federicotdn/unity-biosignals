@@ -16,9 +16,8 @@ public class EnergySphereGun : MonoBehaviour {
     private uint chargeReached = 0;
     private EnergySphere currentSphere = null;
 
-    // Use this for initialization
     void Start() {
-        StartCoroutine(FakeEMGLoop()); // Use Keys instead of EMG for demo
+        //StartCoroutine(FakeEMGLoop()); // Use Keys instead of EMG for demo
     }
 
     void Update() {
@@ -47,6 +46,7 @@ public class EnergySphereGun : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.F)) {
             CreateSphere();
+            currentSphere.SetScale(0.1f);
             LaunchCurrentSphere();
         }
     }

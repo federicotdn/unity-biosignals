@@ -21,7 +21,7 @@ namespace pfcore {
         private EMGReader reader;
 
         public const int FFT_SAMPLE_SIZE = 128;
-        public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
+        public const double FREQ_STEP = (EMGPacket.SAMPLE_RATE) / FFT_SAMPLE_SIZE;
         public const int SKIPS_AFTER_TRANSITION = 3;
 
         private DecisionTree decisionTree;
@@ -89,12 +89,7 @@ namespace pfcore {
             }
         }
 
-        private Action processorCallback = null;
-        public Action ProcessorCallback {
-            set {
-                processorCallback = value;
-            }
-        }
+        private List<Action> processorCallbacks = new List<Action>();
 
         public EMGProcessor(EMGReader reader) {
             this.reader = reader;
@@ -122,6 +117,10 @@ namespace pfcore {
             readerThread.Join();
         }
 
+        public void AddProcessorCallback(Action callback) {
+            processorCallbacks.Add(callback);
+        }
+
         public void ChangeMode(Mode newMode) {
             if (mode == Mode.TRAINING) {
                 EndTraining();
@@ -141,9 +140,19 @@ namespace pfcore {
 
         public void Update() {
             EMGPacket packet;
+            MuscleState hintedMuscleState = MuscleState.NONE;
+
             while (reader.TryDequeue(out packet)) {
+                hintedMuscleState = packet.muscleStateHint;
+
                 packet.muscleStateHint = currentMuscleState;
                 rawReadings.Add(packet);
+            }
+
+            if (hintedMuscleState != MuscleState.NONE) {
+                // If packages are being read from file, a MuscleState hint will be stored in them
+                // Take the current muscle state from packets instead of being specified by the player
+                currentMuscleState = hintedMuscleState;
             }
 
             if (rawReadings.Count >= FFT_SAMPLE_SIZE) {
@@ -166,9 +175,7 @@ namespace pfcore {
                         break;
                 }
 
-                if (processorCallback != null) {
-                    processorCallback();
-                }
+                processorCallbacks.ForEach(callback => callback());
 
                 rawReadings.Clear();
                 readings.Clear();
@@ -206,9 +213,11 @@ namespace pfcore {
 
         public static double PSD(List<Complex> fftResults, float sampleFreq, float freqLow, float freqHigh) {
             float freqStep = sampleFreq / fftResults.Count;
+            int halfSize = fftResults.Count / 2;
 
             int startIndex = (int)(freqLow / freqStep);
             int stopIndex = (int)(freqHigh / freqStep) + 1;
+            stopIndex = Math.Min(stopIndex, halfSize);
 
             double result = 0;
 
@@ -239,6 +248,7 @@ namespace pfcore {
 
         private void Predict() {
             TrainingValue tmp = new TrainingValue();
+            tmp.features = new double[TrainingValue.FEATURE_COUNT];
             FillTrainingValue(ref tmp, fftResults);
 
             int result = decisionTree.Decide(tmp.features);

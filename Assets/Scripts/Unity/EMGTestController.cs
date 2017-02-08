@@ -59,31 +59,19 @@ public class EMGTestController : MonoBehaviour {
             return;
         }
 
-        processor.Start();
+        manager.StartReading();
         baseTime = DateTime.Now.Ticks;
 
         Debug.Log("Now reading EMG data.");
 
-        processor.ProcessorCallback = OnProcessed;
+        processor.AddProcessorCallback(OnProcessed);
         started = true;
     }
 
     void OnApplicationQuit() {
-        StopReading();
-
         if (outFileStream != null) {
             outFileStream.Close();
         }
-    }
-
-    public void StopReading() {
-        if (!started) {
-            Debug.Log("Not reading.");
-            return;
-        }
-
-        processor.StopAndJoin();
-        Debug.Log("STOPPED");
     }
 
     private void OnProcessed() {
@@ -146,8 +134,6 @@ public class EMGTestController : MonoBehaviour {
         meanLabel.text = processor.Mean.ToString();
         predictionLabel.text = "Prediction: " + processor.PredictedMuscleState.ToString();
         trainingInfoLabel.text = "Count: " + processor.TrainingDataLength.ToString() + "\nMuscleState: " + processor.CurrentMuscleState.ToString();
-
-        processor.Update();
     }
 
     public void YAxisAutoSizeEnabled(bool enabled) {
