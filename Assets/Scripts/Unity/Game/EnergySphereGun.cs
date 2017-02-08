@@ -22,9 +22,8 @@ public class EnergySphereGun : MonoBehaviour {
     }
 
     void Update() {
-        Vector3 forward = transform.forward.normalized;
-
         if (currentSphere != null) {
+            Vector3 forward = transform.forward.normalized;
             currentSphere.transform.position = transform.position + forward;
         }
 
@@ -34,20 +33,31 @@ public class EnergySphereGun : MonoBehaviour {
                 currentSphere = null;
             }
         } else if (chargeCounter >= SPAWN_SPHERE_START && chargeCounter < MAX_CHARGE_COUNTERS) {
+            float newScale = ((float)chargeReached / MAX_CHARGE_COUNTERS) * EnergySphere.MAX_SCALE_FACTOR;
+
             if (currentSphere == null) {
-                GameObject ball = Instantiate(energySpherePrefab);
-                Physics.IgnoreCollision(ball.GetComponent<Collider>(), playerCollider);
-
-                ball.transform.position = transform.position + forward;
-                currentSphere = ball.GetComponent<EnergySphere>();
+                CreateSphere();
+                currentSphere.SetScale(newScale);
+            } else {
+                currentSphere.SetScale(newScale, EMGManager.EMG_TICK_DURATION);
             }
-
-            currentSphere.scaleFactor = ((float)chargeReached / MAX_CHARGE_COUNTERS) * EnergySphere.MAX_SCALE_FACTOR;
-            currentSphere.UpdateSize();
-
         } else if (chargeCounter == MAX_CHARGE_COUNTERS) {
             LaunchCurrentSphere();
         }
+
+        if (Input.GetKeyUp(KeyCode.F)) {
+            CreateSphere();
+            LaunchCurrentSphere();
+        }
+    }
+
+    private void CreateSphere() {
+        Vector3 forward = transform.forward.normalized;
+        GameObject ball = Instantiate(energySpherePrefab);
+        Physics.IgnoreCollision(ball.GetComponent<Collider>(), playerCollider);
+
+        ball.transform.position = transform.position + forward;
+        currentSphere = ball.GetComponent<EnergySphere>();
     }
 
     private void LaunchCurrentSphere() {
