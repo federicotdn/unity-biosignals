@@ -20,7 +20,7 @@ namespace pfcore {
 
         private EMGReader reader;
 
-        public const int FFT_SAMPLE_SIZE = 256;
+        public const int FFT_SAMPLE_SIZE = 128;
         public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
         public const int SKIPS_AFTER_TRANSITION = 3;
 
@@ -30,6 +30,7 @@ namespace pfcore {
         public MuscleState CurrentMuscleState {
             set {
                 currentMuscleState = value;
+                skipsRemaining = SKIPS_AFTER_TRANSITION;
             }
             get {
                 return currentMuscleState;
@@ -71,6 +72,7 @@ namespace pfcore {
             }
         }
         private int sampleCount = 0;
+        private int skipsRemaining = 0;
 
         private List<EMGPacket> rawReadings = new List<EMGPacket>();
         private List<EMGReading> readings = new List<EMGReading>();
@@ -179,6 +181,11 @@ namespace pfcore {
         }
 
         private void Train() {
+            if (skipsRemaining > 0) {
+                skipsRemaining--;
+                return;
+            }
+
             TrainingValue value = new TrainingValue(currentMuscleState);
             FillTrainingValue(ref value, fftResults);
             trainingData.Add(value);
