@@ -15,9 +15,28 @@ En el caso de EEG, se decidió utilizar el \emph{Muse Brainsensing Headband}. Es
 	\label{fig:muse-electrodes}
 \end{figure}
 
-El dispositivo tiene una frecuencia de muestreo de $ 256 \, HZ$. Además cuenta con acelerómetro y giroscopio lo que permite medir la orientación del usuario. También cuenta con un puerto micro USB y \emph{bluetooth}. Permite acceder a la información bruta de cada electrodo por lo que se obtienen cinco valores. Cuatro de de los electrodos frontales y de las orejas, y el restante se obtiene de los tres electrodos de referencia. También brinda algunas facilidades como realizar la Transformada de \emph{Fourier},  calcular la potencia de las bandas ($\alpha$, $\beta$, $\delta$, $\theta$ y $\gamma$), entre otros.
+El dispositivo tiene una frecuencia de muestreo de $ 256 \, Hz$. Además cuenta con acelerómetro y giroscopio lo que permite medir la orientación del usuario. También cuenta con un puerto micro USB y \emph{bluetooth}. Permite acceder a la información bruta de cada electrodo por lo que se obtienen cinco valores. Cuatro de de los electrodos frontales y de las orejas, y el restante se obtiene de los tres electrodos de referencia. También brinda algunas facilidades como realizar la Transformada de \emph{Fourier},  calcular la potencia de las bandas ($\alpha$, $\beta$, $\delta$, $\theta$ y $\gamma$), entre otros.
 
 Para los desarrolladores, cuenta con \emph{SDK} para \emph{Windows} y \emph{Unity} y cuenta con aplicaciones multiplataforma para poder acceder a los datos. Una forma de acceder a los datos es a través de \emph{OSC} (\emph{Open Sound Control}. \emph{OSC} es un protocolo que corre sobre UDP y permite el \emph{stream} continuo de datos.
+
+\subsection{EMG} \label{emg-hardware}
+
+Para la lectura de señales EMG, se opto por utilizar la plataforma Arduino, con un modulo adicional diseñado para la captura de señales EMG y EKG.  Arduino es una plataforma que consiste en varios micro controladores de diseño abierto (\emph{Open Source Hardware}), y un software que permite programarlos de forma fácil y rápida utilizando el lenguaje de progamación \emph{C++}.
+
+El modelo de Arduino elegido fue el \emph{Arduino Mega 2560}, que cuenta con un procesador que opera a $16\, MHz$, y cuenta con $256 Kb$ de memoria para programas, lo cual prácticamente permite trabajar sin restricciones de memoria en mente. A su vez, el modulo adicional elegido fue el \emph{Olimex SHIELD-EKG-EMG}, que trae electrodos superficiales que pueden ser ubicados sobre la piel del musculo que se intenta monitorear.  Los electrodos cuentan con tres terminales, marcadas con las letras $L$ (izquierda), $R$ (derecha) y $D$ (referencia) (figura \ref{fig:emg-electrodes}).
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.5\textwidth]{electrodes.jpg}
+    \caption{Electrodos superficiales para el modulo \emph{Olimex SHIELD-EKG-EMG}.}
+	\label{fig:emg-electrodes}
+\end{figure}
+
+Para poder leer las señales EMG, se debe preparar el sistema de monitoreo.  Primero, se debe montar el modulo EMG sobre el micro controlador \emph{Arduino}.  Luego, las terminales $L$ y $R$ se deben posicionar sobre la piel del musculo a monitorear, y la terminal $D$ debe ser posicionada sobre una superficie del cuerpo a utilizar como referencia, que preferiblemente no contenga musculos, o tenga musculos no relacionados a los de las otras dos terminales (a este circuito se le llama \emph{Driven Right Leg Circuit} en inglés). En este proyecto, se opto por medir la actividad muscular de un brazo, junto a la mano, al formar un puño cerrado apretado. Por lo tanto, los electrodos fueron colocados sobre el músculo flexor común superficial de los dedos, que se encuentra sobre la cara anterior de antebrazo\cite{emg-signals-wrist}. Una vez realizados los pasos anteriores, se puede proceder a conectar el micro controlador a la computadora vía un cable USB 2.0.
+
+\subsection{EKG}
+
+TODO
 
 \section{Obtención y Procesamiento de Señales}
 
@@ -50,7 +69,7 @@ El vector de características se confeccionó utilizando dos valores de \emph{Al
 
 En la etapa de entrenamiento se le asignaba un estado a cada uno de estos vectores. La precisión obtenida con este método fue de entre un $65\%$ y un $70\%$. Esto se debe a que aún cuando el usuario se encontraba con los ojos abiertos, \emph{Alpha} alcanzaban valores tan altos como cuando el usuario se encontraba con los ojos cerrados debido a ruidos del sensor y a el hecho de que las bioseñales varían mucho. Se podía observar que el clasificador era muy preciso en detectar ojos cerrados pero muy impreciso en detectar ojos abiertos. La precisión en ojos cerrados era de un $99\%$ y en ojos abiertos de un $25\%$.
 
-Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que, al contar con más muestras, además de obtener picos anómalos, se obtienen los valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian con más valores. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. El dispositivo utiliza una frecuencia de $10 \: Hz$ para los valores de potencia de \emph{Alpha} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
+Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que, al contar con más muestras, además de obtener picos anómalos, se obtienen los valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian con más valores. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. El dispositivo utiliza una frecuencia de $10 \, Hz$ para los valores de potencia de \emph{Alpha} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
 
  \begin{enumerate}
  \item Obtener una ventana $256$ muestras, es decir, un segundo.
@@ -71,5 +90,14 @@ Con este vector de características, se alcanzó una precisión de hasta un $ 85
  
 En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran los valores de transición. Cuando se le indica al usuario que abra o cierre los ojos, se descartan dos segundos antes y después de la transición de estados. Esto se debe a que los valores que corresponden a la transición no son significativos. Los que realmente importan son cuando se está en un estado u otro.
  
+\subsection{EMG}
+
+Una vez preparado el sistema de monitoreo EMG descripto en la seccion \ref{emg-hardware}, se puede comenzar a leer los datos. Los micro controladores \emph{Arduino} permiten comunicarse a una computadora mediante un puerto de serie que es establecido a traves de la conexión USB.  Para poder leer del puerto de serie desde el sistema operativo, es necesario conocer los parametros de la conexión (velocidad, paridad, cantidad de bits de información, etc.), y el nombre del puerto de serie. Los valores utilizados fueron los predeterminados utilizados en el programa de ejemplo referenciado en el manual del módulo EMG\cite{olimex-manual}.
+
+\subsection{EKG}
+
+TODO
 
 \section{Desarrollo de universos 3D interactivos}
+
+TODO
