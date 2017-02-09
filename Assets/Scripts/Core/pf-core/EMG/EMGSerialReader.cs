@@ -19,7 +19,13 @@ namespace pfcore {
         }
 
         public override void Start() {
-            serialPort.Open();
+            try {
+                serialPort.Open();
+            } catch {
+                hasError = true;
+                return;
+            }
+
             byte[] buffer = new byte[EMGPacket.PACKET_SIZE];
 
             while (running) {

@@ -20,8 +20,8 @@ namespace pfcore {
 
         private EMGReader reader;
 
-        public const int FFT_SAMPLE_SIZE = 256;
-        public const double FREQ_STEP = EMGPacket.SAMPLE_RATE / FFT_SAMPLE_SIZE;
+        public const int FFT_SAMPLE_SIZE = 128;
+        public const double FREQ_STEP = (EMGPacket.SAMPLE_RATE) / FFT_SAMPLE_SIZE;
         public const int SKIPS_AFTER_TRANSITION = 3;
 
         private DecisionTree decisionTree;
@@ -30,6 +30,7 @@ namespace pfcore {
         public MuscleState CurrentMuscleState {
             set {
                 currentMuscleState = value;
+                skipsRemaining = SKIPS_AFTER_TRANSITION;
             }
             get {
                 return currentMuscleState;
@@ -71,6 +72,7 @@ namespace pfcore {
             }
         }
         private int sampleCount = 0;
+        private int skipsRemaining = 0;
 
         private List<EMGPacket> rawReadings = new List<EMGPacket>();
         private List<EMGReading> readings = new List<EMGReading>();
@@ -87,12 +89,7 @@ namespace pfcore {
             }
         }
 
-        private Action processorCallback = null;
-        public Action ProcessorCallback {
-            set {
-                processorCallback = value;
-            }
-        }
+        private List<Action> processorCallbacks = new List<Action>();
 
         public EMGProcessor(EMGReader reader) {
             this.reader = reader;
@@ -120,6 +117,10 @@ namespace pfcore {
             readerThread.Join();
         }
 
+        public void AddProcessorCallback(Action callback) {
+            processorCallbacks.Add(callback);
+        }
+
         public void ChangeMode(Mode newMode) {
             if (mode == Mode.TRAINING) {
                 EndTraining();
@@ -139,9 +140,19 @@ namespace pfcore {
 
         public void Update() {
             EMGPacket packet;
+            MuscleState hintedMuscleState = MuscleState.NONE;
+
             while (reader.TryDequeue(out packet)) {
+                hintedMuscleState = packet.muscleStateHint;
+
                 packet.muscleStateHint = currentMuscleState;
                 rawReadings.Add(packet);
+            }
+
+            if (hintedMuscleState != MuscleState.NONE) {
+                // If packages are being read from file, a MuscleState hint will be stored in them
+                // Take the current muscle state from packets instead of being specified by the player
+                currentMuscleState = hintedMuscleState;
             }
 
             if (rawReadings.Count >= FFT_SAMPLE_SIZE) {
@@ -164,9 +175,7 @@ namespace pfcore {
                         break;
                 }
 
-                if (processorCallback != null) {
-                    processorCallback();
-                }
+                processorCallbacks.ForEach(callback => callback());
 
                 rawReadings.Clear();
                 readings.Clear();
@@ -179,30 +188,44 @@ namespace pfcore {
         }
 
         private void Train() {
-            TrainingValue value = new TrainingValue(currentMuscleState);
-            value.features = GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT);
+            if (skipsRemaining > 0) {
+                skipsRemaining--;
+                return;
+            }
 
+            TrainingValue value = new TrainingValue(currentMuscleState);
+            FillTrainingValue(ref value, fftResults);
             trainingData.Add(value);
         }
 
-        public static double[] GetFFTMagnitudes(List<Complex> fftResults, int bins) {
-            int binSize = (fftResults.Count / 2) / bins; // Use second half of FFT results
-            int startIndex = fftResults.Count / 2;
+        public static void FillTrainingValue(ref TrainingValue value, List<Complex> fftResults) {
+            float freqRange = TrainingValue.HIGHER_FREQ - TrainingValue.LOWER_FREQ;
+            float freqStep = freqRange / TrainingValue.FEATURE_COUNT;
+            float lower = TrainingValue.LOWER_FREQ;
+            float higher = lower + freqStep; 
 
-            double[] results = new double[bins];
+            for (int i = 0; i < TrainingValue.FEATURE_COUNT; i++) {
+                value.features[i] = PSD(fftResults, EMGPacket.SAMPLE_RATE, lower, higher);
+                lower += freqStep;
+                higher += freqStep;
+            }
+        }
 
-            for (int i = 0; i < bins; i++) {
-                Complex avg = Complex.Zero;
-                for (int j = 0; j < binSize; j++) {
-                    int valueIdx = startIndex + (i * binSize) + j;
-                    avg += fftResults[valueIdx];
-                }
-                avg /= binSize;
+        public static double PSD(List<Complex> fftResults, float sampleFreq, float freqLow, float freqHigh) {
+            float freqStep = sampleFreq / fftResults.Count;
+            int halfSize = fftResults.Count / 2;
 
-                results[i] = avg.Magnitude;
+            int startIndex = (int)(freqLow / freqStep);
+            int stopIndex = (int)(freqHigh / freqStep) + 1;
+            stopIndex = Math.Min(stopIndex, halfSize);
+
+            double result = 0;
+
+            for (int i = startIndex; i < stopIndex; i++) {
+                result += fftResults[i].Magnitude;
             }
 
-            return results;
+            return result;
         }
 
         private void EndTraining() {
@@ -224,7 +247,11 @@ namespace pfcore {
         }
 
         private void Predict() {
-            int result = decisionTree.Decide(GetFFTMagnitudes(fftResults, TrainingValue.FEATURE_COUNT));
+            TrainingValue tmp = new TrainingValue();
+            tmp.features = new double[TrainingValue.FEATURE_COUNT];
+            FillTrainingValue(ref tmp, fftResults);
+
+            int result = decisionTree.Decide(tmp.features);
             predictedMuscleState = (MuscleState)result;
         }
 
