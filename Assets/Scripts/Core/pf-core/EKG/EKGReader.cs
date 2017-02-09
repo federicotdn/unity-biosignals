@@ -70,8 +70,6 @@ namespace pfcore
 				if (readOk && packet.HeartRate != 0)
 				{
 					PacketQueue.Enqueue(packet);
-
-
 					while (PacketQueue.Count > maxQueueSize)
 					{
 						EKGPacket temp;

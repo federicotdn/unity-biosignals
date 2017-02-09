@@ -117,7 +117,7 @@ namespace pfcore
 		private static void RunEKG()
 		{
 			EKGReader reader = new EKGReader("/dev/tty.SLAB_USBtoUART", 500);
-			EKGProcessor processor = new EKGProcessor(reader, 30);
+			EKGProcessor processor = new EKGProcessor(reader);
 			processor.Start();
 
 			int previousBPM = 0;

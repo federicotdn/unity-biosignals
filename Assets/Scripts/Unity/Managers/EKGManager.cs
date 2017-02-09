@@ -7,7 +7,6 @@ public class EKGManager : MonoBehaviorSingleton<EKGManager> {
 
 	public string portName = "/dev/tty.SLAB_USBtoUART";
 	public int maxQueueSize; 
-	public int windowSize = 20;
 
 	private bool accelerate;
 
@@ -27,7 +26,7 @@ public class EKGManager : MonoBehaviorSingleton<EKGManager> {
 	// Use this for initialization
 	void Start () {
 		EKGReader reader = new EKGReader (portName, maxQueueSize);
-		processor = new EKGProcessor (reader, windowSize);
+		processor = new EKGProcessor (reader);
 		processor.Start ();
 	}
 	

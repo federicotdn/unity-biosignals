@@ -88,6 +88,26 @@ La electromiografía consiste en registrar la actividad eléctrica producida por
 
 El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y de su frecuencia $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto.
 
-\section{Electrocardiograma}
+\section{Pulsioximetría}
 
-TODO
+La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de un  paciente \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.
+
+El corazón bombea sangre a través de las arterias de forma continua. Este es el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar picos. Dichos picos son utilizados para estimar el ritmo cardíaco. 
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{cardiac-cycle.png}
+    \caption{Ciclo cardíaco}.
+	\label{fig:cardiac-cycle}
+\end{figure}
+
+Existen dos formas de calcular el ritmo cardíaco a partir de los picos:
+
+\begin{itemize}
+ \item \textbf{Promedio:} Se cuentan la cantidad de picos en un determinado tiempo y luego se utiliza la regla de tres simple. El problema es que este método no permite observar cambios en el tiempo y por lo tanto no representa verdaderamente la respuesta al ejercicio, el estrés y el ambiente.
+ \item \textbf{Latido a latido:} Se mide el tiempo ($T$) entre dos picos consecutivos y luego se calcula usando la fórmula $60/T$ \cite{spo2-1}.
+\end{itemize}
+
+Se pueden combinar estas dos metodologías y promediar los últimos cuatro o seis resultados obtenidos \cite{spo2-1}.
+
+Existen otras formas de monitorear el ritmo cardíaco como la electrocardiografía. Esta consiste en registrar la actividad eléctrica del corazón utilizando electrodos. 

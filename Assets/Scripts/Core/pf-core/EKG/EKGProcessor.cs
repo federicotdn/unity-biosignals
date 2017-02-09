@@ -10,16 +10,15 @@ namespace pfcore
 	class EKGProcessor
 	{
 		private EKGReader reader;
-		private Queue<long> peaks = new Queue<long>();
+		private List<long> peaks = new List<long>();
 		private bool previousPeak;
 		private Thread readerThread;
 
-		private int windowSize;
+		private const int AVG_COUNT = 7;
 
-		public EKGProcessor(EKGReader reader, int windowSize)
+		public EKGProcessor(EKGReader reader)
 		{
 			this.reader = reader;
-			this.windowSize = windowSize;
 		}
 
 		public void Start()
@@ -36,23 +35,23 @@ namespace pfcore
 			{
 				if (packet.Peak && !previousPeak)
 				{
-					peaks.Enqueue(packet.timeStamp);
+					peaks.Add(packet.timeStamp);
 				}
 
 				previousPeak = packet.Peak;
 
 				// Discard old packages
-				while (peaks.Count > 0 && TimeSpan.FromTicks(DateTime.Now.Ticks - peaks.Peek()).TotalSeconds > windowSize)
+				while (peaks.Count > AVG_COUNT)
 				{
-					peaks.Dequeue();
+					peaks.RemoveAt(0);
 				}
 			}
 
-            /* Discard packets received during processing */
-            queue.Clear();
-        }
+			///* Discard packets received during processing */
+			//queue.Clear();
+		}
 
-        public void StopAndJoin()
+		public void StopAndJoin()
 		{
 			reader.Stop();
 			readerThread.Join();
@@ -60,13 +59,22 @@ namespace pfcore
 
 		public int GetBPM()
 		{
-			if (peaks.Count < 10)
+			if (peaks.Count < 2)
 			{
 				return 0;
 			}
 
-			return (int)((60 * peaks.Count) / TimeSpan.FromTicks(DateTime.Now.Ticks - peaks.Peek()).TotalSeconds);
-		}
+			double aux = 0;
+			int beatsCount = Math.Min(AVG_COUNT, peaks.Count) - 1;
+			for (int i = 0; i < beatsCount; i++)
+			{
+				long t1 = peaks[peaks.Count - i - 1];
+				long t2 = peaks[peaks.Count - (i + 1) - 1];
+				aux += (60 / TimeSpan.FromTicks(t1 - t2).TotalSeconds);
 
+			}
+
+			return (int)(aux / beatsCount);
+		}
 	}
 }
