@@ -8,7 +8,8 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 	public int port = 5005;
 	public bool trainFromFile;
 	public string filepath;
-	public int threshold = 5;
+	public int minThreshold = 3;
+	public int maxThreshold = 6;
 
 	public int StatusCount { get; private set; }
 	public EyesStatus Status { get; private set; }
@@ -23,20 +24,17 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 	void Start () {
 		trainer = new EEGTrainer ();
 		if (trainFromFile) {
-			Debug.Log (Application.dataPath + "/" + filepath);
 			EEGReader fileReader = new EEGFileReader (Application.dataPath + "/" + filepath, false);
 			EEGProcessor fileProcessor = new EEGProcessor (fileReader);
 
 			fileProcessor.Training = true;
-			fileReader.Start ();
-//			fileProcessor.Start ();
-//			while (!fileProcessor.Finished) {
-//				fileProcessor.Update ();
-//			}
+			fileProcessor.Start ();
+			while (!fileProcessor.Finished) {
+				fileProcessor.Update ();
+			}
 
 			trainer.Train (fileProcessor.TrainingValues);
 			trained = true;
-			Debug.Log ("Finished Taraining");
 		}
 		reader = new EEGOSCReader (port);
 		processor = new EEGProcessor (reader);
@@ -51,6 +49,8 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 	// Update is called once per frame
 	void Update () {
 		processor.Update ();
+		Status = EyesStatus.CLOSED;
+	
 	}
 
 	void OnFFT() {
@@ -65,8 +65,8 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 				}
 			}
 			StatusCount += aux;
-			StatusCount = Mathf.Clamp (StatusCount, 0, 15);
-			if (StatusCount >= threshold) {
+			StatusCount = Mathf.Clamp (StatusCount, 0, maxThreshold);
+			if (StatusCount >= minThreshold) {
 				Status = EyesStatus.CLOSED;
 			} else {
 				Status = EyesStatus.OPEN;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FPSPlayer : MonoBehaviour {
+public class FPSPlayer : Humanoid {
 
 	public Animator Animator;
 	public AudioClip GunShotClip;
@@ -15,6 +15,8 @@ public class FPSPlayer : MonoBehaviour {
 	public int rounds { get; private set; }
 	public Camera FPSCam;
 	public float Range = 30;
+	public int health = 100;
+	public ParticleSystem shellEffect;
 
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
@@ -33,7 +35,6 @@ public class FPSPlayer : MonoBehaviour {
 	}
 
 	void Start () {
-
 	}
 	
 	// Update is called once per frame
@@ -52,6 +53,7 @@ public class FPSPlayer : MonoBehaviour {
 				MainAudioSource.PlayOneShot (GunEmptyClip);
 			} else {
 				Animator.SetTrigger ("Fire");
+				shellEffect.Play ();
 				coolDownTimer.Reset ();
 				MainAudioSource.PlayOneShot (GunShotClip);
 				rounds--;
@@ -60,20 +62,27 @@ public class FPSPlayer : MonoBehaviour {
 
 				RaycastHit hit;
 
-
 				if (Physics.Raycast (rayOrigin, FPSCam.transform.forward, out hit, Range))
 				{
 
 					HitBox hitBox = hit.collider.GetComponent<HitBox>();
-
 					// If there was a health script attached
-					if (hitBox != null)
-					{
+					if (hitBox != null) {
 						// Call the damage function of that script, passing in our gunDamage variable
-						hitBox.Hit();
+						hitBox.Hit (hit);
+					} else {
+						Bomb bomb = hit.collider.GetComponent<Bomb> ();
+						if (bomb != null && hit.collider == bomb.hitCollider) { 
+							bomb.Explode (this);
+						}
+
 					}
 				}
 			}
 		}
+	}
+
+	public void Hit(int damage) {
+
 	}
 }
