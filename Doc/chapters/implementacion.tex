@@ -34,9 +34,7 @@ El modelo de Arduino elegido fue el \emph{Arduino Mega 2560}, que cuenta con un 
 
 Para poder leer las señales EMG, se debe preparar el sistema de monitoreo.  Primero, se debe montar el modulo EMG sobre el micro controlador \emph{Arduino}.  Luego, las terminales $L$ y $R$ se deben posicionar sobre la piel del musculo a monitorear, y la terminal $D$ debe ser posicionada sobre una superficie del cuerpo a utilizar como referencia, que preferiblemente no contenga musculos, o tenga musculos no relacionados a los de las otras dos terminales (a este circuito se le llama \emph{Driven Right Leg Circuit} en inglés). En este proyecto, se opto por medir la actividad muscular de un brazo, junto a la mano, al formar un puño cerrado apretado. Por lo tanto, los electrodos fueron colocados sobre el músculo flexor común superficial de los dedos, que se encuentra sobre la cara anterior de antebrazo\cite{emg-signals-wrist}. Una vez realizados los pasos anteriores, se puede proceder a conectar el micro controlador a la computadora vía un cable USB 2.0.
 
-\subsection{EKG}
-
-TODO
+\subsection{SPO2}
 
 \section{Obtención y Procesamiento de Señales}
 
@@ -94,9 +92,25 @@ En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran lo
 
 Una vez preparado el sistema de monitoreo EMG descripto en la seccion \ref{emg-hardware}, se puede comenzar a leer los datos. Los micro controladores \emph{Arduino} permiten comunicarse a una computadora mediante un puerto de serie que es establecido a traves de la conexión USB.  Para poder leer del puerto de serie desde el sistema operativo, es necesario conocer los parametros de la conexión (velocidad, paridad, cantidad de bits de información, etc.), y el nombre del puerto de serie. Los valores utilizados fueron los predeterminados utilizados en el programa de ejemplo referenciado en el manual del módulo EMG\cite{olimex-manual}.
 
-\subsection{SPO2}
+El dispositivo cuenta con una frecuencia de muestreo de $256\, Hz$. Por el teorema de muestreo de Nyquist-Shannon, esto quiere decir que dadas estas muestras, solo es posible reconstruir señales con frecuencias iguales o inferiores a $128\, Hz$. Teniendo esto en mente, el procedimiento llevado a cabo para leer los datos de EMG fueron los siguientes:
 
-TODO
+ \begin{enumerate}
+ \item Obtener una ventana $128$ muestras, es decir, medio segundo.
+ \item Obtener la Transformada de \emph{Fourier} de la ventana.
+ \item Quedarse únicamente con las frecuencias en el rango de $50 \, Hz-128 \, Hz$. Las frecuencias en el rango de $128 \, Hz-150 \, Hz$ no son capturadas.
+ \item Separar el rango de frecuencias resultante en dos mitades: $50 \, Hz-89 \, Hz$ y $90 \, Hz-128 \, Hz$.
+ \item Realizar la DEP sobre ambas mitades por separado.
+ \end{enumerate}
+
+Luego de haber realizado los pasos mencionados, el resultado son dos valores numéricos representativos de la intensidad de la señal recibida.  Utilizando estos dos valores, se construyo el vector de características de la señal EMG. Con este vector, se lograron precisiones de predicción muy altas (superiores a $ 95 \%$), utilizando tiempos de entrenamiento de alrededor de $5$ minutos.
+
+Para el entrenamiento, el procedimiento fue simple. Primero, se preparo el sistema de monitoreo EMG, y se colocaron los electrodos sobre la piel del los músculos mencionados en la sección \ref{emg-hardware}. Luego, con el brazo y mano relajados, se comenzó a entrenar un clasificador con las muestras leídas y procesadas. A continuación se procedió a tensar el brazo y cerrar la mano con fuerza, con tal de generar una diferencia de potencial significativa, en intervalos intermitentes de alrededor de $15$ segundos. Durante todo el proceso, se le informa al clasificador a que categoría pertenece cada dato ingresado (musculo tensionado o relajado).
+
+Al igual que en EEG, al transicionar de un estado de tension de musculo a otro, se ignora cierta cantidad de muestras luego del momento de la transición, ya que solo son de interés los datos leídos al mantener un estado de tension constante. 
+
+Al realizar los experimentos, se noto que ocasionalmente los datos leídos contenían grandes cantidades de ruido, por lo que eran prácticamente inutilizables. El problema encontrado fue que el sujeto conectado al modulo EMG no estaba eléctricamente aislado al suelo, lo cual introducía ruido a los valores leídos. El problema fue resuelto asegurándose de que el sujeto utilizara calzado con suficiente aislación eléctrica, como por ejemplo botas o zapatillas deportivas.
+
+\subsection{SPO2}
 
 \section{Desarrollo de universos 3D interactivos}
 
