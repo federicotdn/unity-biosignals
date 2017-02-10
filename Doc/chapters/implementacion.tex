@@ -36,6 +36,18 @@ Para poder leer las señales EMG, se debe preparar el sistema de monitoreo.  Pri
 
 \subsection{SPO2}
 
+Para medir el ritmo cardíaco se decidió utilizar el dispositivo \emph{CMS50D+ Contec Pulse Oximeter}. Éste es un pulsioxímetro de transmisión de alta precisión, fácil de utilizar y de bajo consumo. Dicho dispositivo utiliza el puerto serie para enviar datos utilizando un formato propietario. Los datos más relevantes que envía el sensor son:
+
+\begin{itemize}
+\item \emph{Picos:}  Indica si hubo un pico.
+\item \emph{Ritmo cardíaco:} Estimado utilizando una ventana de 30 segundos.
+\item \emph{Oxígeno:} Porcentaje de oxígeno.
+\end{itemize} 
+
+El dispositivo se conecta a la computadora con un cable USB 2.0 que internamente transforma de USB a serie. La frecuencia de muestreo es de $256 \, Hz$.
+
+Se decidió utilizar un pulsioxímetro en lugar de un EKG ya que es menos invasivo. El \emph{Olimex SHIELD-EKG-EMG} resultaba muy incómodo de utilizar debido a que uno de los electrodos debía colocarse en una pierna y otro en un brazo, lo que hubiese ocasionado dificultad para operar una computadora mientras se utilizaba. Si bien un dispositivo EKG es más preciso que un pulsioxímetro, estudios han demostrado que la estimación realizada por un pulsioxímetro es muy precisa cuando el ritmo cardíaco se encuentra por debajo del $89\% $ de su máximo \cite{spo2-accuracy}. Como el usuario se encuentra sentado en una computadora, jamás alcanzará dichos valores.
+
 \section{Obtención y Procesamiento de Señales}
 
 Para cada uno de los sensores se evaluaron y aplicaron distintas alternativas sobre como procesar la señal.
@@ -112,6 +124,14 @@ Al realizar los experimentos, se noto que ocasionalmente los datos leídos conte
 
 \subsection{SPO2}
 
+Como se mencionó anteriormente, el dispositivo elegido utilizaba un formato propietario. Por este motivo, no se podía obtener una correcta lectura de los datos. La única forma de obtener los datos era realizando una ingeniería inversa. Se investigó y se encontró el cómo era la estructura interna de cada paquete. Una vez que se podían leer paquetes, estos debían ser procesados. El ritmo cardíaco calculado por el sensor utiliza una ventana de 30 segundos. Esta duración era inaceptable para utilizar en tiempo real ya que se reflejaba el ritmo cardíaco de 30 antes, en lugar del actual. Por este motivo, se decidió calcular el ritmo cardíaco utilizando los picos.
+
+El dispositivo obtiene $256$ muestras por segundo pero el ritmo cardíaco de una persona en reposo se encuentra entre $ 60$ - $100$. Por lo tanto, para cada latido, hay múltiples paquetes indicando que hubo un pico. Para evitar estimar incorrectamente, se consideró como un único pico a todos los paquetes continuos que indicaban que hubo un pico.
+
+En una primera aproximación, se utilizó una ventana de $10$ segundos y se calculaba el ritmo cardíaco utilizando la técnica de promedio. Dicha técnica no resultó efectiva ya que el ritmo cardíaco contaba con grandes fluctuaciones lo que causaba que sea inutilizable en tiempo real. Luego, se empezó a utilizar la técnica de medir el tiempo entre latidos y realizar el promedio de los últimos seis valores. Esta técnica resultó efectiva indicando un ritmo cardíaco estable y preciso. Se comparó con el valor de ritmo cardíaco obtenido por el sensor para determinar si era preciso. A su vez se comparó con lo medido por un \emph{Apple Watch}.
+
+En este sensor no se requería clasificar ningún estado por lo que no requirió reconocimiento de patrones.
+
 \section{Desarrollo de universos 3D interactivos}
 
 Para el desarrollo de universos 3D se decidió utilizar \emph{Unity 3D}. Se tomó esta decisión por diversas razones. Una de ellas fue que es multiplataforma. Permite desarrollar para \emph{MacOS, Windows, Linux, iOS, Anroid, entre otros.} Esto se debe a que utiliza como lenguaje \emph{C\#} el cual es multiplataforma. \emph{C\#} requiere de \emph{.NET}, que solo funciona en \emph{Windows}, para funcionar pero existe un proyecto llamado \emph{Mono} el cual es una implementación multiplataforma de \emph{.NET}.  Siendo usuarios de distintos sistemas operativos, que sea multiplataforma era crucial. Además, \emph{Unity} es robusto, es fácil de utilizar y cuenta con una gran comunidad, por lo que hay muchas extensiones.
@@ -150,3 +170,8 @@ Como se utilizó reconocimiento de patrones, se implementó una interfaz para en
 
 Debido a que la precisión del clasificador no es tan cercana al $100\%$, se decidió establecer un umbral para determinar en que momento el usuario se encuentra con los ojos cerrados. Cada vez que se predice que se encuentra con los ojos abiertos, se decrementa un contador, y cada vez que se predice que se encuentra con los ojos cerrados, se incrementa. El contador tiene como valor mínimo cero y el valor máximo es establecido de acuerdo al usuario.  Luego, cuando el contador supera un umbral, se considera que los ojos están cerrados hasta que dicho contador se encuentre nuevamente por debajo del umbral. Al procesar las ondas cerebrales, se observó, que en ocasiones, aún cuando el usuario se encontraba con los ojos abiertos, las ondas \emph{Alpha}, obtenían valores muy altos. Por este motivo, podían ser clasificadas como ojos cerrados. Al utilizar un umbral, se impone la condición de que las ondas  \emph{Alpha} se encuentren elevadas por un determinado periodo de tiempo. Algo que no debería suceder al encontrarse con los ojos abiertos. Este comportamiento se controla con dos variables (umbral mínimo y umbral máximo) accesibles desde el menú de pausa. Si se identifica que el usuario registra valores de \emph{Alpha} elevados por períodos de una duración de tiempo determinada, se deben incrementar  tanto el umbral mínimo, como el máximo. En caso contrario, se deben decrementar. La utilización de este sistema, puede causar retardo en la detección de estado ya que se debe esperar a tener una mínima cantidad de lecturas de datos para determinar el estado. Por este motivo, se debía tomar una decisión de compromiso en el momento de elegir los valores. No debían ser muy bajos, ya que se iba a detectar falsamente que el usuario se encontraba con los ojos cerrados. Pero tampoco, debían ser muy altos porque el retardo iba a ser elevado.
 
+\subsection{Universo 3D utilizando el ritmo cardíaco}
+
+Se continuó con el desarrollo del vídeojuego en el que se utilizaron las bioseñales del cerebro. Se desarrolló un nuevo nivel que sucede luego de que el jugador escapara del laberinto. Al escapar del laberinto, éste se encuentra en el centro de un campo,  con una linterna y un arma, rodeado de \emph{Zombies}. El objetivo es sobrevivir a todas las olas de ataques de \emph{Zombies}. Cuando el jugador comienza a ponerse nervioso, el ritmo cardíaco aumenta. Se utiliza esta información para simular que al jugador le tiemblan las manos a causa de los nervios. Cuanto más alto es el ritmo cardíaco, más movimientos aleatorios realiza el arma, dificultando la tarea de apuntar. Este movimiento imita a la realidad, ya que cuando uno se encuentra nervioso, le resulta más difícil realizar acciones con las manos, como apuntar un arma. El jugador puede también quedarse sin municiones y sin batería en la linterna, lo que genera mayor nerviosismo en la persona porque no puede ver correctamente y no cuenta con ninguna forma de defenderse.
+
+Aquí también se cuenta con un procesador (\emph{SPO2Processor} y un lector (\emph{SPO2Reader}. El procesador expone un método que permite obtener el ritmo cardíaco actual. De esta manera, la rutina en \emph{Unity} obtiene este valor en cada actualización y en base a él, realiza movimientos sobre la cámara. Dichos movimientos se modelaron utilizando funciones trigonométricas para que sean armónicas y agradables a la vista. La magnitud de los movimientos se controla con dos variables: mínimo y máximo. Una establece el umbral mínimo que se utiliza para determinar si el usuario está nervioso y la otra el máximo. Luego, si el el ritmo cardíaco es mayor al umbral mínimo, se interpola linealmente entre el máximo y el mínimo.
