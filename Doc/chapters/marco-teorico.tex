@@ -1,10 +1,12 @@
-Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará brevemente sobre el procesamiento de las señales. Luego se introducirán los conceptos de extracción de características y clasificación. Finalmente, se explicará como funcionan algunos sensores y se introducirá información teórica sobre la información que se obtiene de los mismos.
+Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará brevemente sobre el procesamiento de las señales. Luego se introducirán los conceptos de extracción de características y clasificación. Finalmente, se explicará como funcionan algunos sensores y se introducirá información teórica sobre la señal que se obtiene de los mismos.
 
 \section{Procesamiento de señales}
 
-Las señales obtenidas de los sensores poseen ruido debido a que el \emph{hardware} no es 100\% confiable. Para eliminar el ruido se utilizan tantos filtros por \emph{hardware}, que los aplica el propio sensor, y filtros por \emph{software}. Dentro de los filtros de \emph{software} se encuentra el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran originar por ruido propio del sensor. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
+Las señales obtenidas de los sensores poseen ruido debido a que el \emph{hardware} no es 100\% confiable. Para eliminar el ruido se utilizan tantos filtros por \emph{hardware}, que los aplica el propio sensor, como filtros por \emph{software}. Dentro de los filtros de \emph{software} se encuentra el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran originar por ruido propio del sensor. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
 
 $$ g(x) = \frac{1}{\sqrt{2 * \pi} * \sigma } * e^{-\frac{x^{2}}{2 * \sigma^{2}}} $$
+
+Muchas veces las señales pueden tener una cierta tendencia. Es decir, se encuentran desfasadas. Para compensar esta tendencia, se utiliza una técnica conocida como \emph{detrending}. Esta consiste en eliminar dicha tendencia.  La forma más simple de realizar \emph{detrending} es calcular la media del sensor y restarla a cada valor. Existen otros algoritmos más complejos de \emph{detrending} pero estos escapan al foco de este trabajo.
 
 Una vez que se redujo el ruido, se pueden aplicar otros filtros o utilizarla directamente. Muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $\mu V$ (microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un EMG, puede significar un impuslo de fuerza. En un EEG, puede significar un pestañeo.
 
@@ -12,7 +14,9 @@ Otro procesamiento que se le puede aplicar es la transformada discreta de \emph{
 
 $$ x_{k} = \sum_{n=0}^{N-1} x_{n}e^{-\frac{2 \pi i}{N}kn} \qquad k = 0,\hdots, N - 1 $$
 
-Computar la Transformada de \emph{fourier} tiene un costo computacional alto. Por este motivo, generalmente, se calcula la Transformada Rápida de \emph{Fourier} (\emph{FFT} por sus siglas en inglés). Esta es una aproximación a la Transformada de \emph{Fourier} y tiene un costo computacional menor. Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le aplica un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplica el filtro pasa banda,  se cuenta con las frecuencias de interés y se continúa con el procesamiento. Una alternativa es calcular la Densidad Espectral de Potencia (DEP). Esta se define como:
+Computar la Transformada de \emph{fourier} tiene un costo computacional alto. Por este motivo, generalmente, se calcula la Transformada Rápida de \emph{Fourier} (\emph{FFT} por sus siglas en inglés). Esta es una aproximación a la Transformada de \emph{Fourier} y tiene un costo computacional menor. Para aplicar la \emph{FFT} se acumulan valores durante un período de tiempo. Esto se conoce como ventana. A esta ventana, se le puede aplicar una función de ventana. Una función de ventana es una función matemática en la cual el resultado es $0$ si los valores se encuentran fuera de un determinado intervalo y distinto de $0$ si se encuentran dentro de él. Por el teorema de \emph{Nyquist-Shannon} la frecuencia obtenida es la mitad de la frecuencia de muestro. Por ejemplo, si se muestrea a $256 \, Hz$, las frecuencias que se obtienen son de $0-128 \,Hz$.
+
+Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le aplica un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplica el filtro pasa banda,  se cuenta con las frecuencias de interés y se continúa con el procesamiento. Una alternativa es calcular la Densidad Espectral de Potencia (DEP). Esta se define como:
 
 $$ P = \int_{-\infty}^{+\infty} S_{xx} (f) df \qquad  \textrm{donde,}$$
 
@@ -36,7 +40,7 @@ Utilizar aprendizaje automático consiste en dos etapas:
 	\item \textbf{Uso:} Consiste en usar el modelo (características y clasificador) obtenido durante la calibración para poder reconocer el estado del usuario \cite{eeg-tutorial}. 
 \end{itemize}
 
-En el caso de utilizar un EEG para detectar si el usuario tiene los ojos cerrados, en la etapa de calibración se obtiene los datos y extraen las características deseadas y se entrena al clasificador indicando a que estado (ojos abiertos o cerrados) corresponde cada dato. Luego, en la etapa de uso, se extraen las características de la señal del usuario y se envían al clasificador para que indique en que estado se encuentra.
+En el caso de utilizar un EEG para detectar si el usuario tiene los ojos cerrados, en la etapa de calibración se obtienen los datos y extraen las características deseadas y se entrena al clasificador indicando a que estado (ojos abiertos o cerrados) corresponde cada dato. Luego, en la etapa de uso, se extraen las características de la señal del usuario y se envían al clasificador para que indique en que estado se encuentra.
 
 \begin{figure}[H]
 	\centering
@@ -45,9 +49,9 @@ En el caso de utilizar un EEG para detectar si el usuario tiene los ojos cerrado
 	\label{fig:eeg-pipeline}
 \end{figure}
 
-En la figura \ref{fig:eeg-pipeline} se puede observar lo descripto anteriormente. Primero, se reciben las señales. Luego, se extraen las características. En este caso se trata de frecuencias asociadas a la corteza motora. Una vez que el vector de características fue creado, se envía al clasificador (en este caso análisis de discriminante lineal). Finalmente, el clasificador determina a que clase pertenece cada vector. En este ejemplo, se intento determinar si el usuario imaginó mover la mano derecha o la izquierda). 
+En la figura \ref{fig:eeg-pipeline} se puede observar lo descripto anteriormente. Primero, se reciben las señales. Luego, se extraen las características. En este caso se trata de frecuencias asociadas a la corteza motora. Una vez que el vector de características fue creado, se envía al clasificador (en este caso análisis de discriminante lineal). Finalmente, el clasificador determina a que clase pertenece cada vector. En este ejemplo, se intento determinar si el usuario imaginó mover la mano derecha o la izquierda. 
 
-Para medir la precisión del clasificador se arma una matriz de confusión. Ésta, es una matriz de dos dimensiones en la cuál una dimensión representa los valores actuales y otra los valores predecidos. Por ejemplo, si utilizamos el ejemplo de ojos cerrados o abiertos, la matriz se armaría de la siguiente manera:
+Para medir la precisión del clasificador se arma una matriz de confusión. Esta, es una matriz de dos dimensiones en la cuál una dimensión representa los valores actuales y otra los valores predecidos. Por ejemplo, si utilizamos el ejemplo de ojos cerrados o abiertos, la matriz se armaría de la siguiente manera:
 
 \[
 \textrm{Mat} = \begin{blockarray}{ccc}
@@ -59,12 +63,12 @@ Para medir la precisión del clasificador se arma una matriz de confusión. Ést
 \end{blockarray}
  \]
  
- , donde $ A $ representa el estado de ojos abiertos y $ C $, el de ojos cerrados. La primera dimensión representa el valor obtenido y la segunda el valor predecido. Por lo tanto, $Mat_{0,0}$ representa los positivos verdaderos ($TP$) (las veces que acertó el clasificador cuando el usuario tenía los ojos abiertos), $Mat_{0,1}$ representa los falsos negativos ($FN$) (valores que el clasificador clasificó como $C$ pero en realidad era $A$), $Mat_{1,0}$ representa los falsos positivos ($FP$) (valores que el clasificador clasificó como $A$ pero en realidad era $C$), y $Mat_{1,1}$ representa los verdaderos negativos ($TN$) (valores que el clasificador clasificó como $C$ y realmente eran $C$). Utilizando esta matriz se puede obtener la precisión, la cuál se define de la siguiente manera:
+ , donde $ A $ representa el estado de ojos abiertos y $ C $, el de ojos cerrados. La primera dimensión representa el valor obtenido y la segunda el valor predecido. Por lo tanto, $Mat_{0,0}$ representa los positivos verdaderos ($TP$) (las veces que acertó el clasificador cuando el usuario tenía los ojos abiertos), $Mat_{0,1}$ representa los falsos negativos ($FN$) (valores que el clasificador clasificó como $C$ pero en realidad eran $A$), $Mat_{1,0}$ representa los falsos positivos ($FP$) (valores que el clasificador clasificó como $A$ pero en realidad eran $C$), y $Mat_{1,1}$ representa los verdaderos negativos ($TN$) (valores que el clasificador clasificó como $C$ y realmente eran $C$). Utilizando esta matriz se puede obtener la precisión, la cuál se define de la siguiente manera:
  
-$$ AAC = \frac{TP + TN}{P + N} $$ 
+$$ ACC = \frac{TP + TN}{P + N} $$ 
 , donde $P =$ total de casos positivos y $ N =$ total de casos negativos. O simplemente:
 
-$$ AAC = \frac{Mat_{0,0} + Mat_{1,1}}{Mat_{0,0} + Mat_{0,1} + Mat_{1,0} + Mat_{1,1}} $$ 
+$$ ACC = \frac{Mat_{0,0} + Mat_{1,1}}{Mat_{0,0} + Mat_{0,1} + Mat_{1,0} + Mat_{1,1}} $$ 
 
 Los valores cercanos a $0.5$ implican que el clasificador es malo y es azar. Cuantos más cercano $1$, mejor el clasificador.
  
@@ -75,24 +79,24 @@ Un electroencefalograma detecta la actividad eléctrica del cerebro. Estos cuent
 Al aplicar la Transformada de \emph{Fourier} a la señal EEG, se obtienen distintas frecuencias. En EEG, dichas frecuencias se dividen en cinco bandas:
 
 \begin{itemize}
- \item \textbf{Alpha ($\alpha$):} $ 8 \, Hz \leq f \leq 13 \, Hz$. Las ondas Alpha se suprimen cuando los ojos se encuentran abiertos y hay estimulación visual presente. Cuando los ojos se encuentran cerrados, estas aumentan.
- \item \textbf{Beta ($\beta$):} $ 13 \, Hz \leq f \leq 30 \, Hz$. Las ondas Beta se asocian la concentración.
- \item \textbf{Delta ($\delta$):} $ 0.5 \, Hz \leq f \leq 4 \, Hz$. Estas ondas aparecen en etapas de sueño profundo.
- \item \textbf{Theta ($\theta$):} $ 4 \, Hz \leq f \leq 8 \, Hz$. Las ondas Theta aparecen en las primeras etapas de sueño.
- \item \textbf{Gamma ($\gamma$):} $ 30 \, Hz \leq f \leq 60 \, Hz$. Las ondas Gamma aparecen cuando hay un aumento de la actividad mental cognitiva \cite{neural-eng}.
+ \item \textbf{\emph{Alfa} ($\alpha$):} $ 8 \, Hz \leq f \leq 13 \, Hz$. Las ondas \emph{Alfa} se suprimen cuando los ojos se encuentran abiertos y hay estimulación visual presente. Cuando los ojos se encuentran cerrados, estas aumentan.
+ \item \textbf{\emph{Beta} ($\beta$):} $ 13 \, Hz \leq f \leq 30 \, Hz$. Las ondas \emph{Beta} se asocian la concentración.
+ \item \textbf{\emph{Delta} ($\delta$):} $ 0.5 \, Hz \leq f \leq 4 \, Hz$. Estas ondas aparecen en etapas de sueño profundo.
+ \item \textbf{\emph{Theta} ($\theta$):} $ 4 \, Hz \leq f \leq 8 \, Hz$. Las ondas \emph{Theta} aparecen en las primeras etapas de sueño.
+ \item \textbf{\emph{Gamma} ($\gamma$):} $ 30 \, Hz \leq f \leq 60 \, Hz$. Algunos expertos consideran los valores de $\beta > 30 \, Hz $ como una quinta banda. \cite{neural-eng}.
 \end{itemize}
 
 \section{Electromiografía}
 
 La electromiografía consiste en registrar la actividad eléctrica producida por los músculos del cuerpo. La actividad eléctrica surge cuando una unidad motora es activada por el sistema nervioso del cuerpo: una unidad motora consiste en una motor neurona, y todas las fibras musculas a la que esta conectada.  Cuando se activa la unidad motora, se genera un voltaje (llamado MUAP, sus siglas en inglés) y se contraen los músculos.  Entonces, la señal EMG consiste en medir la suma de varios MUAPs de uno o mas músculos específicos.
 
-El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y de su frecuencia $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto.
+El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto.
 
 \section{Pulsioximetría}
 
-La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de un  paciente \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.
+La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.
 
-El corazón bombea sangre a través de las arterias de forma continua. Este es el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar picos. Dichos picos son utilizados para estimar el ritmo cardíaco. 
+El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. 
 
 \begin{figure}[H]
 	\centering

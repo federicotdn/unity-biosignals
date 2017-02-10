@@ -1,4 +1,4 @@
-En este capítulo se presentará el estado del arte en lo que respecta a los distintos usos de las bioseñales. Primero se mostrará el uso de las bioseñales en Accesibilidad, luego su uso en aplicaciones interactivas y finalmente se sacarán conclusiones. 
+En este capítulo se presentará el estado del arte en lo que respecta a los distintos usos de las bioseñales. Primero se brindarán algunos ejemplos del uso de las bioseñales en distintos campos y finalmente se sacarán conclusiones. 
 
 \section{Uso de bioseñales en distintos campos}
 
@@ -13,8 +13,8 @@ La NASA desarrolló un sistema para controlar un avión en una simulación utili
 	\label{fig:emg-flight}
 \end{figure}
 
-Dos académicos de la Universidad Nacional de Seúl, utilizaron un dispositivo EMG y un acelerómetro para controlar un video juego. Utilizando el acelerómetro, el juego era capaz de determinar si el usuario estaba dando un simple puñetazo hacia adelante, un puñetazo de abajo hacia arriba o si estaba lanzando una bola de fuego (ver 
-figura \ref{fig:fireball}). Usando el sensor EMG, el juego medía la fuerza realizada por el usuario y la aplicaba proporcionalmente en el juego. Es decir, si el usuario realizaba poca fuerza, el ataque era débil. En cambio, si era fuerte, el ataque era fuerte .De esta forma, se utilizó como dispositivo de entrada las propias señales del cuerpo en lugar de usar un control de mando físico o el teclado \cite{emg-fireball}.
+Dos académicos de la Universidad Nacional de Seúl, utilizaron un dispositivo EMG y un acelerómetro para controlar un vídeojuego. Utilizando el acelerómetro, el juego era capaz de determinar si el usuario estaba dando un simple puñetazo hacia adelante, un puñetazo de abajo hacia arriba o si estaba lanzando una bola de fuego (ver 
+figura \ref{fig:fireball}). Usando el sensor EMG, el juego medía la fuerza realizada por el usuario y la aplicaba proporcionalmente en el juego. Es decir, si el usuario realizaba poca fuerza, el ataque era débil. En cambio, si era fuerte, el ataque era fuerte. De esta forma, se utilizó como dispositivo de entrada las propias señales del cuerpo en lugar de usar un control de mando físico o el teclado \cite{emg-fireball}.
 
 \begin{figure}[H]
     \includegraphics[width=0.8\textwidth]{emg-fireball.png}
@@ -22,13 +22,13 @@ figura \ref{fig:fireball}). Usando el sensor EMG, el juego medía la fuerza real
 	\label{fig:fireball}
 \end{figure}
 
-La empresa \emph{Muse} desarrolló un dispositivo EEG con cinco electrodos. El mismo viene acompañado con una aplicación móvil que ayuda a los usuarios a meditar. Cuando el usuario tiene la mente tranquila, se escucha un clima calmo, pero cuando el usuario está alterado se escucha un clima tormentoso. Muse utiliza distintas ondas cerebrales para detectar si el usuario se encuentra relajado o no.
+La empresa \emph{Muse} desarrolló un dispositivo EEG con siete electrodos. El mismo viene acompañado con una aplicación móvil que ayuda a los usuarios a meditar. Cuando el usuario tiene la mente tranquila, se escucha un clima calmo, pero cuando el usuario está alterado se escucha un clima tormentoso. Muse utiliza distintas ondas cerebrales para detectar si el usuario se encuentra relajado o no.
 
-\emph{Netflix} desarrolló \emph{MindFlix}. \emph{Mindflix} utiliza un dispositivo EEG (electroencefalograma) para controlar su popular servicio con la mente. Utiliza los giroscopios del dispositivo para permitirle al usuario desplazarse horizontalmente y verticalmente por la interfaz. Además, utiliza distintas ondas cerebrales para detectar cuando el usuario piensa en la palabra \emph{play}. En caso de que el usuario piense en esa palabra,  la aplicación comienza a reproducir el contenido seleccionado. Se intentó averiguar qué ondas cerebrales se utilizaban y de que forma no se encontró en ningun lugar \cite{mindflix}.
+\emph{Netflix} desarrolló \emph{MindFlix}. \emph{Mindflix} utiliza un dispositivo EEG (electroencefalograma) para controlar su popular servicio con la mente. Utiliza el giroscopio y el acelrómetro del dispositivo para permitirle al usuario desplazarse horizontalmente y verticalmente por la interfaz. Además, utiliza distintas ondas cerebrales para detectar cuando el usuario piensa en la palabra \emph{play}. En caso de que el usuario piense en esa palabra,  la aplicación comienza a reproducir el contenido seleccionado. Se intentó averiguar qué ondas cerebrales se utilizaban y de que forma, pero no se encontró en ningún lugar \cite{mindflix}.
 
 
 \section{Conclusiones}
 
-Las aplicaciones de las bioseñales son infinitas y cada vez hay más interés en su uso. Pueden utilizarse tanto para ayudar a personas con discapacidad como también para entretener o para reemplazar sistemas físicos con virtuales. Todas las implementaciones combinan \emph{harware} y \emph{sowftware} pero algunas más que otras. En el caso de la computadora de Stephen Hawking, si bien utiliza un sensor infrarojo, el logro aquí está en el software que utiliza ya que el sensor no es tan sofisticado. En los casos de \emph{MindFlix} y \emph{Force Trainer}, el harware cobra más importancia, ya que las ondas del cerebro son difíciles de leer y se debe obtener el menor ruido posible. En el caso de controla un avión, el sensor es crucial pero a su vez lo es utilizar poderosos algoritmos para filtrar y limpiar las señales y para interpretar esas señales como distintos movimientos.
+Las aplicaciones de las bioseñales son infinitas y cada vez hay más interés en su uso. Pueden utilizarse tanto para ayudar a personas con discapacidad como también para entretener o para reemplazar sistemas físicos con virtuales. Todas las implementaciones combinan \emph{harware} y \emph{sowftware} pero algunas más que otras. En el caso de la computadora de Stephen Hawking, si bien utiliza un sensor infrarojo, el logro aquí está en el software que utiliza ya que el sensor no es tan sofisticado. En el caso de \emph{MindFlix}, el \emph{hardware} cobra más importancia, ya que las ondas del cerebro son difíciles de leer y se debe obtener el menor ruido posible. En el caso de controlar un avión, el sensor es crucial pero a su vez lo es utilizar poderosos algoritmos para filtrar y limpiar las señales ,y para poder interpretar esas señales como distintos movimientos.
 
-Sin duda han sido los avances tecnológicos de los últimos años los que han logrado que se haya podido avanzar tanto en esta área. Antes estos eran estudios realizados en laboratorios con equipamientos costos y específicos. En cambio hoy, existen diversos dispositivos accesibles para los consumidores. 
+Sin duda han sido los avances tecnológicos de los últimos años los que han logrado que se haya podido avanzar tanto en esta área. Antes estos eran estudios realizados en laboratorios con equipamientos costosos y específicos. En cambio hoy, existen diversos dispositivos accesibles para los consumidores. 
