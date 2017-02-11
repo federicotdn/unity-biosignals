@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EMG/marcos-1.emg.csv', 'r') as csvfile:
+  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EMG/fede-2.emg.csv', 'r') as csvfile:
     reader = csv.reader(csvfile)
     lines = []
     for row in reader:
@@ -41,8 +41,8 @@ def main():
   fig = plt.figure()
   ax1 = fig.add_subplot(111)
 
-  ax1.scatter(x_o, y_o, c='b', marker="x", label='Relaxed')
-  ax1.scatter(x_c, y_c, c='r', marker="o", label='Tense')
+  ax1.scatter(x_o, y_o, c='b', marker="x", label='Tense')
+  ax1.scatter(x_c, y_c, c='r', marker="o", label='Relaxed')
   plt.legend(loc='upper left')
   plt.show()
 
