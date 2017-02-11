@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Prediction-1.csv', 'r') as csvfile:
+  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2-1.csv', 'r') as csvfile:
     reader = csv.reader(csvfile)
     lines = []
     for row in reader:
@@ -41,26 +41,26 @@ def main():
   fig = plt.figure()
   ax1 = fig.add_subplot(111)
 
-  # ax1.scatter(x_o, y_o, c='b', marker="x", label='Open')
-  # ax1.scatter(x_c, y_c, c='r', marker="o", label='Closed')
-  # plt.legend(loc='upper left')
+  ax1.scatter(x_o, y_o, c='b', marker="x", label='Open')
+  ax1.scatter(x_c, y_c, c='r', marker="o", label='Closed')
+  plt.legend(loc='upper left')
 
-  ax1.boxplot(boxplot_data)
-  ax1.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
-               alpha=0.5)
-  ax1.set_axisbelow(True)
-  i = 0 
-  ticks = []
-  eyes_closed = True
-  while (i < len(boxplot_data)):
-    if eyes_closed:
-      ticks.append('Closed')
-    else:
-      ticks.append('Open')
-    eyes_closed = not eyes_closed
-    i+=1
+  # ax1.boxplot(boxplot_data)
+  # ax1.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+  #              alpha=0.5)
+  # ax1.set_axisbelow(True)
+  # i = 0 
+  # ticks = []
+  # eyes_closed = True
+  # while (i < len(boxplot_data)):
+  #   if eyes_closed:
+  #     ticks.append('Closed')
+  #   else:
+  #     ticks.append('Open')
+  #   eyes_closed = not eyes_closed
+  #   i+=1
 
-  plt.xticks(np.arange(1,len(ticks)), ticks)
+  # plt.xticks(np.arange(1,len(ticks)), ticks)
   plt.show()
 
 
