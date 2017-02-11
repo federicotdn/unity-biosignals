@@ -16,7 +16,6 @@ public class EMGTestController : MonoBehaviour {
     public WMG_Axis_Graph fftGraph;
 
     public Text modeLabel;
-    public Text meanLabel;
     public Text predictionLabel;
     public Text trainingInfoLabel;
 
@@ -110,9 +109,7 @@ public class EMGTestController : MonoBehaviour {
             return;
         }
 
-        if (Input.GetKeyUp(KeyCode.D)) {
-            processor.ChangeMode(EMGProcessor.Mode.DETRENDING);
-        } else if (Input.GetKeyUp(KeyCode.I)) {
+        if (Input.GetKeyUp(KeyCode.I)) {
             processor.ChangeMode(EMGProcessor.Mode.IDLE);
         } else if (Input.GetKeyUp(KeyCode.T)) {
             if (processor.CurrentMuscleState != MuscleState.NONE) {
@@ -131,7 +128,6 @@ public class EMGTestController : MonoBehaviour {
         }
 
         modeLabel.text = processor.CurrentMode.ToString();
-        meanLabel.text = processor.Mean.ToString();
         predictionLabel.text = "Prediction: " + processor.PredictedMuscleState.ToString();
         trainingInfoLabel.text = "Count: " + processor.TrainingDataLength.ToString() + "\nMuscleState: " + processor.CurrentMuscleState.ToString();
     }

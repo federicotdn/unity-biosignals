@@ -32,21 +32,12 @@ namespace pfcore {
             Console.WriteLine("(" + (packets.Count / EMGPacket.SAMPLE_RATE) + " seconds of data)");
             Console.WriteLine("(" + (packets.Count / EMGProcessor.FFT_SAMPLE_SIZE) + " training values)");
 
-            float mean = 0;
-            int count = 0;
-
             foreach (EMGPacket packet in packets) {
                 if (packet.muscleStateHint == MuscleState.NONE) {
                     Console.WriteLine("ERROR: One or more packets are missing a MuscleState hint.");
                     return;
-                } else if (packet.muscleStateHint == MuscleState.RELAXED) {
-                    mean += packet.channels[0];
-                    count++;
                 }
             }
-
-            mean /= count;
-            Console.WriteLine("Mean for Relaxed packets: " + mean);
 
             Console.WriteLine("--------------------------------");
 
@@ -61,8 +52,8 @@ namespace pfcore {
             List<EMGPacket> trainingPackets = packets.GetRange(0, trainingCount);
             List<EMGPacket> predictionPackets = packets.GetRange(packets.Count - predictionCount, predictionCount);
 
-            List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, mean, true);
-            List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, mean, false);
+            List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, true);
+            List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, false);
 
             Console.WriteLine("Training values count: " + trainingValues.Count);
             Console.WriteLine("Prediction values count: " + predictionValues.Count);
@@ -99,7 +90,7 @@ namespace pfcore {
             Console.WriteLine("Accuracy: " + accuracy);
         }
 
-        private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, float mean, bool enableSkip) {
+        private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, bool enableSkip) {
             List<TrainingValue> values = new List<TrainingValue>(EMGProcessor.FFT_SAMPLE_SIZE);
             
             int skipsRemaining = 0;
@@ -122,7 +113,7 @@ namespace pfcore {
                         break;
                     }
 
-                    data[j - start] = new Complex(packet.channels[0] - mean, 0);
+                    data[j - start] = new Complex(EMGProcessor.ValueFromPacket(packet), 0);
                 }
 
                 if (enableSkip && skipsRemaining > 0) {

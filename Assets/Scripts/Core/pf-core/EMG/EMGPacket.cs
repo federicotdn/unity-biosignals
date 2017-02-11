@@ -2,7 +2,7 @@
 
 namespace pfcore {
     public class EMGPacket {
-        // Data packet received from Olimexino328
+        // Data packet received from Olimex EMG Shield
         private const int CHANNEL_COUNT = 6;
         private const int CHANNEL_OFFSET = 4;
         public const int SAMPLE_RATE = 256; //Hz

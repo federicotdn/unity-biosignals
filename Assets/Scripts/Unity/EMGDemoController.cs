@@ -36,9 +36,7 @@ public class EMGDemoController : MonoBehaviour {
             Debug.Log("Started reading.");
         }
 
-        if (Input.GetKeyUp(KeyCode.C)) {
-            processor.ChangeMode(EMGProcessor.Mode.DETRENDING);
-        } else if (Input.GetKeyUp(KeyCode.I)) {
+        if (Input.GetKeyUp(KeyCode.I)) {
             processor.ChangeMode(EMGProcessor.Mode.IDLE);
         } else if (Input.GetKeyUp(KeyCode.T)) {
             if (processor.CurrentMuscleState != MuscleState.NONE) {

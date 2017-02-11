@@ -12,7 +12,6 @@ namespace pfcore {
     public class EMGProcessor {
         public enum Mode {
             IDLE,
-            DETRENDING,
             TRAINING,
             PREDICTING,
             WRITING
@@ -65,12 +64,6 @@ namespace pfcore {
             }
         }
 
-        private float mean = 0.0f;
-        public float Mean {
-            get {
-                return mean;
-            }
-        }
         private int sampleCount = 0;
         private int skipsRemaining = 0;
 
@@ -131,11 +124,6 @@ namespace pfcore {
             }
 
             mode = newMode;
-
-            if (mode == Mode.DETRENDING) {
-                mean = 0.0f;
-                sampleCount = 0;
-            }
         }
 
         public void Update() {
@@ -164,9 +152,6 @@ namespace pfcore {
                         break;
                     case Mode.PREDICTING:
                         Predict();
-                        break;
-                    case Mode.DETRENDING:
-                        Detrend();
                         break;
                     case Mode.WRITING:
                         Write();
@@ -255,11 +240,8 @@ namespace pfcore {
             predictedMuscleState = (MuscleState)result;
         }
 
-        private void Detrend() {
-            foreach (EMGPacket packet in rawReadings) {
-                mean = ((mean * sampleCount) + packet.channels[0]) / (sampleCount + 1);
-                sampleCount++;
-            }
+        public static float ValueFromPacket(EMGPacket packet) {
+            return packet.channels[0];
         }
 
         private void Idle() {
@@ -267,12 +249,12 @@ namespace pfcore {
             readings.Capacity = rawReadings.Count;
 
             foreach (EMGPacket packet in rawReadings) {
-                readings.Add(new EMGReading(packet.channels[0] - mean, packet.timeStamp));
+                readings.Add(new EMGReading(ValueFromPacket(packet), packet.timeStamp));
             }
 
             Complex[] data = new Complex[FFT_SAMPLE_SIZE];
             for (int i = 0; i < FFT_SAMPLE_SIZE; i++) {
-                data[i] = new Complex(rawReadings[i].channels[0] - mean, 0);
+                data[i] = new Complex(ValueFromPacket(rawReadings[i]), 0);
             }
 
             FourierTransform.FFT(data, FourierTransform.Direction.Forward);
