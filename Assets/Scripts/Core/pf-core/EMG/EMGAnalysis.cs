@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Text;
 using System.Threading;
 
 namespace pfcore {
@@ -15,7 +16,7 @@ namespace pfcore {
             this.filename = filename;
         }
 
-        public void PrintResults() {
+        public void PrintResults(bool writeCSV) {
             Console.WriteLine("--------------------------------");
             Console.WriteLine("Using file: " + filename);
             List<EMGPacket> packets = ReadPackets();
@@ -55,6 +56,24 @@ namespace pfcore {
             List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, true);
             List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, false);
 
+            if (writeCSV) {
+                System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+                customCulture.NumberFormat.NumberDecimalSeparator = ".";
+                Thread.CurrentThread.CurrentCulture = customCulture;
+
+                StringBuilder sb = new StringBuilder();
+
+                foreach (TrainingValue val in trainingValues) {
+                    sb.AppendLine(csvLineFromTrainingValue(val));
+                }
+
+                foreach (TrainingValue val in predictionValues) {
+                    sb.AppendLine(csvLineFromTrainingValue(val));
+                }
+
+                File.WriteAllText(filename + ".csv", sb.ToString());
+            }
+
             Console.WriteLine("Training values count: " + trainingValues.Count);
             Console.WriteLine("Prediction values count: " + predictionValues.Count);
 
@@ -88,6 +107,15 @@ namespace pfcore {
             Console.WriteLine("Sensitivity: " + sensitivity);
             Console.WriteLine("Specificity: " + specificity);
             Console.WriteLine("Accuracy: " + accuracy);
+        }
+
+        private string csvLineFromTrainingValue(TrainingValue val) {
+            // Will not compile if FEATURE_COUNT != 2
+            if (TrainingValue.FEATURE_COUNT == 2) {
+                return string.Format("{0},{1},{2}", val.features[0], val.features[1], (int)val.muscleState);
+            }
+
+            // return nothing
         }
 
         private List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, bool enableSkip) {

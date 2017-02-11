@@ -138,7 +138,7 @@ namespace pfcore
 		private static void RunEMGAnalysis(string filename)
 		{
 			EMGAnalysis analysis = new EMGAnalysis(filename);
-			analysis.PrintResults();
+			analysis.PrintResults(true);
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
 		}
