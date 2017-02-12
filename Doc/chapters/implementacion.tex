@@ -43,6 +43,15 @@ El modelo de Arduino elegido fue el \emph{Arduino Mega 2560}, que cuenta con un 
 
 Para poder leer las señales EMG, se debe preparar el sistema de monitoreo.  Primero, se debe montar el modulo EMG sobre el micro controlador \emph{Arduino}.  Luego, las terminales $L$ y $R$ se deben posicionar sobre la piel del musculo a monitorear, y la terminal $D$ debe ser posicionada sobre una superficie del cuerpo a utilizar como referencia, que preferiblemente no contenga musculos, o tenga musculos no relacionados a los de las otras dos terminales (a este circuito se le llama \emph{Driven Right Leg Circuit} en inglés). En este proyecto, se opto por medir la actividad muscular de un brazo, junto a la mano, al formar un puño cerrado apretado. Por lo tanto, los electrodos fueron colocados sobre el músculo flexor común superficial de los dedos, que se encuentra sobre la cara anterior de antebrazo\cite{emg-signals-wrist}. Una vez realizados los pasos anteriores, se puede proceder a conectar el micro controlador a la computadora vía un cable USB 2.0.
 
+Para comprobar el correcto funcionamiento del dispositivo, se utilizó un software llamado \emph{ElectricGuru}, recomendado por los fabricantes del módulo EMG. Si el sistema de monitoreo fue preparado correctamente, el software debería mostrar una pantalla similar a la siguiente:
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{electricguru.png}
+    \caption{Pantalla principal de \emph{ElectricGuru}, leyendo señales EMG.}
+	\label{fig:emg-electricguru}
+\end{figure}
+
 \subsection{SPO2}
 
 Para medir el ritmo cardíaco se decidió utilizar el dispositivo \emph{CMS50D+ Contec Pulse Oximeter}. Éste es un pulsioxímetro de transmisión de alta precisión, fácil de utilizar y de bajo consumo. Dicho dispositivo utiliza el puerto serie para enviar datos utilizando un formato propietario. Los datos más relevantes que envía el sensor son:
@@ -111,7 +120,7 @@ Con este vector de características, se alcanzó una precisión de hasta un $ 85
  
 En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran los valores de transición. Cuando se le indica al usuario que abra o cierre los ojos, se descartan dos segundos antes y después de la transición de estados. Esto se debe a que los valores que corresponden a la transición no son significativos. Los que realmente importan son cuando se está en un estado u otro.
  
-\subsection{EMG}
+\subsection{EMG} \label{sec:emg-signal-processing}
 
 Una vez preparado el sistema de monitoreo EMG descripto en la seccion \ref{emg-hardware}, se puede comenzar a leer los datos. Los micro controladores \emph{Arduino} permiten comunicarse a una computadora mediante un puerto de serie que es establecido a traves de la conexión USB.  Para poder leer del puerto de serie desde el sistema operativo, es necesario conocer los parametros de la conexión (velocidad, paridad, cantidad de bits de información, etc.), y el nombre del puerto de serie. Los valores utilizados fueron los predeterminados utilizados en el programa de ejemplo referenciado en el manual del módulo EMG\cite{olimex-manual}.
 
@@ -195,4 +204,4 @@ Al igual que con el universo que utiliza información del EEG, aquí se cuenta c
 
 Se continuó con el desarrollo del vídeojuego en el que se utilizaron las bioseñales del cerebro. Se desarrolló un nuevo nivel que sucede luego de que el jugador escape del laberinto. Al escapar del laberinto, éste se encuentra en el centro de un campo,  con una linterna y un arma, rodeado de \emph{Zombies}. El objetivo es sobrevivir a todas las olas de ataques de \emph{Zombies}. Cuando el jugador comienza a ponerse nervioso, el ritmo cardíaco aumenta. Se utiliza esta información para simular que al jugador le tiemblan las manos a causa de los nervios. Cuanto más alto es el ritmo cardíaco, más movimientos aleatorios realiza el arma, dificultando la tarea de apuntar. Este movimiento imita a la realidad, ya que cuando uno se encuentra nervioso, le resulta más difícil realizar acciones con las manos, como apuntar un arma. El jugador puede también quedarse sin municiones y sin batería en la linterna, lo que genera mayor nerviosismo en la persona porque no puede ver correctamente y no cuenta con ninguna forma de defenderse.
 
-Aquí también se cuenta con un procesador (\emph{SPO2Processor}) y un lector (\emph{SPO2Reader}). El procesador expone un método que permite obtener el ritmo cardíaco actual. De esta manera, la rutina en \emph{Unity} obtiene este valor en cada actualización y en base a él, realiza movimientos sobre la cámara. Dichos movimientos se modelaron utilizando funciones trigonométricas para que sean armónicas y agradables a la vista. La magnitud de los movimientos se controla con dos variables: mínimo y máximo. Una establece el umbral mínimo que se utiliza para determinar si el usuario está nervioso y la otra el máximo. Luego, si el el ritmo cardíaco es mayor al umbral mínimo, se interpola linealmente entre el mínimi y el máximo.
+Aquí también se cuenta con un procesador (\emph{SPO2Processor}) y un lector (\emph{SPO2Reader}). El procesador expone un método que permite obtener el ritmo cardíaco actual. De esta manera, la rutina en \emph{Unity} obtiene este valor en cada actualización y en base a él, realiza movimientos sobre la cámara. Dichos movimientos se modelaron utilizando funciones trigonométricas para que sean armónicas y agradables a la vista. La magnitud de los movimientos se controla con dos variables: mínimo y máximo. Una establece el umbral mínimo que se utiliza para determinar si el usuario está nervioso y la otra el máximo. Luego, si el el ritmo cardíaco es mayor al umbral mínimo, se interpola linealmente entre el mínimo y el máximo.
