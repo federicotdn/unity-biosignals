@@ -51,10 +51,11 @@ uint8_t switches; // State of PD5 to PD2, in bits 3 to 0.
 #define NUMCHANNELS 6
 #define HEADERLEN 4
 #define PACKETLEN (NUMCHANNELS * 2 + HEADERLEN + 1)
-#define SAMPFREQ 256                      // ADC sampling rate 256
+#define SAMPFREQ 512                      // ADC sampling rate 512
 #define TIMER2VAL (1024/(SAMPFREQ))       // Set 256Hz sampling frequency                    
 #define LED1  13
 #define CAL_SIG 9
+#define SERIAL_BAUDRATE 115200
 
 // Global constants and variables
 volatile unsigned char TXBuf[PACKETLEN];  //The transmission packet
@@ -153,9 +154,7 @@ void setup() {
   FlexiTimer2::set(TIMER2VAL, Timer2_Overflow_ISR);
   FlexiTimer2::start();
 
-
-  //Set speed to 57600 bps
-  Serial.begin(57600);
+  Serial.begin(SERIAL_BAUDRATE);
 
   // MCU sleep mode = idle.
   //outb(MCUCR,(inp(MCUCR) | (1<<SE)) & (~(1<<SM0) | ~(1<<SM1) | ~(1<<SM2)));
@@ -183,7 +182,7 @@ void Timer2_Overflow_ISR()
   }
 
   // Send Packet
-  for (TXIndex = 0; TXIndex < 17; TXIndex++){
+  for (TXIndex = 0; TXIndex < PACKETLEN; TXIndex++){
     Serial.write(TXBuf[TXIndex]);
   }
 
