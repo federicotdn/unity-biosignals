@@ -6,7 +6,7 @@ using System.Threading;
 namespace pfcore {
     public class EMGSerialReader : EMGReader {
         // Values for Olimexino328 Arduino sketch
-        private const int baudRate = 57600;
+        private const int baudRate = 115200;
         private const Parity parity = Parity.None;
         private const int dataBits = 8;
         private const StopBits stopBits = StopBits.One;

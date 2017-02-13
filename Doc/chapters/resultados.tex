@@ -47,3 +47,51 @@ Cabe destacar que al contar con un vector de cuatro características, para grafi
 Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores.
 
 Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2 (sesión 2) y como sesión de predicción una sesión del sujeto 1 (sesión 1). Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6963351$. Esta fue superior a la precisión obtenida con la sesión de entrenamiento del propio sujeto. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
+
+\section{EMG}
+
+Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+ Sujeto & Sesión & Precisión & Duración (Segundos) \\ 
+ \hline
+ 1 & 1 & $0.994$ & $341$ \\
+ \hline
+ 1 & 2 & $0.974$ & $603$ \\
+ \hline
+ 1 & 3 & $0.976$ & $334$ \\
+ \hline
+ 1 & 4 & $0.987$ & $299$ \\
+  \hline
+ 2 & 1 & $0.892$ & $239$ \\
+  \hline
+ 3 & 1 & $0.990$ & $393$ \\
+
+ \hline
+\end{tabular}
+\caption{Resultados de entrenamientos utilizando lecturas de EMG para varios sujetos.}
+\label{tab:emg-results}
+\end{table}
+
+Como muestran los valores de la tabla \ref{tab:emg-results}, los niveles de precisión alcanzados son muy elevados: en cinco de las seis sesiones realizadas, se logró un nivel de precisión de $97\%$, o mayor.  En la sesión del sujeto $2$, se logró un nivel más bajo, de $89\%$. Esto se debe, probablemente, a que ésta sesión tuvo una duración mas corta que las anteriores, por lo que el clasificador fue entrenado con un número menor de muestras. También es necesario remarcar que al medir señales de EMG, existen varias fuentes de ruido eléctrico, que pueden afectar los valores leídos y por lo tanto perjudicar la precision del entrenador. El efecto neto de éstas fuentes de ruido varía de sesión en sesión, ya que depende de factores como la cantidad de movimiento de los electrodos en relación a la piel, o la presencia de dispositivos que emitan radiación electromagnética\cite{emg-delsys}.
+
+A continuación, se muestran los gráficos de dispersión de las dos sesiones más largas, que permiten visualizar las diferencias entre los vectores de características de ambos estados de tensión de músculo.
+
+ \begin{figure}[H]
+	\centering
+    \includegraphics[width=1\textwidth]{fede-2.png}
+    \caption{Gráfico de dispersión del vector de características EMG para la sesión $2$ del sujeto $1$.}
+	\label{fig:emg-graph-s1s2}
+\end{figure}
+
+ \begin{figure}[H]
+	\centering
+    \includegraphics[width=1\textwidth]{javo-1.png}
+    \caption{Gráfico de dispersión del vector de características EMG para la sesión $1$ del sujeto $3$.}
+	\label{fig:emg-graph-s3s1}
+\end{figure}
+
+En la figura \ref{fig:emg-graph-s1s2}, se puede observar una clara separación entre las muestras tomadas con el musculo relajado, y las muestras tomadas con el musculo tensado. En la figura \ref{fig:emg-graph-s3s1} se puede observar el mismo efecto, con una separación aun mas marcada. También, se puede notar como las muestras tomadas con músculo relajado se encuentran concentradas en un área pequeña, debido a la poca variación de potencial medido de muestra en muestra. Por el otro lado, las muestras tomadas con músculo tensado se encuentran dispersas, ya que al tensar el músculo no siempre es posible mantener el mismo nivel fuerza ejercida.
