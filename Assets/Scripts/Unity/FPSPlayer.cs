@@ -8,16 +8,20 @@ public class FPSPlayer : Humanoid {
 	public AudioClip GunShotClip;
 	public AudioClip ReloadClip;
 	public AudioClip GunEmptyClip;
+	public AudioClip ammoPickupClip;
 	public AudioSource gunAudioSource;
 	public AudioSource MainAudioSource;
 	public float CoolDown;
 	public float ReloadTime;
-	public int MagSize = 12;
+	public int magsCount = 3;
+	public int remainingRounds { get; private set; }
+	public int magSize = 12;
 	public int rounds { get; private set; }
 	public Camera FPSCam;
 	public float Range = 30;
 	public ParticleSystem shellEffect;
 	public List<AudioClip> hurtClips;
+	public KeyCode reloadKey;
 
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
@@ -29,23 +33,26 @@ public class FPSPlayer : Humanoid {
 
 		reloadTimer = new CounterTimer(ReloadTime);
 		reloadTimer.Update(ReloadTime);
-		rounds = MagSize;
+		rounds = magSize;
+		remainingRounds = (magsCount - 1) * magSize;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
-		if (Input.GetKeyDown (KeyCode.F)) {
-			FPSUI.Instance.Flash ();
-		}
-
 		coolDownTimer.Update (Time.deltaTime);
 		reloadTimer.Update (Time.deltaTime); 
 
-		if (Input.GetKeyDown (KeyCode.R) && reloadTimer.Finished) {
-			gunAudioSource.PlayOneShot (ReloadClip);
-			reloadTimer.Reset ();
-			rounds = MagSize;
+		if (Input.GetKeyDown (reloadKey) && reloadTimer.Finished) {
+			if (remainingRounds >= 1) {
+				gunAudioSource.PlayOneShot (ReloadClip);
+				reloadTimer.Reset ();
+				int reloadCount = Mathf.Min(magSize - rounds, remainingRounds);
+				rounds += reloadCount;
+				remainingRounds -= reloadCount;
+			} else {
+				gunAudioSource.PlayOneShot (GunEmptyClip);
+			}
+
 		}
 
 		if (reloadTimer.Finished && coolDownTimer.Finished && Input.GetMouseButtonDown (0)) {
@@ -76,7 +83,6 @@ public class FPSPlayer : Humanoid {
 							Bomb bomb = bombHitBox.transform.parent.gameObject.GetComponent<Bomb>();
 							bomb.Explode ();
 						}
-
 					}
 				}
 			}
@@ -86,8 +92,30 @@ public class FPSPlayer : Humanoid {
 
 	public override void Hit(int damage, RaycastHit hit, bool hitPresent) {
 		health -= damage;
-		FPSUI.Instance.Flash ();
 		MainAudioSource.PlayOneShot (hurtClips[Random.Range(0, hurtClips.Count)]);
 		GetComponent<CharacterController> ().Move (-transform.forward * 0.5f);
+	}
+
+	void OnTriggerEnter(Collider other) {
+		PickableItem item = other.GetComponent<PickableItem> ();
+		if (item != null) {
+			switch (item.type) {
+			case ItemType.AMMO:
+				if ((magsCount * magSize) != +rounds + remainingRounds) {
+					remainingRounds = (magsCount * magSize) - rounds;
+					item.Pickup ();
+					MainAudioSource.PlayOneShot (item.soundEffect);
+				}
+				break;
+			case ItemType.HEALTH:
+				if (health != maxHealth) {
+					MainAudioSource.PlayOneShot (item.soundEffect);
+					health = maxHealth;
+					item.Pickup ();
+				}
+				break;
+			}
+
+		}
 	}
 }

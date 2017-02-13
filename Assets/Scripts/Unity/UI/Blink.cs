@@ -4,11 +4,9 @@ using System.Collections;
 
 public class Blink : MonoBehaviour {
 
-	public MaskableGraphic imageToToggle;
+	private MaskableGraphic imageToToggle;
 
 	public float interval = 0.1f;
-	public bool currentState = true;
-	public bool defaultState = true;
 	public float duration = 1.5f;
 	private bool blinking = false;
 
@@ -16,7 +14,8 @@ public class Blink : MonoBehaviour {
 
 	void Start()
 	{
-		imageToToggle.enabled = defaultState;
+		imageToToggle = GetComponent<MaskableGraphic> ();
+		imageToToggle.enabled = true;
 		durationTimer = new CounterTimer (duration);
 		durationTimer.Update (duration);
 	}
@@ -25,6 +24,7 @@ public class Blink : MonoBehaviour {
 		if (durationTimer.Finished && blinking) {
 			blinking = false;
 			CancelInvoke ();
+			imageToToggle.enabled = true;
 		}
 
 		durationTimer.Update (Time.deltaTime);

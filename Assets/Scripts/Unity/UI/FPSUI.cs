@@ -8,33 +8,61 @@ public class FPSUI : MonoBehaviorSingleton<FPSUI> {
 	public Text rounds;
 	public Text BPMPText;
 	public Text healthText;
+	public Image healthImage;
+	public Image roundsImage;
 	public FPSPlayer player;
 	public Image bloodImage;
 
 	// Use this for initialization
+
+	private int previousHealth;
+	private int previousRounds;
 	void Start () {
 		Color color = bloodImage.color;
 		color.a = 0;
 		bloodImage.color = color;
+		previousHealth = -1;
+		previousRounds = -1;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		rounds.text = player.rounds.ToString();
+		rounds.text = player.rounds  + " | " + player.remainingRounds;
 		healthText.text = player.health.ToString ();
 		if (BPMPText != null) {
 			BPMPText.text = EKGManager.Instance.BPM.ToString ();
 		}
+
+		if (previousHealth != -1 && player.health != previousHealth) {
+			healthImage.GetComponent<Blink> ().StartBlinking ();
+
+			if (player.health < previousHealth) {
+				Flash ();
+			}
+		}
+
+		if ((Input.GetKeyDown (player.reloadKey) || Input.GetMouseButton(0)) && (player.remainingRounds + player.rounds) == 0) {
+			BlinkRounds ();
+		}
+
+		if (previousRounds != -1 && player.remainingRounds > previousRounds) {
+			BlinkRounds ();
+		}
+
+		previousHealth = player.health;
+		previousRounds = player.remainingRounds;
 	}
 
-	public void Flash() {
+	private void Flash() {
 		Color color = bloodImage.color;
 		color.a = 0.5f;
 		bloodImage.color = color;
 		bloodImage.CrossFadeAlpha (1, 0.0001f, true);
 		bloodImage.CrossFadeAlpha (0, 1.5f, false);
+	}
 
-		healthText.GetComponent<Blink> ().StartBlinking ();
+	private void BlinkRounds() {
+		roundsImage.GetComponent<Blink> ().StartBlinking ();
 	}
 
 }

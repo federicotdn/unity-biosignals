@@ -56,4 +56,8 @@ public class OutlineObject : MonoBehaviour {
 
 		raycastTimer.Update (Time.deltaTime);
 	}
+
+	void OnDestroy() {
+		EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
+	}
 }

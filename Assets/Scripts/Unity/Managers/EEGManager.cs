@@ -53,14 +53,14 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 	void Update () {
 		processor.Update ();
 
-//		if (testingTimer.Finished) {
-//			testingTimer.Reset ();
-//			if (Status == EyesStatus.CLOSED) {
-//				Status = EyesStatus.OPEN;
-//			} else {
-//				Status = EyesStatus.CLOSED;
-//			}
-//		}
+		if (testingTimer.Finished) {
+			testingTimer.Reset ();
+			if (Status == EyesStatus.CLOSED) {
+				Status = EyesStatus.OPEN;
+			} else {
+				Status = EyesStatus.CLOSED;
+			}
+		}
 
 		testingTimer.Update (Time.deltaTime);
 	}
