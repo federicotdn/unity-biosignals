@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class Zombie : Humanoid {
 
-	public Transform mainTarget;
+	public FPSPlayer player;
 	public List<Transform> patrols;
 	public NavMeshAgent Agent;
 	public Animator animator;
@@ -17,6 +17,8 @@ public class Zombie : Humanoid {
 	public float stoppingDistance = 1;
 	public ParticleSystem bulletImpactEffect;
 	public ParticleSystem deadEffect;
+	public int damage = 20;
+	public float hearingDistance = 4;
 
 	public AudioSource AudioSrc;
 
@@ -32,6 +34,7 @@ public class Zombie : Humanoid {
 
 	// Use this for initialization
 	void Start () {
+		base.OnStart ();
 		growlClip = GrowlClips[Random.Range(0, GrowlClips.Count)];
 		hitClip = HitClips[Random.Range(0, HitClips.Count)];
 		AudioSrc.clip = growlClip;
@@ -43,14 +46,17 @@ public class Zombie : Humanoid {
 			currentTarget = patrols[patrolIndex];
 			Agent.stoppingDistance = 0;
 		} else {
-			currentTarget = mainTarget;
+			currentTarget = player.transform;
 			Agent.stoppingDistance = stoppingDistance;
 		}
+		animator.applyRootMotion = false;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (Health > 0) {
+		if (health > 0) {
+			Vector3 dir = (player.transform.position - transform.position);
+
 			if (patrolMode && !playerFound) {
 				if (Agent.remainingDistance < 0.1) {
 					patrolIndex++;
@@ -62,52 +68,64 @@ public class Zombie : Humanoid {
 					raycastTimer.Reset ();
 					RaycastHit hit;
 					Vector3 rayOrigin = transform.position;
-					Vector3 dir = (mainTarget.position - transform.position);
 					dir.y = 0.2f;
 					float dot = Vector3.Dot(transform.forward, dir);
 					if (dot >= 0 && Physics.Raycast (rayOrigin, dir, out hit, maxViewingDistance)) {
 						FPSPlayer player = hit.collider.GetComponent<FPSPlayer> ();
 						if (player != null) {
-							playerFound = true;
-							currentTarget = mainTarget;
-							Agent.stoppingDistance = stoppingDistance;
-							Debug.Log ("FOUND");
+							PlayerFound ();
 						}
 					}
 				}
 			}
-		
 
 			Agent.destination = currentTarget.position;
 			animator.SetFloat ("Speed", Agent.speed);
 
-			if (currentTarget == mainTarget && !attacking && Agent.remainingDistance <= (Agent.stoppingDistance + 0.1)) {
+			if (!attacking && Vector3.Distance(player.transform.position, transform.position) <= (stoppingDistance * 1.2f)) {
 				StartCoroutine (Attack ());
+			}
+
+			if (!playerFound && Vector3.Distance(transform.position, player.transform.position) <= hearingDistance) { 
+				PlayerFound ();
 			}
 		}
 		raycastTimer.Update (Time.deltaTime);
 	}
 
-	public void Hit(float damage, RaycastHit hit) {
+	private void PlayerFound() {
+		playerFound = true;
+		currentTarget = player.transform;
+		Agent.stoppingDistance = stoppingDistance;
+	}
+
+	public override void Hit(int damage, RaycastHit hit, bool hitPresent) {
 //		bloodEffect.transform.position = hit.point;
 //		bloodEffect.transform.rotation = Quaternion.LookRotation(hit.normal);
 //		bloodEffect.Play ();
-		Health = (int)Mathf.Max (0, Health - damage);
-		if (Health <= 0) {
+		health -= damage;
+		if (health <= 0) {
+			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject>());
 			animator.SetTrigger ("Die");
 			AudioSrc.PlayOneShot (hitClip);
-			Agent.Stop ();
-			deadEffect.transform.position = hit.point;
-			deadEffect.Play ();
-			Destroy (gameObject, 3);
+			if (hitPresent) {
+				deadEffect.transform.position = hit.point;
+				deadEffect.Play ();
+			}
+			Agent.enabled = false;
+			AudioSrc.enabled = false;
+		} else {
+			Agent.Move(-hit.normal * 0.4f);
 		}
 	}
 
 	private IEnumerator Attack() {
 		attacking = true;
 		animator.SetTrigger ("Attack");
+		player.Hit (damage, default(RaycastHit), false);
 		yield return new WaitForSeconds (attackCooldown);	
 		attacking = false;
+
 	}
 
 }

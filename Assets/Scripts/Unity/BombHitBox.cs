@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HitBox : MonoBehaviour {
-
-	public int Damage;
-	public Zombie Enemy;
-
+public class BombHitBox : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		
@@ -15,9 +11,5 @@ public class HitBox : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
-	}
-
-	public void Hit(RaycastHit hit) {
-		Enemy.Hit (Damage, hit, true);
 	}
 }

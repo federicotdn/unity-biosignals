@@ -1,80 +1,79 @@
-Shader "Outlined/Silhouette Only" {
-	Properties {
-		_OutlineColor ("Outline Color", Color) = (0,0,0,1)
-		_Outline ("Outline width", Range (0.0, 0.03)) = .005
-	}
+Shader "Outlined/NewOcclusionOutline" {
+ Properties {
+     _Color ("Main Color", Color) = (.5,.5,.5,1)
+     _RimCol ("Rim Colour" , Color) = (1,0,0,1)
+     _RimPow ("Rim Power", Float) = 1.0
+     _MainTex ("Base (RGB)", 2D) = "white" {}
+ }
+ SubShader {
+     Pass {
+             Name "Behind"
+             Tags { "RenderType"="transparent" "Queue" = "Transparent" }
+             Blend SrcAlpha OneMinusSrcAlpha
+             ZTest Greater               // here the check is for the pixel being greater or closer to the camera, in which
+             Cull Back                   // case the model is behind something, so this pass runs
+             ZWrite Off
+             LOD 200                    
+            
+             CGPROGRAM
+             #pragma vertex vert
+             #pragma fragment frag
+             #include "UnityCG.cginc"
+            
+             struct v2f {
+                 float4 pos : SV_POSITION;
+                 float2 uv : TEXCOORD0;
+                 float3 normal : TEXCOORD1;      // Normal needed for rim lighting
+                 float3 viewDir : TEXCOORD2;     // as is view direction.
+             };
+            
+             sampler2D _MainTex;
+             float4 _RimCol;
+             float _RimPow;
+            
+             float4 _MainTex_ST;
+            
+             v2f vert (appdata_tan v)
+             {
+                 v2f o;
+                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                 o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                 o.normal = normalize(v.normal);
+                 o.viewDir = normalize(ObjSpaceViewDir(v.vertex));       //this could also be WorldSpaceViewDir, which would
+                 return o;                                               //return the World space view direction.
+             }
+            
+             half4 frag (v2f i) : COLOR
+             {
+                 half Rim = 1 - saturate(dot(normalize(i.viewDir), i.normal));       //Calculates where the model view falloff is       
+                                                                                                                                    //for rim lighting.
+                
+                 half4 RimOut = _RimCol * pow(Rim, _RimPow);
+                 return RimOut;
+             }
+             ENDCG
+         }
  
-CGINCLUDE
-#include "UnityCG.cginc"
- 
-struct appdata {
-	float4 vertex : POSITION;
-	float3 normal : NORMAL;
-};
- 
-struct v2f {
-	float4 pos : POSITION;
-	float4 color : COLOR;
-};
- 
-uniform float _Outline;
-uniform float4 _OutlineColor;
- 
-v2f vert(appdata v) {
-	// just make a copy of incoming vertex data but scaled according to normal direction
-	v2f o;
-	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
- 
-	float3 norm   = mul ((float3x3)UNITY_MATRIX_IT_MV, v.normal);
-	float2 offset = TransformViewToProjection(norm.xy);
- 
-	o.pos.xy += offset * o.pos.z * _Outline;
-	o.color = _OutlineColor;
-	return o;
-}
-ENDCG
- 
-	SubShader {
-		Tags { "Queue" = "Transparent" }
- 
-		Pass {
-			Name "BASE"
-			Cull Back
-			Blend Zero One
- 
-			// uncomment this to hide inner details:
-			//Offset -8, -8
- 
-			SetTexture [_OutlineColor] {
-				ConstantColor (0,0,0,0)
-				Combine constant
-			}
-		}
- 
-		// note that a vertex shader is specified here but its using the one above
-		Pass {
-			Name "OUTLINE"
-			Tags { "LightMode" = "Always" }
-			Cull Front
-			// you can choose what kind of blending mode you want for the outline
-			//Blend SrcAlpha OneMinusSrcAlpha // Normal
-			//Blend One One // Additive
-			Blend One OneMinusDstColor // Soft Additive
-			//Blend DstColor Zero // Multiplicative
-			//Blend DstColor SrcColor // 2x Multiplicative
- 
-CGPROGRAM
-#pragma vertex vert
-#pragma fragment frag
- 
-half4 frag(v2f i) :COLOR {
-	return i.color;
-}
-ENDCG
-		}
- 
- 
-	}
- 
-	Fallback "Diffuse"
-}
+         Pass {
+             Name "BASE"
+             ZWrite On
+             ZTest LEqual
+             Blend SrcAlpha OneMinusSrcAlpha
+             Material {
+                 Diffuse [_Color]
+                 Ambient [_Color]
+             }
+             Lighting On
+             SetTexture [_MainTex] {
+                 ConstantColor [_Color]
+                 Combine texture * constant
+             }
+             SetTexture [_MainTex] {
+                 Combine previous * primary DOUBLE
+             }
+         }
+                
+     }
+     //FallBack "VertexLit"
+     FallBack "Diffuse"
+ }

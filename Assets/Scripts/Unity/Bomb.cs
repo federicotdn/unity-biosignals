@@ -16,45 +16,35 @@ public class Bomb : MonoBehaviour {
 	private HashSet<Humanoid> inRangeHumanoids;
 
 	public float beepInterval = 1.5f;
-	public float visibilityTime = 5;
 
-	public bool Visible {
-		get {
-			return visible || !visibilityTimer.Finished;
-		}
-	}
-
-	private bool visible;
+	private bool playing;
 	private bool exploded;
 	private bool waiting = false;
-	private CounterTimer visibilityTimer;
 	private FPSPlayer playerInRange;
 	private CounterTimer raycastTimer;
+	private OutlineObject outline;
 
 	// Use this for initialization
 	void Start () {
-		visibilityTimer = new CounterTimer (visibilityTime);
-		visibilityTimer.Update (visibilityTime);
 		inRangeHumanoids = new HashSet<Humanoid> ();
 		raycastTimer = new CounterTimer (raycastInterval);
+		mesh.enabled = false;
+		outline = GetComponent<OutlineObject> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (visible && !waiting) {
+		if (playing && !waiting) {
 			StartCoroutine (Play());
 		}
 
-		if (!visible && visibilityTimer.Finished && mesh.enabled) {
-			mesh.enabled = false;
-			hitCollider.enabled = false;
-		}
+		hitCollider.enabled = outline.Outline && !exploded;
+		mesh.enabled = outline.Outline && !exploded;
 
 		if (raycastTimer.Finished && playerInRange != null && CheckVisibility (playerInRange, triggerDistance * 1.2f)) {
-			Explode (playerInRange);
+			Explode ();
 		}
 
-		visibilityTimer.Update (Time.deltaTime);
 		raycastTimer.Update(Time.deltaTime);
 	}
 
@@ -63,38 +53,37 @@ public class Bomb : MonoBehaviour {
 
 		if (player != null && InRange (triggerDistance, player.transform)) {
 			if (CheckVisibility (player, triggerDistance * 1.2f)) {
-				Explode (player);
+				Explode ();
 			} else {
 				// Player is in range but behind an object
 				playerInRange = player;
 			}
 		}
-
-		Vector3 pos = other.transform.position;
-		pos.y = transform.position.y;
-		float distance = Vector3.Distance (pos, transform.position);
-		if (distance >= blastRange) {
-			Humanoid humanoid = player;
-			HitBox hitbox = other.GetComponent<HitBox> ();
-			if (hitbox != null) {
-				humanoid = hitbox.Enemy;
-			}
+			
+		Humanoid humanoid = player;
+		HitBox hitbox = other.GetComponent<HitBox> ();
+		if (hitbox != null) {
+			humanoid = hitbox.Enemy;
+		} 
+		if (humanoid != null && !inRangeHumanoids.Contains (humanoid)) {
 			inRangeHumanoids.Add (humanoid);
 		}
 	}
 
 	private bool CheckVisibility(Humanoid humanoid, float range) {
+		if (humanoid == null) {
+			return false;
+		}
+
 		RaycastHit hit;
 		Vector3 rayOrigin = transform.position;
 		Vector3 dir = ((humanoid.transform.position + Vector3.up * 0.2f) - transform.position);
-		Debug.DrawRay (rayOrigin, dir, Color.green);
+		rayOrigin += dir.normalized;
 		if (Physics.Raycast (rayOrigin, dir, out hit, range)) {
-			if (humanoid == hit.collider.GetComponent<Humanoid> ()) {
-				return true;
-			}
+			return hit.collider.gameObject.layer != LayerMask.NameToLayer ("Wall");
 		}
 
-		return false;
+		return true;
 	}
 
 	private bool InRange(float range, Transform t) {
@@ -118,32 +107,45 @@ public class Bomb : MonoBehaviour {
 		}
 	}
 
-	public void Explode(Humanoid humanoid) {
+	public void Explode() {
 		if (exploded) {
 			return;
 		}
+
+		foreach (Humanoid humanoid in inRangeHumanoids) {
+			Hit (humanoid);
+		}
+
 		exploded = true;
-		visible = false;
+		playing = false;
 		mesh.enabled = false;
 		foreach (Collider c in colliders) {
 			c.enabled = false;
 		}
-		explosion = Instantiate(explosion, transform.position + (Vector3.up * 0.2f), Quaternion.identity);
-		Destroy(explosion, 4); 
+		explosion = Instantiate(explosion, transform.position, Quaternion.identity);
+		EEGGameManager.Instance.RemoveBomb (this);
+		Destroy(explosion, 3.9f); 
 		Destroy(gameObject, 4); 
 		audioSource.PlayOneShot (explosionSound);
 	}
 
+	private void Hit(Humanoid humanoid) {
+		Vector3 pos = humanoid.transform.position;
+		pos.y = transform.position.y;
+		float distance = Vector3.Distance (pos, transform.position);
+		if (CheckVisibility(humanoid, blastRange) && distance <= blastRange) {
+			float damage = (blastRange - distance) / blastRange;
+			humanoid.Hit ((int)(humanoid.maxHealth * 2 * damage), default(RaycastHit), false);
+		}
+	}
+
 	public void PlayBeepSound() {
-		visible = true;
-		mesh.enabled = true;
-		hitCollider.enabled = true;
+		playing = true;
 	}
 		
 
 	public void StopPlaying() {
-		visible = false;
-		visibilityTimer.Reset ();
+		playing = false;
 	}
 
 	private IEnumerator Play() {

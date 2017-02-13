@@ -8,6 +8,7 @@ public class FPSPlayer : Humanoid {
 	public AudioClip GunShotClip;
 	public AudioClip ReloadClip;
 	public AudioClip GunEmptyClip;
+	public AudioSource gunAudioSource;
 	public AudioSource MainAudioSource;
 	public float CoolDown;
 	public float ReloadTime;
@@ -15,17 +16,14 @@ public class FPSPlayer : Humanoid {
 	public int rounds { get; private set; }
 	public Camera FPSCam;
 	public float Range = 30;
-	public int health = 100;
 	public ParticleSystem shellEffect;
+	public List<AudioClip> hurtClips;
 
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
 
-
-
-	// Use this for initialization
-
-	void Awake() {
+	void Start () {
+		base.OnStart ();
 		coolDownTimer = new CounterTimer(CoolDown);
 		coolDownTimer.Update(CoolDown);
 
@@ -33,29 +31,31 @@ public class FPSPlayer : Humanoid {
 		reloadTimer.Update(ReloadTime);
 		rounds = MagSize;
 	}
-
-	void Start () {
-	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.F)) {
+			FPSUI.Instance.Flash ();
+		}
+
 		coolDownTimer.Update (Time.deltaTime);
 		reloadTimer.Update (Time.deltaTime); 
 
 		if (Input.GetKeyDown (KeyCode.R) && reloadTimer.Finished) {
-			MainAudioSource.PlayOneShot (ReloadClip);
+			gunAudioSource.PlayOneShot (ReloadClip);
 			reloadTimer.Reset ();
 			rounds = MagSize;
 		}
 
 		if (reloadTimer.Finished && coolDownTimer.Finished && Input.GetMouseButtonDown (0)) {
 			if (rounds <= 0) {
-				MainAudioSource.PlayOneShot (GunEmptyClip);
+				gunAudioSource.PlayOneShot (GunEmptyClip);
 			} else {
 				Animator.SetTrigger ("Fire");
 				shellEffect.Play ();
 				coolDownTimer.Reset ();
-				MainAudioSource.PlayOneShot (GunShotClip);
+				gunAudioSource.PlayOneShot (GunShotClip);
 				rounds--;
 				LookManager.Instance.Recoil ();
 				Vector3 rayOrigin = FPSCam.ViewportToWorldPoint (new Vector3(0.5f, 0.5f, 0.0f));
@@ -71,9 +71,10 @@ public class FPSPlayer : Humanoid {
 						// Call the damage function of that script, passing in our gunDamage variable
 						hitBox.Hit (hit);
 					} else {
-						Bomb bomb = hit.collider.GetComponent<Bomb> ();
-						if (bomb != null && hit.collider == bomb.hitCollider) { 
-							bomb.Explode (this);
+						BombHitBox bombHitBox = hit.collider.GetComponent<BombHitBox> ();
+						if (bombHitBox != null) { 
+							Bomb bomb = bombHitBox.transform.parent.gameObject.GetComponent<Bomb>();
+							bomb.Explode ();
 						}
 
 					}
@@ -81,8 +82,12 @@ public class FPSPlayer : Humanoid {
 			}
 		}
 	}
+		
 
-	public void Hit(int damage) {
-
+	public override void Hit(int damage, RaycastHit hit, bool hitPresent) {
+		health -= damage;
+		FPSUI.Instance.Flash ();
+		MainAudioSource.PlayOneShot (hurtClips[Random.Range(0, hurtClips.Count)]);
+		GetComponent<CharacterController> ().Move (-transform.forward * 0.5f);
 	}
 }

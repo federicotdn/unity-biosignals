@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EMG/fede-2.emg.csv', 'r') as csvfile:
+  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EMG/javo-1.emg.csv', 'r') as csvfile:
     reader = csv.reader(csvfile)
     lines = []
     for row in reader:

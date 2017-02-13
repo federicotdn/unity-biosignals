@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>EKG /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2.eeg /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Prediction-2-v2.eeg</StartArguments>
+    <StartArguments>EEGTrain /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2.eeg /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-1-Prediction-1-v2.eeg</StartArguments>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EKG\EKGPacket.cs" />

@@ -21,6 +21,8 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 
 	private EEGTrainer trainer;
 
+	private CounterTimer testingTimer;
+
 	void Start () {
 		trainer = new EEGTrainer ();
 		if (trainFromFile) {
@@ -44,13 +46,23 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 		Status = EyesStatus.NONE;
 
 		processor.ProcessorCallback = OnFFT;
+		testingTimer = new CounterTimer (5);
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		processor.Update ();
-		Status = EyesStatus.CLOSED;
-	
+
+//		if (testingTimer.Finished) {
+//			testingTimer.Reset ();
+//			if (Status == EyesStatus.CLOSED) {
+//				Status = EyesStatus.OPEN;
+//			} else {
+//				Status = EyesStatus.CLOSED;
+//			}
+//		}
+
+		testingTimer.Update (Time.deltaTime);
 	}
 
 	void OnFFT() {
