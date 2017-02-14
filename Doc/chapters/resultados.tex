@@ -72,7 +72,7 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
 
  \hline
 \end{tabular}
-\caption{Resultados de entrenamientos utilizando lecturas de EMG para varios sujetos.}
+\caption{Resultados de entrenamientos utilizando lecturas de EMG para varios sujetos. Frecuencia de muestreo: $256\,Hz$.}
 \label{tab:emg-results}
 \end{table}
 
@@ -95,3 +95,47 @@ A continuación, se muestran los gráficos de dispersión de las dos sesiones m�
 \end{figure}
 
 En la figura \ref{fig:emg-graph-s1s2}, se puede observar una clara separación entre las muestras tomadas con el musculo relajado, y las muestras tomadas con el musculo tensado. En la figura \ref{fig:emg-graph-s3s1} se puede observar el mismo efecto, con una separación aun mas marcada. También, se puede notar como las muestras tomadas con músculo relajado se encuentran concentradas en un área pequeña, debido a la poca variación de potencial medido de muestra en muestra. Por el otro lado, las muestras tomadas con músculo tensado se encuentran dispersas, ya que al tensar el músculo no siempre es posible mantener el mismo nivel fuerza ejercida.
+
+Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia de muestreo del modulo EMG fue cambiada de $256\,Hz$ a $512\,Hz$. Para comprobar que la precision de predicción se mantuvo luego de este cambio, se grabaron nuevas sesiones.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+ Sujeto & Sesión & Precisión & Duración (Segundos) \\ 
+ \hline
+ 1 & 1 & $0.996$ & $174$ \\
+ \hline
+ 1 & 2 & $0.993$ & $284$ \\
+ \hline
+ 1 & 3 & $0.968$ & $251$ \\
+ \hline
+ 2 & 1 & $0.989$ & $292$ \\
+ \hline
+ 3 & 1 & $0.988$ & $339$ \\
+
+ \hline
+\end{tabular}
+\caption{Resultados de entrenamientos utilizando lecturas de EMG para varios sujetos. Frecuencia de muestreo: $512\,Hz$.}
+\label{tab:emg-results-512}
+\end{table}
+
+Como se puede observar en la tabla \ref{tab:emg-results-512}, el nivel de precision se mantuvo elevado, luego de haber realizado el cambio de frecuencia de muestreo. Las dos sesiones mas largas fueron graficadas, nuevamente, para poder observar la relación entre los valores de los vectores de características y el estado del músculo:
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=1\textwidth]{fede-512-2.png}
+    \caption{Gráfico de dispersión del vector de características EMG para la sesión $2$ del sujeto $1$ ($512\,Hz$).}
+	\label{fig:emg-graph-s1s2-512}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=1\textwidth]{javo-512-1.png}
+    \caption{Gráfico de dispersión del vector de características EMG para la sesión $1$ del sujeto $3$ ($512\,Hz$).}
+	\label{fig:emg-graph-s3s1-512}
+\end{figure}
+
+Las figuras \ref{fig:emg-graph-s1s2-512} y \ref{fig:emg-graph-s3s1-512} muestran, nuevamente, una clara separación entre las muestras tomadas durante el tiempo que se mantuvo el músculo relajado y tensado.
+
+En definitiva, los niveles de precision alcanzados utilizando las técnicas detalladas en este informe fueron muy elevados ($97\%$ o más en la mayoría de los casos). Éstos valores resultaron ser más que suficientes para el desarrollo de las simulaciones interactivas, que en sí también fueron diseñadas teniendo en cuenta que la precision de predicción prácticamente nunca podría ser del $100\%$.
