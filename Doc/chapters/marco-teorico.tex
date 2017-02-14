@@ -1,8 +1,43 @@
 Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará sobre las bioseñales. Luego se hablará sobre el procesamiento de las señales (específicamente el procesamiento de bioseñales), desde su obtención hasta la extracción de características y clasificación. Finalmente, se explicará como funcionan algunos sensores y se introducirá información teórica sobre la señal que se obtiene de los mismos.
 
+\section{Bioseñales}\label{sec:biosignals}
+
+Una bioseñal puede ser definida como una descripción de un fenómeno fisiológico. Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de bioseñales es muy grande. Como se puede observar en la figura \ref{fig:biosignals-clasification} las bioseñales puede ser clasificadas por lo menos por tres criterios distintos \cite{biosignal-book-2}: 
+
+\begin{itemize}
+	\item \textbf{Existencia:}
+		\begin{itemize}
+			\item Permanentes: Existen sin necesidad de un impacto artificial, disparador o excitación externa al cuerpo y están disponibles todo el tiempo. Por ejemplo, la señal electrocardiográfica es inducida por la excitación eléctrica del corazón.
+			\item Inducidas: Son disparadas artificialmente, excitadas o inducidas externamente. Su duración está ligada a la duración de la excitación. Cuando el impacto artificial termina, la bioseñal se atenúa. Por ejemplo, la pulsioximetría (SpO2) utiliza luz para detectar el oxígeno en sangre y la señal dura tanto tiempo como dicha luz se encuentre encendida.
+		\end{itemize}
+	\item \textbf{Dinamismo:}
+		\begin{itemize}
+			\item Casi estáticas:  Exhiben pocos cambios a lo largo del tiempo. Un ejemplo de esta señal es la temperatura del cuerpo.
+			\item Dinámicas: Varían mucho a través del tiempo. Un ejemplo de está señal es la electrocardiografía ya que el latido del corazón cambia constantemente.
+		\end{itemize}
+	\item \textbf{Origen:}
+		\begin{itemize}
+			\item Eléctricas: Estas incluyen señales como electrocardiograma, que refleja la actividad eléctrica del corazón, electroencefalograma (EEG), que refleja la actividad eléctrica de las neuronas,  electromiografma (EMG), que refleja la actividad eléctrica de los músculos, o la respuesta galvánica de la piel (GSR), que refleja las variaciones de energía en la piel.
+			\item Magnéticas: Reflejan un campo magnético inducido. Por ejemplo un magnetocardiograma utiliza los campos magnéticos emitidos por las corrientes eléctricas generadas por la excitación del corazón.
+			\item Mecánicas: Incluyen deformaciones del cuerpo o vibraciones en la piel. Por ejemplo un mecanorespirograma utiliza los movimientos del abdomen para medir el ritmo cardíaco.
+			\item Ópticas: Utilizan la absorción de la luz. Se utiliza una luz artificial. Un ejemplo es la pulsioxomietría (SpO2).
+			\item Acústicas: Utiliza diversos sonidos del cuerpo como por ejemplo sonidos cardíacos.
+			\item Químicas: Reflejan la composición química y los cambios temporales en los elementos sólidos, líquidos y gaseosos del cuerpo.
+			\item Térmicas: Utilizan la absorción y pérdida de calor en el cuerpo.
+			\item Otras.
+	\end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{biosignals-clasification.png}
+    \caption{Las posibles clasificaciones de las bioseñales de acuerdo a su \textbf{(a)} existencia, \textbf{(b)} dinamismo y \textbf{(c)} origen \cite{biosignal-book-2}.}
+	\label{fig:biosignals-clasification}
+\end{figure}
+
 \section{Obtención y Procesamiento de Señales}
 
-En la figura \ref{fig:signal-pipeline} se pueden observar las distintas etapas por las que pasa una bioseñal al ser procesada: obtención de la señal física de un sensor, utilización de un transductor, procesamiento analógico, digitalización, transmisión, procesamiento de la señal digital, extracción de características y clasificación, y salida.
+En la figura \ref{fig:signal-pipeline} se pueden observar las distintas etapas por las que pasa una bioseñal al ser procesada: obtención de la señal fisiológica de un sensor, utilización de un transductor, procesamiento analógico, digitalización, transmisión, procesamiento de la señal digital, extracción de características y clasificación, y salida.
 
 \begin{figure}[H]
 	\centering
@@ -11,7 +46,7 @@ En la figura \ref{fig:signal-pipeline} se pueden observar las distintas etapas p
 	\label{fig:signal-pipeline}
 \end{figure}
 
-\subsection{Obtención de la Señal Física}
+\subsection{Obtención de la Señal Fisiológica}
 
 Esta es la primer etapa en el procesamiento de bioseñales. Se debe obtener la señal de algún sensor. Puede ser un electrodo, un fotodetector, entre otros. La  señal viene en forma de energía. Dicha energía puede ser generada por el proceso en si (por ejemplo la actividad eléctrica producida por los músuclos), puede ser energía indirectamente relacionada al proceso o puede ser producida por una fuente externa \cite{biosignal-book}.
 
@@ -68,7 +103,7 @@ Digitalizar una señal implica segmentar la amplitud y el tiempo. Resulta eviden
 
 \begin{itemize}
 \item \textbf{Amplitud:} También se conoce como cuantificación. El grado de aproximación en este caso depende de la cantidad de valores distintos que son utilizados para representar la señal, es decir, la cantidad de bits utilizados. El nivel de cuantificación ($q$) se define como el tamaño del segmento de amplitud . El efecto de la cuantificación es la adición de ruido y este es determinado por $q$. En la figura \ref{fig:quantization} se puede observar el ruido añadido por la cuantificación. Por lo general los conversores usan $8$, $12$ y $16$ bits de salida. Pues la mayoría de las señales, no cuentan con una relación señal-ruido lo suficientemente elevada como para utilizar una resolución mayor.
-\item \textbf{Tiempo:} Se refiere al muestreo. El criterio de \emph{Nyquist} establece que la frecuencia máxima (frecuencia de \emph{Nyquist}) obtenida es la mitad que la frecuencia de muestreo. El teorema de \emph{Shannon-Nyquist} establece que para poder recuperar la señal analógica a partir de la señal digital, se debe muestrear al doble que la máxima frecuencia contenida en la señal original, es decir, $ f_{s} > 2\, f_{max} $. Utilizar frecuencias de muestro más altas es innecesario e implica tener que guardar más información y tener que procesarla a una velocidad mayor \cite{biosignal-book}.  
+\item \textbf{Tiempo:} Se refiere al muestreo. El criterio de \emph{Nyquist} establece que la frecuencia máxima (frecuencia de \emph{Nyquist}) obtenida es la mitad que la frecuencia de muestreo. El teorema de \emph{Shannon-Nyquist} establece que para poder recuperar la señal analógica a partir de la señal digital, se debe muestrear al doble que la máxima frecuencia contenida en la señal original, es decir, $ f_{s} > 2\, f_{max} $. Utilizar frecuencias de muestro más altas es innecesario e implica tener que guardar más información y tener que procesarla a una velocidad mayor .  Aún así, en la práctica es muy común que se utilicen frecuencias de muestreo de tres hasta cinco veces $f_{max}$. De esta forma se incrementa el espacio entre frecuencias y se facilita la tarea de eliminar frecuencias indeseadas \cite{biosignal-book}. Esto se debe a que se cuenta con una mayor granularidad al tratar con las frecuencias. Por ejemplo si se cuenta con una frecuencia de muestro de $128 \, Hz$, se obtienen $64$ valores al realizar la Transformada de \emph{Fourier} (en realidad son $128$ pero por simetría, solo se utiliza la mitad). Entonces, se cuenta con escalones de $2 \, Hz$, es decir, si se quiere obtener la frecuencia $ 8 Hz$, el valor en realidad representa $ 8 \, Hz - 9 \, Hz$. En cambio, si se utilizan $256 \, Hz$, el escalón es de $ 1 \, Hz$ lo que simplifica la obtención de determinadas frecuencias.
 \end{itemize}
 
 \begin{figure}[H]
@@ -157,33 +192,40 @@ Para determinar que parámetros de ajuste son los mejores para un modelo se pued
 
 \subsection{Salida}
 
-Una vez que la señal fue procesada, la información obtenida esta lista para ser utilizada. La salida puede ser, por ejemplo, una API de una librería que le permite a un usuario acceder a la información de forma amigable o una visualización en la computadora.
- 
-\section{Electroencefalograma}
+Una vez que la señal fue procesada, la información obtenida está lista para ser utilizada. La salida puede ser, por ejemplo, una API de una librería que le permite a un usuario acceder a la información de forma amigable o una visualización en la computadora.
 
-Un electroencefalograma detecta la actividad eléctrica del cerebro. Estos cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal que se obtiene es el nivel de potencial eléctrico en cada electrodo. Un electroencefalograma no sirve si no se le da alguna aplicación. Aquí aparece el concepto de Interfaz Cerebro-computora (también conocido por sus silgas en inglés como BCI). "BCI es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de BCI no es determinar la intensión de una persona espíando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
+\section{Señales de Interés}
+
+En la sección \ref{sec:biosignals} se introdujo el concepto de bioseñales y se mencionaron algunas de ellas. Este proyecto tiene foco en tres de ellas: 
+electroencefalografía, electromiografía y pulsioximetría. En las siguientes secciones se brindará más información sobre las mismas.
+
+\subsection{Electroencefalografía (EEG)}
+
+La electroencefalografía detecta la actividad eléctrica de las neuronas, es decir, del cerebro. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica. Los dispositivos utilizados para realizar un eletctroencefalograma cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal digital que se obtiene es el nivel de potencial eléctrico en cada electrodo. Un electroencefalograma no sirve si no se le da alguna aplicación. Aquí aparece el concepto de Interfaz Cerebro-Computora (también conocido por sus silgas en inglés como BCI). "BCI es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de BCI no es determinar la intensión de una persona espíando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
 
 Al aplicar la Transformada de \emph{Fourier} a la señal EEG, se obtienen distintas frecuencias. En EEG, dichas frecuencias se dividen en cinco bandas:
 
 \begin{itemize}
  \item \textbf{\emph{Alfa} ($\alpha$):} $ 8 \, Hz \leq f \leq 13 \, Hz$. Las ondas \emph{Alfa} se suprimen cuando los ojos se encuentran abiertos y hay estimulación visual presente. Cuando los ojos se encuentran cerrados, estas aumentan.
- \item \textbf{\emph{Beta} ($\beta$):} $ 13 \, Hz \leq f \leq 30 \, Hz$. Las ondas \emph{Beta} se asocian la concentración.
+ \item \textbf{\emph{Beta} ($\beta$):} $ 13 \, Hz \leq f \leq 30 \, Hz$. Las ondas \emph{Beta} se asocian la concentración y aparecen como actividad de fondo en sujetos ansiosos. 
  \item \textbf{\emph{Delta} ($\delta$):} $ 0.5 \, Hz \leq f \leq 4 \, Hz$. Estas ondas aparecen en etapas de sueño profundo.
  \item \textbf{\emph{Theta} ($\theta$):} $ 4 \, Hz \leq f \leq 8 \, Hz$. Las ondas \emph{Theta} aparecen en las primeras etapas de sueño.
- \item \textbf{\emph{Gamma} ($\gamma$):} $ 30 \, Hz \leq f \leq 60 \, Hz$. Algunos expertos consideran los valores de $\beta > 30 \, Hz $ como una quinta banda. \cite{neural-eng}.
+ \item \textbf{\emph{Gamma} ($\gamma$):} $ 30 \, Hz \leq f \leq 60 \, Hz $. Algunos expertos consideran los valores de $\beta > 30 \, Hz $ como una quinta banda. \cite{neural-eng}.
 \end{itemize}
 
-\section{Electromiografía}
+Como las frecuencias de interés abarcan hasta por los menos los $60 \, Hz$, se debe debe muestrar al menos a a $120 \, Hz$. Como se menciono anteriormente, muchas veces se utiliza una frecuencia de muestreo mayor y por lo general en EEG, se utiliza una frecuencia de muestreo superior a los $200 \, Hz$ \cite{neural-eng}.
 
-La electromiografía consiste en registrar la actividad eléctrica producida por los músculos del cuerpo. La actividad eléctrica surge cuando una unidad motora es activada por el sistema nervioso del cuerpo: una unidad motora consiste en una motor neurona, y todas las fibras musculas a la que esta conectada.  Cuando se activa la unidad motora, se genera un voltaje (llamado MUAP, sus siglas en inglés) y se contraen los músculos.  Entonces, la señal EMG consiste en medir la suma de varios MUAPs de uno o mas músculos específicos.
+\subsection{Electromiografía (EMG)}
 
-El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto.
+La electromiografía consiste en registrar la actividad eléctrica producida por los músculos del cuerpo. La actividad eléctrica surge cuando una unidad motora es activada por el sistema nervioso del cuerpo: una unidad motora consiste en una motor neurona, y todas las fibras musculas a la que esta conectada.  Cuando se activa la unidad motora, se genera un voltaje (llamado MUAP, sus siglas en inglés) y se contraen los músculos.  Entonces, la señal EMG consiste en medir la suma de varios MUAPs de uno o mas músculos específicos. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica.
 
-\section{Pulsioximetría}
+El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto. Por lo tanto, se debe muestrear al menos a $300 \, Hz$.
 
-La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.
+\subsection{Pulsioximetría (SpO2)}
 
-El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. 
+La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.  
+
+El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. Esta señal es inducida, ya que se requiere de la utilización de una luz, dinámica, ya que varía de forma considerable en el tiempo, y, óptica. En este caso, la salida del transductor es binaria. Indica si ha habido un pico o no, por lo que no se genera ruido al digitalizarla.
 
 \begin{figure}[H]
 	\centering
@@ -201,4 +243,3 @@ Existen dos formas de calcular el ritmo cardíaco a partir de los picos:
 
 Se pueden combinar estas dos metodologías y promediar los últimos cuatro o seis resultados obtenidos \cite{spo2-1}.
 
-Existen otras formas de monitorear el ritmo cardíaco como la electrocardiografía. Esta consiste en registrar la actividad eléctrica del corazón utilizando electrodos. 

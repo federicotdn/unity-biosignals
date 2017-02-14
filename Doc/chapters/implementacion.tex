@@ -1,8 +1,28 @@
-En este capítulo se hablará sobre la implementación realizada. Primero, se introducirá el \emph{hardware} utilizado. Luego, se explicará de que manera se procesaron las distintas señales, desde la obtención de las mismas hasta las características y clasificadores utilizados. Finalmente, se hablará de los universos 3D interactivos desarrollados. Los universos 3D fueron desarrollados en el lenguaje \emph{C\#} en \emph{Unity}.
+En este capítulo se hablará sobre la implementación realizada. Primero, se mencionarán las señales elegidas y se dará una explicación de por qué se tomo esta decisión. Luego, se introducirá el \emph{hardware} utilizado. Después, se explicará de que manera se procesaron las distintas señales, desde la obtención de las mismas hasta las características y clasificadores utilizados. Finalmente, se hablará de los universos 3D interactivos desarrollados. Los universos 3D fueron desarrollados en el lenguaje \emph{C\#} en \emph{Unity}.
+
+\section{Elección de las señales}
+
+Primero se tuvo que elegir que señales se iban a procesar. Para llevar a cabo esta elección, se tuvo en cuenta que sean no invasivas, que su tiempo de procesamiento sea aceptable para tiempo real, que se le pueda dar un uso en un universo interactivo y que sean fáciles de utilizar por personas sin conocimientos técnicos. En un momento se había considerado la utilización de GSR ya que es no invasivo y se puede procesar en tiempo real. El problema yacía en que era difícil producir cambios en la respuesta galvánica en universos interactivos y además, aún si se pudiese lograr el cambio, no se le encontró un uso que realmente mejore la inmersión. Utilizando estos criterios, se eligieron las siguientes señales: EEG, EMG y SpO2. Se determinó utilizar únicamente tres señales, y no una mayor cantidad, para evitar perder el foco del trabajo.
+
+\subsection{EEG}
+
+Existen sensores para capturar este tipo de señal que son no invasivos. Simplemente se utilizan electrodos. Además, el cerbero refleja mucho el estado del usuario por lo que la información extraída de él resulta muy útil e interesante para utilizar en universos interactivos. Al investigar, se descubrió que existe  diversos dispositivos (no muy costosos) que tienen una frecuencia de muestreo superior a los $200 \, Hz$ y como se mencionó anteriormente, las frecuencias de interés llegan hasta $60 \, Hz$ , lo cual  permite su uso en tiempo real. El hecho de que la frecuencia de muestreo no sea muy elevada permite que se puedan procesar los datos rápidamente. Si la frecuencia fuese muy elevada, tal vez no se podrían procesar en tiempo real y habría una latencia muy elevada. A su vez, la colocación de dicho sensor es fácil. Por lo general se coloca una banda o casco en la cabeza, por lo cuál puede ser utilizado por personas no técnicas.
+
+\subsection{EMG}
+
+Para capturar esta señal, existen electrodos invasivos y no invasivos por lo cual cumple con el primer criterio. Las frecuencias de interés son entre $0 \, Hz $ y $150 Hz$ y existen diversos dispositivos con frecuencias de muestreo mayores a $300 \, Hz$ por lo cual se puede utilizar en tiempo real. Además, con este tipos de dispositivos, se puede medir la fuerza realizada por los músculos. Resulta muy interesante poder medir y detectar cambios en la fuerza realizada por los músculos y utilizar esta información para controlar acciones en universos interactivos. Existen también otro tipo de electrodos de monitoreo EMG: los intramusculares, que van insertados dentro del musculo del sujeto. Este tipo de electrodos no fueron utilizados en este proyecto ya que son muy invasivos, y muy imprácticos dentro del contexto de diseñar un sistema que pueda ser utilizado fácilmente por cualquier persona sin conocimientos técnicos del área.
+
+\subsection{SpO2}
+
+La pulsioximetría no es una técnica invasiva. Como se menciono anteriormente, utiliza luces y fotodetectores. El ritmo cardíaco resulta de mucho interés para ser utilizado en universos interactivos ya que su estado puede reflejar que tan nervioso se encuentra el usuario y utilizar dicha información para alterar el estado de la simulación. A su vez, los picos se miden en tiempo real. Su utilización es tan simple como colocar el pulsioxímetro en un dedo.
+
+Se decidió utilizar un pulsioxímetro en lugar de un EKG ya que es menos invasivo. El \emph{Olimex SHIELD-EKG-EMG} resultaba muy incómodo de utilizar debido a que uno de los electrodos debía colocarse en una pierna y otro en un brazo, lo que hubiese ocasionado dificultad para operar una computadora mientras se utilizaba. Si bien un dispositivo EKG es más preciso que un pulsioxímetro, estudios han demostrado que la estimación realizada por un pulsioxímetro es muy precisa cuando el ritmo cardíaco se encuentra por debajo del $89\% $ de su máximo \cite{spo2-accuracy}. Como el usuario se encuentra sentado en una computadora, jamás alcanzará dichos valores.
+
+Además, como ya se contaba con dos señales eléctricas permanentes, se buscó una señal con otra clasificación.
 
 \section{Hardware}
 
-Para la elección del \emph{hardware} se tuvieron en cuenta distintos criterios. Principalmente se busco un compromiso entre costo y fiabilidad pero también se tuvo en cuenta su facilidad de uso.
+ Para la elección del \emph{hardware} se tuvieron en cuenta distintos criterios. Principalmente se busco un compromiso entre costo y fiabilidad pero también se tuvo en cuenta su facilidad de uso.
 
 \subsection{EEG}
 
@@ -20,7 +40,7 @@ En la figura \ref{fig:eeg-raw} se puede observar las señal EEG bruta de los cua
 \begin{figure}[H]
 	\centering
     \includegraphics[width=0.8\textwidth]{eeg-raw.png}
-    \caption{Señal EEG bruta de cada uno de los electrodos.}
+    \caption{Señal EEG bruta de cada uno de los electrodos obtenido utilizando la aplicación \emph{MuseLab}.}
 	\label{fig:eeg-raw}
 \end{figure}
 
@@ -40,8 +60,6 @@ El modelo de Arduino elegido fue el \emph{Arduino Mega 2560}, que cuenta con un 
     \caption{Electrodos superficiales para el modulo \emph{Olimex SHIELD-EKG-EMG}.}
 	\label{fig:emg-electrodes}
 \end{figure}
-
-Existen también otro tipo de electrodos de monitoreo EMG: los intramusculares, que van insertados dentro del musculo del sujeto. Este tipo de electrodos no fueron utilizados en este proyecto ya que son muy invasivos, y muy imprácticos dentro del contexto de diseñar un sistema que pueda ser utilizado fácilmente por cualquier persona sin conocimientos técnicos del área.
 
 Para poder leer las señales EMG, se debe preparar el sistema de monitoreo.  Primero, se debe montar el modulo EMG sobre el micro controlador \emph{Arduino}.  El \emph{Arduino} debe tener instalado un \emph{sketch} específico, detallado en la sección \ref{sec:emg-signal-processing}. Luego, las terminales $L$ y $R$ se deben posicionar sobre la piel del musculo a monitorear, y la terminal $D$ debe ser posicionada sobre una superficie del cuerpo a utilizar como referencia, que preferiblemente no contenga musculos, o tenga musculos no relacionados a los de las otras dos terminales (a este circuito se le llama \emph{Driven Right Leg Circuit} en inglés). En este proyecto, se opto por medir la actividad muscular de un brazo, junto a la mano, al formar un puño cerrado apretado. Por lo tanto, los electrodos fueron colocados sobre el músculo flexor común superficial de los dedos, que se encuentra sobre la cara anterior de antebrazo\cite{emg-signals-wrist}. Una vez realizados los pasos anteriores, se puede proceder a conectar el micro controlador a la computadora vía un cable USB 2.0.
 
@@ -64,9 +82,7 @@ Para medir el ritmo cardíaco se decidió utilizar el dispositivo \emph{CMS50D+ 
 \item \textbf{Oxígeno:} Porcentaje de oxígeno.
 \end{itemize} 
 
-El dispositivo se conecta a la computadora con un cable USB 2.0 que internamente convierte de serie a USB. La frecuencia de muestreo es de $256 \, Hz$.
-
-Se decidió utilizar un pulsioxímetro en lugar de un EKG ya que es menos invasivo. El \emph{Olimex SHIELD-EKG-EMG} resultaba muy incómodo de utilizar debido a que uno de los electrodos debía colocarse en una pierna y otro en un brazo, lo que hubiese ocasionado dificultad para operar una computadora mientras se utilizaba. Si bien un dispositivo EKG es más preciso que un pulsioxímetro, estudios han demostrado que la estimación realizada por un pulsioxímetro es muy precisa cuando el ritmo cardíaco se encuentra por debajo del $89\% $ de su máximo \cite{spo2-accuracy}. Como el usuario se encuentra sentado en una computadora, jamás alcanzará dichos valores.
+El dispositivo se conecta a la computadora con un cable USB 2.0 que internamente convierte de serie a USB. Se debe contar con un controlador de puerto serie en la computadora que permita su lectura. La frecuencia de muestreo es de $256 \, Hz$.
 
 \section{Obtención y Procesamiento de Señales}
 
@@ -99,7 +115,7 @@ El vector de características se confeccionó utilizando dos valores de \emph{Al
 
 En la etapa de entrenamiento se le asignaba un estado a cada uno de estos vectores. Se le indicaba a al usuario en que momento abrir y cerrar los ojos y se registraba el estado para dichos valores. La precisión obtenida con este método fue de aproximadamente un $60\%$. Esto se debe a que aún cuando el usuario se encontraba con los ojos abiertos, \emph{Alfa} alcanzaban valores tan altos como cuando el usuario se encontraba con los ojos cerrados debido a posibles ruidos del sensor y a el hecho de que las bioseñales varían mucho. Se podía observar que el clasificador era muy preciso en detectar ojos cerrados pero muy impreciso en detectar ojos abiertos. La precisión en ojos cerrados era de un $99\%$ y en ojos abiertos de un $25\%$.
 
-Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que al contar con más muestras es probable que se obtenga una mayor cantidad de valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian al tener una mayor cantidad valores normales. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. El dispositivo utiliza una frecuencia de $10 \, Hz$ para los valores de potencia de \emph{Alfa} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
+Para intentar mejorar la precisión, se decidió aumentar el tamaño de la ventana con la expectativa de que al tener una mayor cantidad de valores, los picos anómalos que se generaban cuando el usuario estaba con los ojos abiertos, se redujeran ya que al contar con más muestras es probable que se obtenga una mayor cantidad de valores que corresponden al estado de ojos abiertos. Se podría decir que los picos anómalos se promedian al tener una mayor cantidad valores normales. Cuando se trabaja con bioseñales, cuantos más datos se tomen, más robusta será la clasificación. El problema es que para tomar más datos se necesita más tiempo. Entonces, aquí aparece un compromiso entre robustez y latencia. Como en este proyecto la utilización fue en tiempo real, hubo que considerar seriamente este compromiso. A su vez, cuanto mayor sea la frecuencia de muestreo, mayor es el espacio entre frecuencias y como consecuencia se pueden representar con más granularidad dichas frecuencias. El dispositivo utiliza una frecuencia de $10 \, Hz$ para los valores de potencia de \emph{Alfa} y se necesitaba una frecuencia mayor, por lo que se decidió calcular dicha potencia utilizando los datos brutos. El dispositivo envía un arreglo de cinco elementos. Como se mencionó anteriormente, el quinto valor es de referencia por lo que se ignora en el procesamiento. El procedimiento implementado fue el siguiente:
 
  \begin{enumerate}
  \item Obtener una ventana $256$ muestras, es decir, un segundo.
