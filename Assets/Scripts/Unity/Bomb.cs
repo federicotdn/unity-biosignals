@@ -11,7 +11,7 @@ public class Bomb : MonoBehaviour {
 	public Collider hitCollider;
 	public float triggerDistance;
 	public float blastRange;
-	public float raycastInterval = 0.5f;
+	public float raycastInterval = 0.8f;
 	public List<Collider> colliders;
 	private HashSet<Humanoid> inRangeHumanoids;
 
@@ -97,13 +97,21 @@ public class Bomb : MonoBehaviour {
 		Vector3 pos = other.transform.position;
 		pos.y = transform.position.y;
 		float distance = Vector3.Distance (pos, transform.position);
+
+		FPSPlayer player = other.GetComponent<FPSPlayer> ();
 		if (distance >= blastRange) {
-			Humanoid humanoid = other.GetComponent<Humanoid> ();
+			if (player != null) {
+				playerInRange = null;
+				inRangeHumanoids.Remove (player);
+				return;
+			}
 			HitBox hitbox = other.GetComponent<HitBox> ();
 			if (hitbox != null) {
-				humanoid = hitbox.Enemy;
+				Zombie zombie = hitbox.Enemy;
+				inRangeHumanoids.Remove (zombie);
 			}
-			inRangeHumanoids.Remove (humanoid);
+		} else if (player != null) {
+			playerInRange = null;
 		}
 	}
 

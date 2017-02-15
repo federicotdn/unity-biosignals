@@ -6,7 +6,7 @@ using pfcore;
 public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	public FPSPlayer player;
 	public GameObject bombsContainer;
-	public float checkingInterval = 0.2f;
+	public float checkingInterval = 0.4f;
 
 	private HashSet<Bomb> bombs;
 
@@ -37,6 +37,10 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	
 	// Update is called once per frame
 	void Update () {
+		if (player.health <= 0) {
+			GameOver ();
+		}
+			
 		EyesStatus status = EEGManager.Instance.Status;
 		if (status == EyesStatus.CLOSED) {
 			if (previousStatus == EyesStatus.OPEN) {
@@ -118,7 +122,17 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	}
 
 	public void RemoveOutlineObject(OutlineObject obj) {
+		obj.Outline = false;
 		activeObjects.Remove (obj);
 		inactiveObjects.Remove (obj);
 	}
+
+	public void PlayerWins() {
+		Debug.Log ("Player wins");
+	}
+
+	private void GameOver() {
+		Debug.Log ("Game Over");
+	}
+
 }

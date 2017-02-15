@@ -12,13 +12,13 @@ public class Zombie : Humanoid {
 	public List<AudioClip> GrowlClips;
 	public List<AudioClip> HitClips;
 	public float attackCooldown = 1;
-	public float raycastInterval = 0.5f;
-	public float maxViewingDistance = 30;
+	public float raycastInterval = 0.8f;
+	public float maxViewingDistance = 20;
 	public float stoppingDistance = 1;
 	public ParticleSystem bulletImpactEffect;
 	public ParticleSystem deadEffect;
 	public int damage = 20;
-	public float hearingDistance = 4;
+	public float hearingDistance = 10;
 
 	public AudioSource AudioSrc;
 
@@ -61,7 +61,7 @@ public class Zombie : Humanoid {
 				if (Agent.remainingDistance < 0.1) {
 					patrolIndex++;
 					patrolIndex %= patrols.Count;
-					currentTarget = patrols[patrolIndex];
+					currentTarget = patrols [patrolIndex];
 				}
 
 				if (raycastTimer.Finished) {
@@ -69,26 +69,28 @@ public class Zombie : Humanoid {
 					RaycastHit hit;
 					Vector3 rayOrigin = transform.position;
 					dir.y = 0.2f;
-					float dot = Vector3.Dot(transform.forward, dir);
-					if (dot >= 0 && Physics.Raycast (rayOrigin, dir, out hit, maxViewingDistance)) {
-						FPSPlayer player = hit.collider.GetComponent<FPSPlayer> ();
-						if (player != null) {
-							PlayerFound ();
+					float dot = Vector3.Dot (transform.forward, dir);
+					float distance = Vector3.Distance (transform.position, player.transform.position);
+					if (distance <= maxViewingDistance && Physics.Raycast (rayOrigin, dir, out hit, maxViewingDistance)) {
+						if (dot >= 0 || distance <= hearingDistance) {
+							FPSPlayer player = hit.collider.GetComponent<FPSPlayer> ();
+							if (player != null) {
+								PlayerFound ();
+							}
 						}
 					}
+				}
+			} else if (playerFound) {
+				dir.y = 0.2f;
+				float dot = Vector3.Dot (transform.forward, dir);
+				if (!attacking && Vector3.Distance(player.transform.position, transform.position) <= (stoppingDistance * 1.2f) && dot >= 0) {
+					StartCoroutine (Attack ());
 				}
 			}
 
 			Agent.destination = currentTarget.position;
 			animator.SetFloat ("Speed", Agent.speed);
 
-			if (!attacking && Vector3.Distance(player.transform.position, transform.position) <= (stoppingDistance * 1.2f)) {
-				StartCoroutine (Attack ());
-			}
-
-			if (!playerFound && Vector3.Distance(transform.position, player.transform.position) <= hearingDistance) { 
-				PlayerFound ();
-			}
 		}
 		raycastTimer.Update (Time.deltaTime);
 	}
@@ -105,7 +107,7 @@ public class Zombie : Humanoid {
 //		bloodEffect.Play ();
 		health -= damage;
 		if (health <= 0) {
-			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject>());
+			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
 			animator.SetTrigger ("Die");
 			AudioSrc.PlayOneShot (hitClip);
 			if (hitPresent) {

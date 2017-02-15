@@ -9,6 +9,7 @@ public class FPSPlayer : Humanoid {
 	public AudioClip ReloadClip;
 	public AudioClip GunEmptyClip;
 	public AudioClip ammoPickupClip;
+	public AudioClip flashlightClip;
 	public AudioSource gunAudioSource;
 	public AudioSource MainAudioSource;
 	public float CoolDown;
@@ -22,6 +23,7 @@ public class FPSPlayer : Humanoid {
 	public ParticleSystem shellEffect;
 	public List<AudioClip> hurtClips;
 	public KeyCode reloadKey;
+	public Light flashlight;
 
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
@@ -41,6 +43,11 @@ public class FPSPlayer : Humanoid {
 	void Update () {
 		coolDownTimer.Update (Time.deltaTime);
 		reloadTimer.Update (Time.deltaTime); 
+
+		if (Input.GetKeyDown(KeyCode.L)) {
+			flashlight.enabled = !flashlight.enabled;
+			MainAudioSource.PlayOneShot (flashlightClip);
+		}
 
 		if (Input.GetKeyDown (reloadKey) && reloadTimer.Finished) {
 			if (remainingRounds >= 1) {
