@@ -13,7 +13,7 @@ namespace pfcore
 		{
 		}
 
-		public void Train(List<EEGTrainingValue> trainingData)
+		public void Train(List<TrainingValue<EyesStatus>> trainingData)
 		{
 			List<DecisionVariable> trainingVariables = new List<DecisionVariable> {
 						DecisionVariable.Continuous("X"),
@@ -38,14 +38,14 @@ namespace pfcore
 			for (int i = 0; i < featuresArray.Length; i++)
 			{
 				featuresArray[i] = trainingData[i].Features;
-				outputs[i] = (int)trainingData[i].Status;
+				outputs[i] = (int)trainingData[i].State;
 			}
 
 			C45Learning teacher = new C45Learning(tree);
 			teacher.Learn(featuresArray, outputs);
 		}
 
-		public List<EyesStatus> Predict(List<EEGTrainingValue> predictionData)
+		public List<EyesStatus> Predict(List<TrainingValue<EyesStatus>> predictionData)
 		{
 			if (tree == null)
 			{

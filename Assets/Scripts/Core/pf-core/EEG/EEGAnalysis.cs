@@ -28,8 +28,8 @@ namespace pfcore
 				processor.Update();
 			}
 
-			List<EEGTrainingValue> trainingData = processor.TrainingValues;
-			List<EEGTrainingValue> alphaTrainingData = processor.AlphaTrainingValues;
+			List<TrainingValue<EyesStatus>> trainingData = processor.TrainingValues;
+			List<TrainingValue<EyesStatus>> alphaTrainingData = processor.AlphaTrainingValues;
 
 			EEGTrainer trainer = new EEGTrainer();
 			trainer.Train(trainingData);
@@ -44,14 +44,14 @@ namespace pfcore
 				processor.Update();
 			}
 
-			List<EEGTrainingValue> predictionData = processor.TrainingValues;
-			List<EEGTrainingValue> alphaPredictionData = processor.AlphaTrainingValues;
+			List<TrainingValue<EyesStatus>> predictionData = processor.TrainingValues;
+			List<TrainingValue<EyesStatus>> alphaPredictionData = processor.AlphaTrainingValues;
 
 			trainAndAnalize(trainingData, predictionData);
 			trainAndAnalize(alphaTrainingData, alphaPredictionData);
 		}
 
-		private void trainAndAnalize(List<EEGTrainingValue> trainingData, List<EEGTrainingValue> predictionData)
+		private void trainAndAnalize(List<TrainingValue<EyesStatus>> trainingData, List<TrainingValue<EyesStatus>> predictionData)
 		{
 			EEGTrainer trainer = new EEGTrainer();
 			trainer.Train(trainingData);
@@ -62,7 +62,7 @@ namespace pfcore
 			int[,] confusionMatrix = new int[2, 2];
 			for (int i = 0; i < outputs.Count; i++)
 			{
-				if (predictionData[i].Status == EyesStatus.CLOSED)
+				if (predictionData[i].State == EyesStatus.CLOSED)
 				{
 					if (outputs[i] == EyesStatus.CLOSED)
 					{

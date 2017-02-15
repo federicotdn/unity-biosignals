@@ -26,18 +26,6 @@ namespace pfcore
 		}
 	}
 
-	public struct EEGTrainingValue
-	{
-		public double[] Features;
-		public EyesStatus Status;
-
-		public EEGTrainingValue(double[] features, EyesStatus status)
-		{
-			Features = features;
-			Status = status;
-		}
-	}
-
 	public struct EEGData
 	{
 		public double[][] features;
@@ -56,9 +44,9 @@ namespace pfcore
 		public List<float> Beta { get; private set; }
 		public List<EyesStatus> AlphaStatus { get; private set; }
 		public List<Complex> FFTResults { get; private set; }
-		public List<EEGTrainingValue> TrainingValues { get; private set; }
-		public List<EEGTrainingValue> TrainingValuesWindow { get; private set; }
-		public List<EEGTrainingValue> AlphaTrainingValues { get; private set; }
+		public List<TrainingValue<EyesStatus>> TrainingValues { get; private set; }
+		public List<TrainingValue<EyesStatus>> TrainingValuesWindow { get; private set; }
+		public List<TrainingValue<EyesStatus>> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
 		public List<Complex> TP9FFT { get; private set; }
@@ -70,7 +58,9 @@ namespace pfcore
 		public const int SAMPLING_RATE = 256;
 		public const int FFT_SAMPLE_SIZE = 256;
 		public const double FREQ_STEP = SAMPLING_RATE / (float)FFT_SAMPLE_SIZE;
+		public const int FEATURE_COUNT = 4;
 		private const int SKIP = 2;
+
 
 		private List<float> readingsMean = new List<float>();
 
@@ -149,9 +139,9 @@ namespace pfcore
 			RawStatus = new List<EyesStatus>();
 			Alpha = new List<float>();
 			Beta = new List<float>();
-			TrainingValues = new List<EEGTrainingValue>();
-			AlphaTrainingValues = new List<EEGTrainingValue>();
-			TrainingValuesWindow = new List<EEGTrainingValue>();
+			TrainingValues = new List<TrainingValue<EyesStatus>>();
+			AlphaTrainingValues = new List<TrainingValue<EyesStatus>>();
+			TrainingValuesWindow = new List<TrainingValue<EyesStatus>>();
 
 			FFTResults = new List<Complex>();
 			TP9FFT = new List<Complex>();
@@ -200,7 +190,7 @@ namespace pfcore
 
 			for (int i = 0; i < af7.Count; i++)
 			{
-				readingsMean.Add(af7[i] + tp9[i] + tp10[i] + af8[i] / 4);
+				readingsMean.Add(af7[i] + tp9[i] + tp10[i] + af8[i] / FEATURE_COUNT);
 			}
 
 			CalculateFFT(readingsMean, FFTResults);
@@ -210,14 +200,15 @@ namespace pfcore
 			CalculateFFT(tp10, TP10FFT);
 
 			double[] feature = new double[4];
-			feature[0] = PSD(TP9FFT, FREQ_STEP);
-			feature[1] = PSD(AF7FFT, FREQ_STEP);
-			feature[2] = PSD(AF8FFT, FREQ_STEP);
-			feature[3] = PSD(TP10FFT, FREQ_STEP);
+
 
 			if (!Training || (Training && ignore == 0))
 			{
-				EEGTrainingValue trainingValue = new EEGTrainingValue(feature, Status);
+				TrainingValue<EyesStatus> trainingValue = new TrainingValue<EyesStatus>(Status, FEATURE_COUNT);
+				trainingValue.Features[0] = PSD(TP9FFT, FREQ_STEP);
+				trainingValue.Features[1] = PSD(AF7FFT, FREQ_STEP);
+				trainingValue.Features[2] = PSD(AF8FFT, FREQ_STEP);
+				trainingValue.Features[3] = PSD(TP10FFT, FREQ_STEP);
 				TrainingValues.Add(trainingValue);
 				TrainingValuesWindow.Add(trainingValue);
 			}
@@ -285,10 +276,10 @@ namespace pfcore
 
 								if (prevStatus == Status)
 								{
-									double[] features = new double[2];
-									features[0] = alpha1;
-									features[1] = alpha2;
-									AlphaTrainingValues.Add(new EEGTrainingValue(features, Status));
+									TrainingValue<EyesStatus> trainingValue = new TrainingValue<EyesStatus>(Status, 2);
+									trainingValue.Features[0] = alpha1;
+									trainingValue.Features[1] = alpha2;
+									AlphaTrainingValues.Add(trainingValue);
 								}
 							}
 							else

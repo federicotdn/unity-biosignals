@@ -6,7 +6,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EEGSession, EMGAnalysis, EEGConvert
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert
 	}
 
 	class MainClass
@@ -52,17 +52,6 @@ namespace pfcore
 				case RunMode.EEGTrain:
 					Console.WriteLine("Running on EEGTrain mode!\n");
 					RunEEGTrain(args[1], args[2]);
-					break;
-				case RunMode.EEGSession:
-					Console.WriteLine("Running on EEG Session mode!\n");
-					if (args.Length >= 3)
-					{
-						RunEEGSession(args[1], args[2]);
-					}
-					else
-					{
-						RunEEGSession();
-					}
 					break;
 				case RunMode.EMGAnalysis:
 					Console.WriteLine("Running EMG Analysis on file.");
@@ -164,25 +153,6 @@ namespace pfcore
 
 				Thread.Sleep(16);
 			}
-		}
-
-		private static void RunEEGSession(string trainigPath = null, string predictionPath = null)
-		{
-			EEGReader reader = new EEGOSCReader(5005);
-
-			EEGSessionRecorder sessionRecorder;
-			if (trainigPath != null && predictionPath != null)
-			{
-				EEGProcessor processor = new EEGProcessor(reader);
-				sessionRecorder = new EEGSessionRecorder(processor, trainigPath, predictionPath);
-			}
-			else
-			{
-				EEGProcessor processor = new EEGProcessor(reader);
-				sessionRecorder = new EEGSessionRecorder(processor);
-			}
-
-			sessionRecorder.Start();
 		}
 
 		private static void RunEEGConvert(string filepath)

@@ -34,7 +34,8 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>EEGTrain /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2.eeg /Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-1-Prediction-1-v2.eeg</StartArguments>
+    <StartArguments>EEGTrain EEG/Subject-2-Training-1-v2.eeg EEG/Subject-2-Prediction-1-v2.eeg</StartArguments>
+    <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EKG\EKGPacket.cs" />
@@ -48,7 +49,6 @@
     <Compile Include="EMG\EMGSerialReader.cs" />
     <Compile Include="EMG\EMGReading.cs" />
     <Compile Include="EMG\MuscleState.cs" />
-    <Compile Include="EMG\TrainingValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EEG\EEGPacket.cs" />
@@ -65,9 +65,9 @@
     <Compile Include="EEG\EEGFileReader.cs" />
     <Compile Include="EEG\EEGOSCReader.cs" />
     <Compile Include="EEG\EEGTrainer.cs" />
-    <Compile Include="EEG\EEGSessionRecorder.cs" />
     <Compile Include="EEG\EEGAnalysis.cs" />
     <Compile Include="EEG\EEGConverter.cs" />
+    <Compile Include="Common\TrainingValue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord, Version=3.3.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
@@ -99,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Accord.3.3.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.3.0\build\Accord.targets')" />
