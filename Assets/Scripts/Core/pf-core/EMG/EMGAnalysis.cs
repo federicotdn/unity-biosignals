@@ -23,7 +23,7 @@ namespace pfcore
 		{
 			Console.WriteLine("--------------------------------");
 			Console.WriteLine("Using file: " + filename);
-			List<EMGPacket> packets = ReadPackets();
+			List<EMGPacket> packets = ReadPackets(filename);
 
 			Console.WriteLine("Read: " + packets.Count + " packets.");
 			int toDiscard = packets.Count % EMGProcessor.FFT_SAMPLE_SIZE;
@@ -59,8 +59,8 @@ namespace pfcore
 			List<EMGPacket> trainingPackets = packets.GetRange(0, trainingCount);
 			List<EMGPacket> predictionPackets = packets.GetRange(packets.Count - predictionCount, predictionCount);
 
-			List<TrainingValue<MuscleState>> trainingValues = GetTrainingValues(trainingPackets, true);
-			List<TrainingValue<MuscleState>> predictionValues = GetTrainingValues(predictionPackets, false);
+			List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, true);
+			List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, false);
 
 			if (writeCSV)
 			{
@@ -70,12 +70,12 @@ namespace pfcore
 
 				StringBuilder sb = new StringBuilder();
 
-				foreach (TrainingValue<MuscleState> val in trainingValues)
+				foreach (TrainingValue val in trainingValues)
 				{
 					sb.AppendLine(csvLineFromTrainingValue(val));
 				}
 
-				foreach (TrainingValue<MuscleState> val in predictionValues)
+				foreach (TrainingValue val in predictionValues)
 				{
 					sb.AppendLine(csvLineFromTrainingValue(val));
 				}
@@ -88,17 +88,17 @@ namespace pfcore
 
 			Console.WriteLine("--------------------------------");
 
-			DecisionTree tree = EMGProcessor.CreateDecisionTree();
-			EMGProcessor.TrainTree(trainingValues, tree);
+			Trainer trainer = new Trainer(EMGProcessor.FEATURE_COUNT, ClassifierType.DecisionTree);
+			EMGProcessor.Train(trainingValues, trainer);
 
 			int[,] confMat = new int[2, 2];
 
-			foreach (TrainingValue<MuscleState> predValue in predictionValues)
+			foreach (TrainingValue predValue in predictionValues)
 			{
-				int result = tree.Decide(predValue.Features);
+				int result = trainer.Predict(predValue);
 				MuscleState muscleState = (MuscleState)result;
 
-				int i = (predValue.State == MuscleState.TENSE) ? 1 : 0;
+				int i = (predValue.State == (int)MuscleState.TENSE) ? 1 : 0;
 				int j = (muscleState == MuscleState.TENSE) ? 1 : 0;
 
 				confMat[i, j]++;
@@ -119,14 +119,14 @@ namespace pfcore
 			Console.WriteLine("Accuracy: " + accuracy);
 		}
 
-		private string csvLineFromTrainingValue(TrainingValue<MuscleState> val)
+		private string csvLineFromTrainingValue(TrainingValue val)
 		{
 			return string.Format("{0},{1},{2}", val.Features[0], val.Features[1], (int)val.State);
 		}
 
-		private List<TrainingValue<MuscleState>> GetTrainingValues(List<EMGPacket> packets, bool enableSkip)
+		internal static List<TrainingValue> GetTrainingValues(List<EMGPacket> packets, bool enableSkip)
 		{
-			List<TrainingValue<MuscleState>> values = new List<TrainingValue<MuscleState>>(EMGProcessor.FFT_SAMPLE_SIZE);
+			List<TrainingValue> values = new List<TrainingValue>(EMGProcessor.FFT_SAMPLE_SIZE);
 
 			int skipsRemaining = 0;
 
@@ -163,7 +163,7 @@ namespace pfcore
 				FourierTransform.FFT(data, FourierTransform.Direction.Forward);
 				List<Complex> fftResults = new List<Complex>(data);
 
-				TrainingValue<MuscleState> trainingValue = new TrainingValue<MuscleState>(packets[start].muscleStateHint, EMGProcessor.FEATURE_COUNT);
+				TrainingValue trainingValue = new TrainingValue((int)packets[start].muscleStateHint, EMGProcessor.FEATURE_COUNT);
 
 				EMGProcessor.FillTrainingValue(ref trainingValue, fftResults);
 				values.Add(trainingValue);
@@ -172,7 +172,7 @@ namespace pfcore
 			return values;
 		}
 
-		private List<EMGPacket> ReadPackets()
+		internal static List<EMGPacket> ReadPackets(String filename)
 		{
 			FileStream fileStream = File.OpenRead(filename);
 			List<EMGPacket> packets = new List<EMGPacket>();

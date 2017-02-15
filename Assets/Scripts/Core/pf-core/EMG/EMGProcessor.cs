@@ -4,8 +4,6 @@ using System.Threading;
 using System.Numerics;
 
 using Accord.Math;
-using Accord.MachineLearning.DecisionTrees;
-using Accord.MachineLearning.DecisionTrees.Learning;
 using System.IO;
 
 namespace pfcore
@@ -29,8 +27,8 @@ namespace pfcore
 		public const float LOWER_FREQ = 50;
 		public const float HIGHER_FREQ = 150;
 
-		private DecisionTree decisionTree;
-		private List<TrainingValue<MuscleState>> trainingData;
+		private Trainer trainer;
+		private List<TrainingValue> trainingData;
 		private MuscleState currentMuscleState = MuscleState.NONE;
 		public MuscleState CurrentMuscleState
 		{
@@ -81,7 +79,6 @@ namespace pfcore
 			}
 		}
 
-		private int sampleCount = 0;
 		private int skipsRemaining = 0;
 
 		private List<EMGPacket> rawReadings = new List<EMGPacket>();
@@ -109,19 +106,8 @@ namespace pfcore
 		{
 			this.reader = reader;
 
-			decisionTree = CreateDecisionTree();
-			trainingData = new List<TrainingValue<MuscleState>>();
-		}
-
-		public static DecisionTree CreateDecisionTree()
-		{
-			List<DecisionVariable> decisionVariables = new List<DecisionVariable>(FEATURE_COUNT);
-			for (int i = 0; i < FEATURE_COUNT; i++)
-			{
-				decisionVariables.Add(DecisionVariable.Continuous(i.ToString()));
-			}
-
-			return new DecisionTree(decisionVariables, FEATURE_COUNT);
+			trainer = new Trainer(FEATURE_COUNT, ClassifierType.DecisionTree);
+			trainingData = new List<TrainingValue>();
 		}
 
 		public void Start()
@@ -219,12 +205,12 @@ namespace pfcore
 				return;
 			}
 
-			TrainingValue<MuscleState> value = new TrainingValue<MuscleState>(currentMuscleState, FEATURE_COUNT);
+			TrainingValue value = new TrainingValue((int)currentMuscleState, FEATURE_COUNT);
 			FillTrainingValue(ref value, fftResults);
 			trainingData.Add(value);
 		}
 
-		public static void FillTrainingValue(ref TrainingValue<MuscleState> value, List<Complex> fftResults)
+		public static void FillTrainingValue(ref TrainingValue value, List<Complex> fftResults)
 		{
 			float freqRange = HIGHER_FREQ - LOWER_FREQ;
 			float freqStep = freqRange / FEATURE_COUNT;
@@ -260,32 +246,22 @@ namespace pfcore
 
 		private void EndTraining()
 		{
-			TrainTree(trainingData, decisionTree);
+			Train(trainingData, trainer);
 			trainingData.Clear();
 		}
 
-		public static void TrainTree(List<TrainingValue<MuscleState>> trainingData, DecisionTree tree)
+		internal static void Train(List<TrainingValue> trainingData, Trainer trainer)
 		{
-			double[][] featuresArray = new double[trainingData.Count][];
-			int[] labels = new int[trainingData.Count];
-
-			for (int i = 0; i < featuresArray.Length; i++)
-			{
-				featuresArray[i] = trainingData[i].Features;
-				labels[i] = (int)trainingData[i].State;
-			}
-
-			C45Learning teacher = new C45Learning(tree);
-			teacher.Learn(featuresArray, labels);
+			trainer.Train(trainingData);
 		}
 
 		private void Predict()
 		{
-			TrainingValue<MuscleState> tmp = new TrainingValue<MuscleState>();
+			TrainingValue tmp = new TrainingValue();
 			tmp.Features = new double[FEATURE_COUNT];
 			FillTrainingValue(ref tmp, fftResults);
 
-			int result = decisionTree.Decide(tmp.Features);
+			int result = trainer.Predict(tmp);
 			predictedMuscleState = (MuscleState)result;
 		}
 

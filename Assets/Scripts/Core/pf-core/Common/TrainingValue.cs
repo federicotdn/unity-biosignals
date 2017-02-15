@@ -2,12 +2,12 @@
 
 namespace pfcore
 {
-	public struct TrainingValue<T> where T : struct, IConvertible
+	public struct TrainingValue
 	{
 		public double[] Features { get; set; }
-		public T State { get; set; }
+		public int State { get; set; }
 
-		public TrainingValue(T state, int featureCount)
+		public TrainingValue(int state, int featureCount)
 		{
 			State = state;
 			Features = new double[featureCount];

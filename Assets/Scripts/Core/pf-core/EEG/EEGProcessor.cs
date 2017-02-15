@@ -44,9 +44,9 @@ namespace pfcore
 		public List<float> Beta { get; private set; }
 		public List<EyesStatus> AlphaStatus { get; private set; }
 		public List<Complex> FFTResults { get; private set; }
-		public List<TrainingValue<EyesStatus>> TrainingValues { get; private set; }
-		public List<TrainingValue<EyesStatus>> TrainingValuesWindow { get; private set; }
-		public List<TrainingValue<EyesStatus>> AlphaTrainingValues { get; private set; }
+		public List<TrainingValue> TrainingValues { get; private set; }
+		public List<TrainingValue> TrainingValuesWindow { get; private set; }
+		public List<TrainingValue> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
 		public List<Complex> TP9FFT { get; private set; }
@@ -119,16 +119,6 @@ namespace pfcore
 						ignore = SKIP;
 						alphaIgnore = SKIP * 10;
 					}
-
-					switch (status)
-					{
-						case EyesStatus.CLOSED:
-							Console.WriteLine("Switched to eyes CLOSED");
-							break;
-						case EyesStatus.OPEN:
-							Console.WriteLine("Switched to eyes OPEN");
-							break;
-					}
 				}
 			}
 		}
@@ -139,9 +129,9 @@ namespace pfcore
 			RawStatus = new List<EyesStatus>();
 			Alpha = new List<float>();
 			Beta = new List<float>();
-			TrainingValues = new List<TrainingValue<EyesStatus>>();
-			AlphaTrainingValues = new List<TrainingValue<EyesStatus>>();
-			TrainingValuesWindow = new List<TrainingValue<EyesStatus>>();
+			TrainingValues = new List<TrainingValue>();
+			AlphaTrainingValues = new List<TrainingValue>();
+			TrainingValuesWindow = new List<TrainingValue>();
 
 			FFTResults = new List<Complex>();
 			TP9FFT = new List<Complex>();
@@ -197,14 +187,11 @@ namespace pfcore
 			CalculateFFT(af7, AF7FFT);
 			CalculateFFT(af8, AF8FFT);
 			CalculateFFT(tp9, TP9FFT);
-			CalculateFFT(tp10, TP10FFT);
-
-			double[] feature = new double[4];
-
+			CalculateFFT(tp10, TP10FFT); 
 
 			if (!Training || (Training && ignore == 0))
 			{
-				TrainingValue<EyesStatus> trainingValue = new TrainingValue<EyesStatus>(Status, FEATURE_COUNT);
+				TrainingValue trainingValue = new TrainingValue((int)Status, FEATURE_COUNT);
 				trainingValue.Features[0] = PSD(TP9FFT, FREQ_STEP);
 				trainingValue.Features[1] = PSD(AF7FFT, FREQ_STEP);
 				trainingValue.Features[2] = PSD(AF8FFT, FREQ_STEP);
@@ -276,7 +263,7 @@ namespace pfcore
 
 								if (prevStatus == Status)
 								{
-									TrainingValue<EyesStatus> trainingValue = new TrainingValue<EyesStatus>(Status, 2);
+									TrainingValue trainingValue = new TrainingValue((int)Status, 2);
 									trainingValue.Features[0] = alpha1;
 									trainingValue.Features[1] = alpha2;
 									AlphaTrainingValues.Add(trainingValue);

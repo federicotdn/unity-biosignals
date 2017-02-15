@@ -28,10 +28,10 @@ namespace pfcore
 				processor.Update();
 			}
 
-			List<TrainingValue<EyesStatus>> trainingData = processor.TrainingValues;
-			List<TrainingValue<EyesStatus>> alphaTrainingData = processor.AlphaTrainingValues;
+			List<TrainingValue> trainingData = processor.TrainingValues;
+			List<TrainingValue> alphaTrainingData = processor.AlphaTrainingValues;
 
-			EEGTrainer trainer = new EEGTrainer();
+			Trainer trainer = new Trainer(EEGProcessor.FEATURE_COUNT, ClassifierType.DecisionTree);
 			trainer.Train(trainingData);
 
 
@@ -44,27 +44,43 @@ namespace pfcore
 				processor.Update();
 			}
 
-			List<TrainingValue<EyesStatus>> predictionData = processor.TrainingValues;
-			List<TrainingValue<EyesStatus>> alphaPredictionData = processor.AlphaTrainingValues;
+			List<TrainingValue> predictionData = processor.TrainingValues;
+			List<TrainingValue> alphaPredictionData = processor.AlphaTrainingValues;
 
-			trainAndAnalize(trainingData, predictionData);
-			trainAndAnalize(alphaTrainingData, alphaPredictionData);
+			trainAndAnalize(trainingData, predictionData, EEGProcessor.FEATURE_COUNT);
+			trainAndAnalize(alphaTrainingData, alphaPredictionData, 2);
 		}
 
-		private void trainAndAnalize(List<TrainingValue<EyesStatus>> trainingData, List<TrainingValue<EyesStatus>> predictionData)
+		internal static List<TrainingValue> getTrainingValues(string filepath) {
+			EEGReader reader;
+			reader = new EEGFileReader(filepath, false);
+			EEGProcessor processor = new EEGProcessor(reader);
+
+
+			processor.Training = true;
+			processor.Start();
+			while (!processor.Finished)
+			{
+				processor.Update();
+			}
+
+			return processor.TrainingValues;
+		}
+
+		private void trainAndAnalize(List<TrainingValue> trainingData, List<TrainingValue> predictionData, int featureSize)
 		{
-			EEGTrainer trainer = new EEGTrainer();
+			Trainer trainer = new Trainer(featureSize, ClassifierType.DecisionTree);
 			trainer.Train(trainingData);
 
 
-			List<EyesStatus> outputs = trainer.Predict(predictionData);
+			int[] outputs = trainer.Predict(predictionData);
 
 			int[,] confusionMatrix = new int[2, 2];
-			for (int i = 0; i < outputs.Count; i++)
+			for (int i = 0; i < outputs.Length; i++)
 			{
-				if (predictionData[i].State == EyesStatus.CLOSED)
+				if (predictionData[i].State == (int)EyesStatus.CLOSED)
 				{
-					if (outputs[i] == EyesStatus.CLOSED)
+					if (outputs[i] == (int)EyesStatus.CLOSED)
 					{
 						confusionMatrix[0, 0]++;
 					}
@@ -75,7 +91,7 @@ namespace pfcore
 				}
 				else
 				{
-					if (outputs[i] == EyesStatus.OPEN)
+					if (outputs[i] == (int)EyesStatus.OPEN)
 					{
 						confusionMatrix[1, 1]++;
 					}
