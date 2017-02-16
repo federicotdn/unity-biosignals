@@ -50,7 +50,29 @@ Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al 
 
 \section{EMG}
 
-Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas.
+Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. Para la elección de clasificador, se realizaron pruebas sobre cuatro clasificadores distintos. Se tomaron seis sesiones de EMG grabadas, y se aplico la técnica de validación cruzada con $k$ iteraciones ( mencionada en la sección \ref{sec:classification}) por cada clasificador. Los resultados fueron los siguientes:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ |c|c| }
+ \hline
+ Clasificador & Precisión \\ 
+ \hline
+ Bayesiano ingenuo & $0.971$ \\
+ \hline
+ Análisis Discriminante Lineal & $0.958$ \\
+ \hline
+ Máquinas de vectores de soporte & $0.498$ \\
+ \hline
+ Árboles de decisión & $0.978$ \\
+ 
+ \hline
+\end{tabular}
+\caption{Precisiones de distintos clasificadores sobre las sesiones de EMG.}
+\label{tab:emg-classifiers}
+\end{table}
+
+Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de Máquinas de vectores de soporte, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
 
 \begin{table}[H]
 \centering
@@ -58,11 +80,11 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
  \hline
  Sujeto & Precisión & Duración (Segundos) \\ 
  \hline
- 1 & $0.974$ & $603$ \\
+ 1 & $0.970$ & $603$ \\
   \hline
- 2 & $0.892$ & $239$ \\
+ 2 & $0.955$ & $239$ \\
   \hline
- 3 & $0.990$ & $393$ \\
+ 3 & $0.994$ & $393$ \\
 
  \hline
 \end{tabular}
@@ -70,7 +92,7 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
 \label{tab:emg-results}
 \end{table}
 
-Como muestran los valores de la tabla \ref{tab:emg-results}, los niveles de precisión alcanzados son muy elevados: en dos de las tres sesiones realizadas, se logró un nivel de precisión de $97\%$, o mayor.  En la sesión del sujeto $2$, se logró un nivel más bajo, de $89\%$. Esto se debe, probablemente, a que ésta sesión tuvo una duración mas corta que las anteriores, por lo que el clasificador fue entrenado con un número menor de muestras. También es necesario remarcar que al medir señales de EMG, existen varias fuentes de ruido eléctrico, que pueden afectar los valores leídos y por lo tanto perjudicar la precision del entrenador. El efecto neto de éstas fuentes de ruido varía de sesión en sesión, ya que depende de factores como la cantidad de movimiento de los electrodos en relación a la piel, o la presencia de dispositivos que emitan radiación electromagnética\cite{emg-delsys}.
+Como muestran los valores de la tabla \ref{tab:emg-results}, los niveles de precisión alcanzados son muy elevados: en las tres sesiones realizadas, se logró un nivel de precisión de $95\%$, o mayor. Es necesario remarcar que al medir señales de EMG, existen varias fuentes de ruido eléctrico, que pueden afectar los valores leídos y por lo tanto perjudicar la precision del entrenador. El efecto neto de éstas fuentes de ruido varía de sesión en sesión, ya que depende de factores como la cantidad de movimiento de los electrodos en relación a la piel, o la presencia de dispositivos que emitan radiación electromagnética\cite{emg-delsys}.
 
 A continuación, se muestran los gráficos de dispersión de las dos sesiones más largas, que permiten visualizar las diferencias entre los vectores de características de ambos estados de tensión de músculo.
 
@@ -98,11 +120,11 @@ Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia d
  \hline
  Sujeto & Precisión & Duración (Segundos) \\ 
  \hline
- 1 & $0.993$ & $284$ \\
+ 1 & $0.972$ & $284$ \\
  \hline
- 2 & $0.989$ & $292$ \\
+ 2 & $0.984$ & $292$ \\
  \hline
- 3 & $0.988$ & $339$ \\
+ 3 & $0.991$ & $339$ \\
 
  \hline
 \end{tabular}
