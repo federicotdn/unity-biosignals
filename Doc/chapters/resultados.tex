@@ -1,52 +1,88 @@
-En este capítulo se presentan los resultados obtenidos al procesar las señales y se realiza un breve análisis. Al registrar sesiones, o bien se creaba una sesión de entrenamiento y una de predicción, en la que se evaluaba el desempeño, o bien se creaba una única sesión y luego se dividía en dos partes. Debido a que el posicionamiento del sensor es importante y varía cuando se coloca y se retira,  y a que el estado del cuerpo cambia de un instante al otro, las bioseñales sufren variaciones. Por este motivo, las sesiones de entrenamiento y predicción se registraban una a continuación de la otra. De esta manera, se buscaba que la señal sea lo más consistente posible.
+En este capítulo se presentan los resultados obtenidos al procesar las señales y se realiza un breve análisis. Al registrar sesiones,  se creaba una única sesión y luego se dividía en múltiples partes. Debido a que el posicionamiento del sensor es importante y varía cuando se coloca y se retira,  y a que el estado del cuerpo cambia de un instante al otro, las bioseñales sufren variaciones. Por este motivo, se utilizaban datos de una única sesión tanto como para entrenar como para predecir. De esta manera, se buscaba que la señal sea lo más consistente posible. Para calcular la precisión se utilizó el método de validación cruzada de $k$ iteraciones. Se tomó esta decisión ya que, como se mencionó en la sección \ref{sec:classification}, partir las sesiones en dos partes y utilizar una para entrenamiento y otra para validación no resulta representativo debido a que la elección del lugar en donde se parten los datos puede influir mucho en el resultado. Se utilizaron valores de $k$ iguales a $5$, $10$ y $15$. La elección de estos valores se basó en la cantidad de muestras con la que se contaba. Luego, se promediaban los resultados arrojados por cada valor de $k$ y ese número reflejaba la precisión de la sesión. Tanto en EEG como en EMG se analizaron los siguientes clasificadores: bayesiano ingenuo, análisis discriminante lineal (LDA por sus siglas en inglés), Máquinas de vectores de soporte (SVM por sus siglas en inglés) y árboles de decisión. En ningún caso se realiza un análisis del por qué algunos clasificadores resultan mejores que otros ya que no es el foco de este proyecto.
 
 \section{EEG}
 
-Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo anterior, primero se comenzó utilizando los valores de potencia \emph{Alfa} que brindaba el sensor ($\alpha_{10 \, Hz}$). Como no se lograba el nivel de precisión deseado, se decidió realizar una implementación propia ($\alpha_{256 \, Hz}$) y confeccionar el vector de características con cuatro elementos. En la tabla \ref{tab:eeg-results} se pueden observar los resultados de aplicar ambos métodos a distintas sesiones de entrenamiento de distintos sujetos.
+Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo anterior, primero se comenzó utilizando los valores de potencia \emph{Alfa} que brindaba el sensor ($\alpha_{10 \, Hz}$). Para intentar mejorar la precisión, se decidió realizar una implementación propia ($\alpha_{256 \, Hz}$) y confeccionar el vector de características con cuatro elementos. Para determinar que clasificador utilizar, se utilizaron todos los conjuntos de datos y se promedio la precisión de cada clasificador. En la tabla \ref{tab:eeg-class-result} se pueden observar los resultados de cada clasificador.
+ 
+\begin{table}[H]
+\centering
+\begin{tabular}{ |c|c|c| } 
+ \hline
+ Clasificador & Precisión $\alpha_{10 \, Hz}$ &  Precisión $\alpha_{256 \, Hz}$ \\ 
+ \hline
+ Bayesiano ingenuo & $0.732$  & $0.680$  \\
+ \hline
+ Análisis Discriminante Lineal (LDA)  & $0.726$ & $0.767$ \\
+  \hline
+ Máquinas de vectores de soporte (SVM) & $0.706$ & $0.542$ \\
+  \hline
+ Árbol de decisión & $0.723$ & $0.834$ \\
+ \hline
+\end{tabular}
+\caption{Resultados de utilizar distintos clasificadores sobre todas las muestras.}
+\label{tab:eeg-class-result}
+\end{table}
+
+Se puede observar que los mejores resultados se obtuvieron utilizando un árbol de decisión con un vector de cuatro características obtenido de $256$ muestras. Al de utilizar el método con un vector de dos características obtenidos a $10 \, Hz$, no hubo grandes diferencias en cuanto al clasificador por lo que se decidió utilizar un árbol de decisión para ambos métodos.
+
+En la tabla \ref{tab:eeg-results} se pueden observar los resultados de todas las sesiones.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{ |c|c|c|c| } 
+\begin{tabular}{ |c|c|c| } 
  \hline
- Sujeto & Sesión & $\alpha_{10 \, Hz}$ &  $\alpha_{256 \, Hz}$ \\ 
+ Sujeto & Precisión $\alpha_{10 \, Hz}$ &  Precisión $\alpha_{256 \, Hz}$ \\ 
  \hline
- 1 & 1 & $0.5659229$ & $0.6910995$ \\
+ 1 & $0.565$ & $0.665$ \\
  \hline
- 1 & 2 & $0.6265357$ & $0.672956$ \\
-  \hline
- 2 & 1 & $0.6808835$ & $0.8532819$ \\
-  \hline
- 2 & 2 & $0.6527051$ & $0.8533725$ \\
+ 2 & $0.831$ & $0.881$ \\
+ \hline
+ 3 & $0.768$ & $0.88125$ \\
+ \hline
+4  & $0.727$ & $0.909$ \\
+ \hline
+
+
 
  \hline
 \end{tabular}
-\caption{Resultados de utilizar distintas formas de calcular potencia de \emph{Alfa} en distintos sujetos.}
+\caption{Resultados de utilizar distintas formas de calcular potencia de \emph{Alfa} en distintos sujetos utilizando como clasificador un árbol de decisión.}
 \label{tab:eeg-results}
 \end{table}
 
 La primer observación que se puede realizar es que utilizar $\alpha_{256 \, Hz}$ es más preciso que utilizar $\alpha_{10 \, Hz}$. Como se mencionó anteriormente, esto se debe a que en el primer caso se toman $256$ muestras para calcular la potencia de \emph{Alfa} mientras que en el segundo se utilizan únicamente $25$. A su vez, en el primer caso se utilizan los valores obtenidos por cada electrodo por separado mientras que en el segundo caso se promedian y se arma el vector de características con dos valores consecutivos. Utilizar las mediciones de los distintos electrodos en un período de tiempo describe mejor el estado que utilizar valores de dos períodos consecutivos.
 
-En las figuras \ref{fig:subject-2-10} y \ref{fig:subject-2-256} se observan gráficos de dispersión utilizando los valores de potencia de \emph{Alfa}. En ambos se observa una clara separación de estados. El estado de ojos cerrados contiene valores mayores que el estado de ojos abiertos. La figura \ref{fig:subject-2-10}  cuenta con una cantidad mayor de valores atípicos, particularmente, una cantidad mayor de valores de \emph{Alfa} elevados en el estado de ojos abiertos. A su vez, en la figura \ref{fig:subject-2-256} los valores para ojos abiertos se encuentran mayormente concentrados por debajo de los valores para ojos cerrados. Por estos motivos, la precisión es mucho mayor al utilizar el vector de cuatro dimensiones.
+En las figuras \ref{fig:subject-2-10} y \ref{fig:subject-2-256} se observan gráficos de dispersión utilizando los valores de potencia de \emph{Alfa}. En ambos se observa una clara separación de estados. El estado de ojos cerrados contiene valores mayores que el estado de ojos abiertos. La figura \ref{fig:subject-2-10} cuenta con una cantidad mayor de valores atípicos, particularmente, una cantidad mayor de valores de \emph{Alfa} elevados en el estado de ojos abiertos. A su vez, en la figura \ref{fig:subject-2-256} los valores para ojos abiertos se encuentran mayormente concentrados por debajo de los valores para ojos cerrados. Por estos motivos, la precisión es mayor al utilizar el vector de cuatro dimensiones. Debido a la separación que se observa en los gráficos, fue suficiente utilizar un clasificador simple.
 
  \begin{figure}[H]
 	\centering
     \includegraphics[width=0.8\textwidth]{subject-2-10.png}
-    \caption{Gráfico de dispersión del vector de características de dos características de la sesión  2 del sujeto 2.}
+    \caption{Gráfico de dispersión del vector de características de dos características del sujeto 2}
 	\label{fig:subject-2-10}
 \end{figure}
 
  \begin{figure}[H]
 	\centering
     \includegraphics[width=0.8\textwidth]{subject-2-256.png}
-    \caption{Gráfico de dispersión del vector de características de cuatro características de la sesión  2 del sujeto 2. Para transformar de cuatro dimensiones a dos, se promediaron los dos primeros valores y los dos valores finales.}
+    \caption{Gráfico de dispersión del vector de características de cuatro características del sujeto 2. Para transformar de cuatro dimensiones a dos, se promediaron los dos primeros valores y los dos valores finales.}
 	\label{fig:subject-2-256}
+\end{figure}
+
+
+Al comparar las figuras \ref{fig:subject-1-256} y \ref{fig:subject-2-256}, se puede observar, que hay una mayor separación entre estados en la figura \ref{fig:subject-2-256}. Por este motivo, la precisión del sujeto $2$ fue un $20\%$ superior.
+
+ \begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{subject-1-256.png}
+    \caption{Gráfico de dispersión del vector de características de cuatro características del sujeto 1.}
+	\label{fig:subject-1-256}
 \end{figure}
 
 Cabe destacar que al contar con un vector de cuatro características, para graficar se necesitarían cuatro dimensiones. Para abordar este problema se decidió transformar el vector en un vector de dos componentes donde la primer componente es el promedio de los dos primeros valores y la segunda, el promedio de los dos últimos valores.
 
-Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores.
+Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores. Esta gran diferencia puede apreciarse al observar que el Sujeto $1$ obtuvo una precisión mucho menor que el resto de los sujetos.
 
-Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2 (sesión 2) y como sesión de predicción una sesión del sujeto 1 (sesión 1). Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6963351$. Esta fue superior a la precisión obtenida con la sesión de entrenamiento del propio sujeto. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
+Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
 
 \section{EMG}
 
@@ -72,7 +108,7 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
 \label{tab:emg-classifiers}
 \end{table}
 
-Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de Máquinas de vectores de soporte, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
+Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de Máquinas de vectores de soporte, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. No se utilizó un clasificador más complejo, como una red neuronal, ya que era posible resolverlo con clasificadores simples. Como se observará más adelante, existe una clara separación entre los valores de un estado y el otro por lo que un clasificador simple es más que suficiente. Además, los clasificadores más complejos requieren más poder de procesamiento y requieren una gran dedicación de tiempo para determinar los mejores parámetros. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
 
 \begin{table}[H]
 \centering
@@ -110,7 +146,7 @@ A continuación, se muestran los gráficos de dispersión de las dos sesiones m�
 	\label{fig:emg-graph-s3}
 \end{figure}
 
-En la figura \ref{fig:emg-graph-s1}, se puede observar una clara separación entre las muestras tomadas con el musculo relajado, y las muestras tomadas con el musculo tensado. En la figura \ref{fig:emg-graph-s3} se puede observar el mismo efecto, con una separación aun mas marcada. También, se puede notar como las muestras tomadas con músculo relajado se encuentran concentradas en un área pequeña, debido a la poca variación de potencial medido de muestra en muestra. Por el otro lado, las muestras tomadas con músculo tensado se encuentran dispersas, ya que al tensar el músculo no siempre es posible mantener el mismo nivel fuerza ejercida.
+En la figura \ref{fig:emg-graph-s1}, se puede observar una clara separación entre las muestras tomadas con el musculo relajado, y las muestras tomadas con el musculo tensado. En la figura \ref{fig:emg-graph-s3} se puede observar el mismo efecto, con una separación aun mas marcada. Esta clara separación fue la que permitió utilizar un clasificador simple. También, se puede notar como las muestras tomadas con músculo relajado se encuentran concentradas en un área pequeña, debido a la poca variación de potencial medido de muestra en muestra. Por el otro lado, las muestras tomadas con músculo tensado se encuentran dispersas, ya que al tensar el músculo no siempre es posible mantener el mismo nivel fuerza ejercida.
 
 Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia de muestreo del modulo EMG fue cambiada de $256\,Hz$ a $512\,Hz$. Para comprobar que la precision de predicción se mantuvo luego de este cambio, se grabaron nuevas sesiones.
 
