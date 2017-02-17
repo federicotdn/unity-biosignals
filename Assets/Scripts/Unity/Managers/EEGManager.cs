@@ -19,12 +19,12 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 
 	private bool trained;
 
-	private EEGTrainer trainer;
+	private Trainer trainer;
 
 	private CounterTimer testingTimer;
 
 	void Start () {
-		trainer = new EEGTrainer ();
+		trainer = new Trainer (EEGProcessor.FEATURE_COUNT, ClassifierType.DecisionTree);
 		if (trainFromFile) {
 			EEGReader fileReader = new EEGFileReader (Application.dataPath + "/" + filepath, false);
 			EEGProcessor fileProcessor = new EEGProcessor (fileReader);
@@ -67,7 +67,7 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager> {
 
 	void OnFFT() {
 		if (trained) {
-			List<EyesStatus> outputs = trainer.Predict (processor.TrainingValuesWindow);
+			int[] outputs = trainer.Predict (processor.TrainingValuesWindow);
 			int aux = 0;
 			foreach (EyesStatus status in outputs) {
 				if (status == EyesStatus.CLOSED) {

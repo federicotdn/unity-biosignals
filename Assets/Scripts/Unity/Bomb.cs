@@ -38,8 +38,10 @@ public class Bomb : MonoBehaviour {
 			StartCoroutine (Play());
 		}
 
-		hitCollider.enabled = outline.Outline && !exploded;
-		mesh.enabled = outline.Outline && !exploded;
+		if (outline.Outline && !exploded) {
+			hitCollider.enabled = true;
+			mesh.enabled = true;
+		}
 
 		if (raycastTimer.Finished && playerInRange != null && CheckVisibility (playerInRange, triggerDistance * 1.2f)) {
 			Explode ();

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EEG/Subject-2-Training-2-v2-1.csv', 'r') as csvfile:
+  with open('/Users/hobbit/projects/ProyectoFinal/DataSets/EEG/test/Subject-1-1.csv', 'r') as csvfile:
     reader = csv.reader(csvfile)
     lines = []
     for row in reader:

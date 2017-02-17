@@ -12,7 +12,7 @@ public class Zombie : Humanoid {
 	public List<AudioClip> GrowlClips;
 	public List<AudioClip> HitClips;
 	public float attackCooldown = 1;
-	public float raycastInterval = 0.8f;
+	public float raycastInterval = 1;
 	public float maxViewingDistance = 20;
 	public float stoppingDistance = 1;
 	public ParticleSystem bulletImpactEffect;
