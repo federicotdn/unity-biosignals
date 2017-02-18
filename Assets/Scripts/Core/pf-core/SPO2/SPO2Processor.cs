@@ -10,6 +10,13 @@ namespace pfcore {
 		private bool previousPeak;
 		private Thread readerThread;
 
+        private List<SPO2Packet> processedPackets = new List<SPO2Packet>();
+        public List<SPO2Packet> ProcessedPackets {
+            get {
+                return processedPackets;
+            }
+        }
+
 		private const int AVG_COUNT = 7;
 
 		public SPO2Processor(SPO2Reader reader)
@@ -26,7 +33,9 @@ namespace pfcore {
 		public void Update()
 		{
 			ConcurrentQueue<SPO2Packet> queue = reader.PacketQueue;
-			SPO2Packet packet;
+            processedPackets.Clear();
+            SPO2Packet packet;
+
 			while (queue.TryDequeue(out packet))
 			{
 				if (packet.Peak && !previousPeak)
@@ -41,7 +50,9 @@ namespace pfcore {
 				{
 					peaks.RemoveAt(0);
 				}
-			}
+
+                processedPackets.Add(packet);
+            }
 
 			///* Discard packets received during processing */
 			//queue.Clear();

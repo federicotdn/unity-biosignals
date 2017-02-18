@@ -17,6 +17,11 @@ namespace pfcore
 
 		public ConcurrentQueue<SPO2Packet> PacketQueue { get; }
 		private int maxQueueSize;
+        public int MaxQueueSize {
+            get {
+                return maxQueueSize;
+            }
+        }
 
 		public SPO2Reader(string portName, int maxQueueSize)
 		{
