@@ -11,6 +11,8 @@
 \usepackage{cite}
 \usepackage{babelbib}
 \usepackage{float}
+\usepackage{appendix}
+\usepackage[acronym]{glossaries}
 \graphicspath{ {images/} }
 
 \title{
@@ -24,6 +26,11 @@
 \date{Febrero 2017}
 
 \makeindex
+\makeglossaries
+
+\setglossarypreamble[acronym]{Se preservaron los acrónimo en inglés para facilitar la búsqueda de los mismos y para mantener consistencia con las publicaciones ya existentes. A continuación se presenta una lista de los acrónimos utilizados y su definición.}
+
+\newacronym{psd}{PSD}{\emph{Power Spectral Density} o Densidad Espectral de Potencia}
 
 \begin{document}
 \maketitle
@@ -38,7 +45,10 @@ Con la información obtenida de los clasificadores se realizaron alteraciones en
 
 \tableofcontents
 
-\chapter{Estado del Arte}
+\chapter{Introducción}
+\input{chapters/introduccion}
+
+\chapter{Distintas Aplicaciones de Bioseñales} \label{chap:biosignal-apps}
 \input{chapters/estado-del-arte}
 
 \chapter{Marco Teórico}
@@ -54,8 +64,12 @@ Con la información obtenida de los clasificadores se realizaron alteraciones en
 \chapter{Conclusiones}
 \input{chapters/conclusiones}
 
+\addcontentsline{toc}{chapter}{Lista de Ácronimos}
+\printglossary[type=\acronymtype,title={Lista de Ácronimos}]
+
+
 \addcontentsline{toc}{chapter}{Bibliografía}
 \bibliography{bibliography}{}
 \bibliographystyle{babplain}
- 
+
 \end{document}

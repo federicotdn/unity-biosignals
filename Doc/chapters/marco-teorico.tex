@@ -2,13 +2,13 @@ Dado que este proyecto se centrará en las bioseñales, resulta fundamental expl
 
 \section{Bioseñales}\label{sec:biosignals}
 
-Una bioseñal puede ser definida como una descripción de un fenómeno fisiológico. Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de bioseñales es muy grande. Como se puede observar en la figura \ref{fig:biosignals-clasification} las bioseñales puede ser clasificadas por lo menos por tres criterios distintos \cite{biosignal-book-2}: 
+Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de bioseñales es muy grande. Como se puede observar en la figura \ref{fig:biosignals-clasification} las bioseñales puede ser clasificadas por lo menos por tres criterios distintos \cite{biosignal-book-2}: 
 
 \begin{itemize}
 	\item \textbf{Existencia:}
 		\begin{itemize}
 			\item Permanentes: Existen sin necesidad de un impacto artificial, disparador o excitación externa al cuerpo y están disponibles todo el tiempo. Por ejemplo, la señal electrocardiográfica es inducida por la excitación eléctrica del corazón.
-			\item Inducidas: Son disparadas artificialmente, excitadas o inducidas externamente. Su duración está ligada a la duración de la excitación. Cuando el impacto artificial termina, la bioseñal se atenúa. Por ejemplo, la pulsioximetría (SpO2) utiliza luz para detectar el oxígeno en sangre y la señal dura tanto tiempo como dicha luz se encuentre encendida.
+			\item Inducidas: Son disparadas artificialmente, excitadas o inducidas externamente. Su duración está ligada a la duración de la excitación. Cuando el impacto artificial termina, la bioseñal se atenúa. Por ejemplo, la pulsioximetría (SpO\textsubscript{2}) utiliza luz para detectar el oxígeno en sangre y la señal dura tanto tiempo como dicha luz se encuentre encendida.
 		\end{itemize}
 	\item \textbf{Dinamismo:}
 		\begin{itemize}
@@ -132,7 +132,7 @@ $$ x_{k} = \sum_{n=0}^{N-1} x_{n}e^{-\frac{2 \pi i}{N}kn} \qquad k = 0,\hdots, N
 
 Computar la Transformada de \emph{fourier} tiene un costo computacional alto. Por este motivo, generalmente, se calcula la Transformada Rápida de \emph{Fourier} (\emph{FFT} por sus siglas en inglés). Esta es una aproximación a la Transformada de \emph{Fourier} y tiene un costo computacional menor. Para aplicar la \emph{FFT} se acumulan valores durante un período de tiempo. Esto se conoce como ventana. A esta ventana, se le puede aplicar una función de ventana. Una función de ventana es una función matemática en la cual el resultado es $0$ si los valores se encuentran fuera de un determinado intervalo y distinto de $0$ si se encuentran dentro de él. 
 
-Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le puede aplicar un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplicar el filtro pasa banda, se cuenta con las frecuencias de interés y se continúa con el procesamiento. Una alternativa es calcular la Densidad Espectral de Potencia (DEP). Esta se define como:
+Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le puede aplicar un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplicar el filtro pasa banda, se cuenta con las frecuencias de interés y se continúa con el procesamiento. Una alternativa es calcular la \acrshort{psd}. Esta se define como:
 
 $$ P = \int_{-\infty}^{+\infty} S_{xx} (f) df \qquad  \textrm{donde,}$$
 
@@ -145,7 +145,7 @@ Esta potencia puede ser utilizada luego como una característica de interés per
 Cuando se cuenta con la señal procesada, se puede utilizar directamente con reglas simples como utilizar un umbral. Este es el caso en el que se estén buscando picos. Si se buscan patrones más complejos, hay que utilizar reconocimiento de patrones. El reconocimiento de patrones tiene dos pasos principales:
 
 \begin{itemize}
-  \item \textbf{Extracción de características:} Esta etapa consiste en elegir características de la señal que sean relevantes al estado que se quiere clasificar. Por lo general estás características se colocan en un vector conocido como vector de características. El extractor utiliza como entrada una o más señales y las transforma en características útiles. Las características pueden ser por ejemplo ciertas bandas de frecuencia, calcular la DEP sobre una determinada banda de frecuencias, el valor de las derivadas en un instante del tiempo, entre otros. 
+  \item \textbf{Extracción de características:} Esta etapa consiste en elegir características de la señal que sean relevantes al estado que se quiere clasificar. Por lo general estás características se colocan en un vector conocido como vector de características. El extractor utiliza como entrada una o más señales y las transforma en características útiles. Las características pueden ser por ejemplo ciertas bandas de frecuencia, calcular la \acrshort{psd} sobre una determinada banda de frecuencias, el valor de las derivadas en un instante del tiempo, entre otros. 
   \item \textbf{Clasificación:} En este paso se le asigna una clase a un conjunto de características (vector de características) extraído de la señal. Aquí se utilizan algoritmos de aprendizaje automático. Existen diversos algoritmos de clasificación, por ejemplo análisis discriminante lineal, árbol de decisión, clasificador bayesiano, entre otros \cite{eeg-tutorial}. También existen clasificadores más complejos como la utilización de redes neuronales. La elección del clasificador depende de la complejidad del problema.
 \end{itemize}
 
@@ -221,11 +221,11 @@ La electromiografía consiste en registrar la actividad eléctrica producida por
 
 El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto. Por lo tanto, se debe muestrear al menos a $300 \, Hz$.
 
-\subsection{Pulsioximetría (SpO2)}
+\subsection{Pulsioximetría (SpO\textsubscript{2})}
 
-La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.  
+La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{SpO2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{SpO2-2}.  
 
-El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. Esta señal es inducida, ya que se requiere de la utilización de una luz, dinámica, ya que varía de forma considerable en el tiempo, y, óptica. En este caso, la salida del transductor es binaria. Indica si ha habido un pico o no, por lo que no se genera ruido al digitalizarla.
+El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{SpO2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. Esta señal es inducida, ya que se requiere de la utilización de una luz, dinámica, ya que varía de forma considerable en el tiempo, y, óptica. En este caso, la salida del transductor es binaria. Indica si ha habido un pico o no, por lo que no se genera ruido al digitalizarla.
 
 \begin{figure}[H]
 	\centering
