@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>EEGCrossVal EEG/test</StartArguments>
+    <StartArguments>EEGCrossVal lion.eeg</StartArguments>
     <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>

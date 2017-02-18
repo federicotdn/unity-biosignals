@@ -3,17 +3,18 @@ using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using OSC;
+using System.Text;
 
 namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, EEGCSV
 	}
 
 	class MainClass
 	{
-		public static void Main(string[] args)
+		internal static void Main(string[] args)
 		{
 #if !UNITY_EDITOR
 			Console.WriteLine("Hello from pfcore.Main");
@@ -74,6 +75,10 @@ namespace pfcore
 				case RunMode.EEGJoin:
 					Console.WriteLine("Running EEG Join\n");
 					RunEEGJoin(args[1], args[2], args[3]);
+					break;
+				case RunMode.EEGCSV:
+					Console.WriteLine("Running EEG CSV");
+					RunEEGCSV(args[1]);
 					break;
 				default:
 					throw new Exception("No run mode specified.");
@@ -178,8 +183,7 @@ namespace pfcore
 
 		private static void RunEEGCrossValidation(string directoryPath)
 		{
-			string[] paths = Directory.GetFiles(directoryPath, "*.eeg", SearchOption.TopDirectoryOnly);
-			List<string> filepaths = new List<string>(paths);
+			List<string> filepaths = getFiles(directoryPath, "*.eeg");
 			List<List<TrainingValue>> dataSets = new List<List<TrainingValue>>();
 			foreach (string filepath in filepaths)
 			{
@@ -197,8 +201,7 @@ namespace pfcore
 		}
 
 		private static void RunEMGCrossValidation(string directoryPath) {
-			string[] paths = Directory.GetFiles(directoryPath, "*.emg", SearchOption.TopDirectoryOnly);
-			List<string> filepaths = new List<string>(paths);
+			List<string> filepaths = getFiles(directoryPath, "*.emg");
 			List<List<TrainingValue>> dataSets = new List<List<TrainingValue>>();
 			foreach (string filepath in filepaths) {
 				List<EMGPacket> packets = EMGAnalysis.ReadPackets(filepath);
@@ -247,6 +250,56 @@ namespace pfcore
 			stream.Close();
 
 			Console.WriteLine("Saved new dataset to: " + newName);
+		}
+
+		private static List<string> getFiles(string path, string extension) {
+			FileAttributes attr = File.GetAttributes(path);
+			if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+				string[] paths = Directory.GetFiles(path, extension, SearchOption.TopDirectoryOnly);
+				List<string> filepaths = new List<string>(paths);
+
+
+				return filepaths;
+			}
+
+			return new List<string> {
+				path
+			};
+		}
+
+		private static void RunEEGCSV(string filepath)
+		{
+			EEGReader reader = new EEGFileReader(filepath, false);
+			EEGProcessor processor = new EEGProcessor(reader);
+
+			processor.Start();
+
+			while (!processor.Finished)
+			{
+				processor.Update();
+			}
+
+			List<TrainingValue> results = processor.TrainingValues;
+
+
+			StringBuilder csv = new StringBuilder();
+
+			foreach (TrainingValue t in results)
+			{
+				csv.AppendLine(String.Format("{0},{1},{2}", (t.Features[0] + t.Features[1]) / 2, (t.Features[2] + t.Features[3]) / 2, t.State));
+
+			}
+
+			string filename = filepath.Split('.')[0] + ".csv";
+			//string filename2 = filename + "-2.csv";
+
+			//filename += "-1.csv";
+
+
+			File.WriteAllText(filename, String.Empty);
+			File.WriteAllText(filename, csv.ToString());
+			//File.WriteAllText(filename2, String.Empty);
+			//File.WriteAllText(filename2, csv2.ToString());
 		}
 	}
 }
