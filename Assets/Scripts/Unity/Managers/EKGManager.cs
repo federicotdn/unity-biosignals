@@ -10,7 +10,7 @@ public class EKGManager : MonoBehaviorSingleton<EKGManager> {
 
 	private bool accelerate;
 
-	private EKGProcessor processor;
+	private SPO2Processor processor;
 
 	public int BPM {
 		get {
@@ -25,8 +25,8 @@ public class EKGManager : MonoBehaviorSingleton<EKGManager> {
 
 	// Use this for initialization
 	void Start () {
-		EKGReader reader = new EKGReader (portName, maxQueueSize);
-		processor = new EKGProcessor (reader);
+		SPO2Reader reader = new SPO2Reader (portName, maxQueueSize);
+		processor = new SPO2Processor (reader);
 		processor.Start ();
 	}
 	

@@ -3,7 +3,7 @@ using System.IO.Ports;
 
 namespace pfcore
 {
-	class EKGReader
+	class SPO2Reader
 	{
 		// Values for CMS50D+ CONTEC Pulse Oximeter
 		private const int baudRate = 19200;
@@ -15,14 +15,14 @@ namespace pfcore
 
 		private SerialPort serialPort;
 
-		public ConcurrentQueue<EKGPacket> PacketQueue { get; }
+		public ConcurrentQueue<SPO2Packet> PacketQueue { get; }
 		private int maxQueueSize;
 
-		public EKGReader(string portName, int maxQueueSize)
+		public SPO2Reader(string portName, int maxQueueSize)
 		{
 			serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
 			serialPort.ReadTimeout = SerialPort.InfiniteTimeout;
-			PacketQueue = new ConcurrentQueue<EKGPacket>();
+			PacketQueue = new ConcurrentQueue<SPO2Packet>();
 			this.maxQueueSize = maxQueueSize;
 		}
 
@@ -36,14 +36,14 @@ namespace pfcore
 		{
 			serialPort.Open();
 
-			byte[] buffer = new byte[EKGPacket.PACKET_SIZE];
+			byte[] buffer = new byte[SPO2Packet.PACKET_SIZE];
 
 			reading = true;
 
 			while (reading)
 			{
 				bool readOk = true;
-				EKGPacket packet = new EKGPacket();
+				SPO2Packet packet = new SPO2Packet();
 
 				for (int i = 0; i < buffer.Length && readOk; i++)
 				{
@@ -72,7 +72,7 @@ namespace pfcore
 					PacketQueue.Enqueue(packet);
 					while (PacketQueue.Count > maxQueueSize)
 					{
-						EKGPacket temp;
+						SPO2Packet temp;
 						PacketQueue.TryDequeue(out temp);
 					}
 				}

@@ -38,9 +38,9 @@
     <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="EKG\EKGPacket.cs" />
-    <Compile Include="EKG\EKGProcessor.cs" />
-    <Compile Include="EKG\EKGReader.cs" />
+    <Compile Include="SPO2\EKGPacket.cs" />
+    <Compile Include="SPO2\EKGProcessor.cs" />
+    <Compile Include="SPO2\EKGReader.cs" />
     <Compile Include="EMG\EMGAnalysis.cs" />
     <Compile Include="EMG\EMGFileReader.cs" />
     <Compile Include="EMG\EMGPacket.cs" />
@@ -86,24 +86,19 @@
     <Reference Include="System" />
     <Reference Include="System.Numerics" />
     <Reference Include="Accord">
-      <HintPath>..\packages\Accord.3.4.0\lib\net45\Accord.dll</HintPath>
+      <HintPath>..\packages\Accord.3.3.0\lib\net45\Accord.dll</HintPath>
     </Reference>
     <Reference Include="Accord.Math.Core">
-      <HintPath>..\packages\Accord.Math.3.4.0\lib\net45\Accord.Math.Core.dll</HintPath>
+      <HintPath>..\packages\Accord.Math.3.3.0\lib\net45\Accord.Math.Core.dll</HintPath>
     </Reference>
     <Reference Include="Accord.Math">
-      <HintPath>..\packages\Accord.Math.3.4.0\lib\net45\Accord.Math.dll</HintPath>
-    </Reference>
-    <Reference Include="Accord.Neuro">
-      <HintPath>..\packages\Accord.Neuro.3.4.0\lib\net45\Accord.Neuro.dll</HintPath>
+      <HintPath>..\packages\Accord.Math.3.3.0\lib\net45\Accord.Math.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Accord.3.4.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.4.0\build\Accord.targets')" />
 </Project>
