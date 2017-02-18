@@ -32,6 +32,7 @@ namespace pfcore {
             writeThread.Start();
 
             Console.Read();
+            Console.WriteLine("Joining with write thread.");
 
             done = true;
             writeThread.Join();
@@ -48,21 +49,31 @@ namespace pfcore {
             List<SPO2Packet> allPackets = new List<SPO2Packet>();
             List<BPMEvent> bpmEvents = new List<BPMEvent>();
 
+            bool startWriting = false;
+
             while (!done) {
                 processor.Update();
 
                 List<SPO2Packet> packets = processor.ProcessedPackets;
-                allPackets.AddRange(packets);
-
                 BPMEvent bpmEvent;
                 bpmEvent.bpm = processor.GetBPM();
                 bpmEvent.timestamp = DateTime.Now.Ticks;
-                bpmEvents.Add(bpmEvent);
+                if (bpmEvent.bpm != 0) {
+                    startWriting = true;
+                }
+
+                if (startWriting) {
+                    allPackets.AddRange(packets);
+                    bpmEvents.Add(bpmEvent);
+                }
+
+                Thread.Sleep(10);
             }
 
             processor.StopAndJoin();
 
             Console.WriteLine("Done. Packets read: " + allPackets.Count);
+            Console.WriteLine("Filename base: " + filenameBase);
             Console.WriteLine("Writing files...");
 
             StringBuilder rawBpms = new StringBuilder();
@@ -82,6 +93,10 @@ namespace pfcore {
                 string line = ev.bpm.ToString() + "," + ev.timestamp;
                 procBpms.AppendLine(line);
             }
+
+            File.WriteAllText(filenameBase + "-RawBpm.csv", rawBpms.ToString());
+            File.WriteAllText(filenameBase + "-ProcBpm.csv", procBpms.ToString());
+            File.WriteAllText(filenameBase + "-Peaks.csv", peaks.ToString());
         }
     }
 }
