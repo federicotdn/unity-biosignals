@@ -38,9 +38,10 @@
     <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="SPO2\EKGPacket.cs" />
-    <Compile Include="SPO2\EKGProcessor.cs" />
-    <Compile Include="SPO2\EKGReader.cs" />
+    <Compile Include="SPO2\SPO2Packet.cs" />
+    <Compile Include="SPO2\SPO2Processor.cs" />
+    <Compile Include="SPO2\SPO2Reader.cs" />
+	<Compile Include="SPO2\SPO2Writer.cs" />
     <Compile Include="EMG\EMGAnalysis.cs" />
     <Compile Include="EMG\EMGFileReader.cs" />
     <Compile Include="EMG\EMGPacket.cs" />

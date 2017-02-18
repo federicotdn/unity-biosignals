@@ -8,7 +8,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, SPO2Writer
 	}
 
 	class MainClass
@@ -75,6 +75,10 @@ namespace pfcore
 					Console.WriteLine("Running EEG Join\n");
 					RunEEGJoin(args[1], args[2], args[3]);
 					break;
+                case RunMode.SPO2Writer:
+                    Console.WriteLine("Running SPO2Writer");
+                    RunSPO2Writer();
+                    break;
 				default:
 					throw new Exception("No run mode specified.");
 
@@ -102,6 +106,11 @@ namespace pfcore
 				processor.Update();
 			}
 		}
+
+        private static void RunSPO2Writer() {
+            SPO2Writer writer = new SPO2Writer("COM5");
+            writer.Start();
+        }
 
 		private static void RunEEGWrite()
 		{
