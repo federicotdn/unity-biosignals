@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace pfcore
-{
-	class EKGProcessor
+namespace pfcore {
+    class SPO2Processor
 	{
-		private EKGReader reader;
+		private SPO2Reader reader;
 		private List<long> peaks = new List<long>();
 		private bool previousPeak;
 		private Thread readerThread;
 
 		private const int AVG_COUNT = 7;
 
-		public EKGProcessor(EKGReader reader)
+		public SPO2Processor(SPO2Reader reader)
 		{
 			this.reader = reader;
 		}
@@ -29,8 +25,8 @@ namespace pfcore
 
 		public void Update()
 		{
-			ConcurrentQueue<EKGPacket> queue = reader.PacketQueue;
-			EKGPacket packet;
+			ConcurrentQueue<SPO2Packet> queue = reader.PacketQueue;
+			SPO2Packet packet;
 			while (queue.TryDequeue(out packet))
 			{
 				if (packet.Peak && !previousPeak)

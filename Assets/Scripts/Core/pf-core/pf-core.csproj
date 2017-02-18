@@ -38,9 +38,9 @@
     <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="EKG\EKGPacket.cs" />
-    <Compile Include="EKG\EKGProcessor.cs" />
-    <Compile Include="EKG\EKGReader.cs" />
+    <Compile Include="SPO2\EKGPacket.cs" />
+    <Compile Include="SPO2\EKGProcessor.cs" />
+    <Compile Include="SPO2\EKGReader.cs" />
     <Compile Include="EMG\EMGAnalysis.cs" />
     <Compile Include="EMG\EMGFileReader.cs" />
     <Compile Include="EMG\EMGPacket.cs" />
@@ -98,9 +98,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Accord.3.4.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.4.0\build\Accord.targets')" />
 </Project>

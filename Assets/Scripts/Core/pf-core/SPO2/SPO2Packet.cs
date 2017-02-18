@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace pfcore {
-    class EKGPacket {
+    class SPO2Packet {
         // Data packet received from CMS50+ Contec Pulse Oximeter
         public const int PACKET_SIZE = 5;
 
