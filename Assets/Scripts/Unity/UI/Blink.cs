@@ -8,14 +8,15 @@ public class Blink : MonoBehaviour {
 
 	public float interval = 0.1f;
 	public float duration = 1.5f;
-	private bool blinking = false;
+	public bool visibleAfterEnding = true;
 
+	private bool blinking = false;
 	private CounterTimer durationTimer;
 
 	void Start()
 	{
 		imageToToggle = GetComponent<MaskableGraphic> ();
-		imageToToggle.enabled = true;
+		imageToToggle.enabled = visibleAfterEnding;
 		durationTimer = new CounterTimer (duration);
 		durationTimer.Update (duration);
 	}
@@ -24,7 +25,7 @@ public class Blink : MonoBehaviour {
 		if (durationTimer.Finished && blinking) {
 			blinking = false;
 			CancelInvoke ();
-			imageToToggle.enabled = true;
+			imageToToggle.enabled = visibleAfterEnding;
 		}
 
 		durationTimer.Update (Time.deltaTime);

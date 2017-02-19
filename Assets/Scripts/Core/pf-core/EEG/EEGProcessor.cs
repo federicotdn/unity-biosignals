@@ -45,7 +45,6 @@ namespace pfcore
 		public List<EyesStatus> AlphaStatus { get; private set; }
 		public List<Complex> FFTResults { get; private set; }
 		public List<TrainingValue> TrainingValues { get; private set; }
-		public List<TrainingValue> TrainingValuesWindow { get; private set; }
 		public List<TrainingValue> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
@@ -69,12 +68,36 @@ namespace pfcore
 		private List<float> af8 = new List<float>();
 		private List<float> tp10 = new List<float>();
 		private EyesStatus prevStatus = EyesStatus.OPEN;
+		private Trainer trainer;
+		private Thread readerThread;
 
 		bool alphaSet;
 		double alpha1;
 		double alpha2;
 
-		public bool Training;
+
+		private bool training;
+		public bool Training {
+			get {
+				return training;
+			}
+
+			set {
+				training = value;
+				if (training) {
+					af7.Clear();
+					af8.Clear();
+					tp9.Clear();
+					tp10.Clear();
+					ignore = SKIP;
+				} else {
+					trainer = new Trainer(FEATURE_COUNT, ClassifierType.DecisionTree);
+					if (TrainingValues.Count > 0) {
+						trainer.Train(TrainingValues);
+					}
+				}
+			}
+		}
 
 		private int ignore = SKIP;
 		private int alphaIgnore = SKIP * 10;
@@ -131,7 +154,6 @@ namespace pfcore
 			Beta = new List<float>();
 			TrainingValues = new List<TrainingValue>();
 			AlphaTrainingValues = new List<TrainingValue>();
-			TrainingValuesWindow = new List<TrainingValue>();
 
 			FFTResults = new List<Complex>();
 			TP9FFT = new List<Complex>();
@@ -145,7 +167,7 @@ namespace pfcore
 
 		public void Start()
 		{
-			Thread readerThread = new Thread(new ThreadStart(reader.Start));
+			readerThread = new Thread(new ThreadStart(reader.Start));
 			readerThread.Start();
 		}
 
@@ -167,11 +189,18 @@ namespace pfcore
 					af8.Clear();
 					tp9.Clear();
 					tp10.Clear();
-					TrainingValuesWindow.Clear();
 				}
 			}
 
 			Finished = reader.Finished;
+		}
+
+		public void StopAndJoin()
+		{
+			reader.Stop();
+			if (readerThread != null) {
+				readerThread.Join();
+			}
 		}
 
 		private void RunFFT()
@@ -197,7 +226,11 @@ namespace pfcore
 				trainingValue.Features[2] = PSD(AF8FFT, FREQ_STEP);
 				trainingValue.Features[3] = PSD(TP10FFT, FREQ_STEP);
 				TrainingValues.Add(trainingValue);
-				TrainingValuesWindow.Add(trainingValue);
+
+				if (!Training && trainer != null) {
+					Status = (EyesStatus) trainer.Predict(trainingValue);
+				}
+
 			}
 			else if (Training && ignore != 0)
 			{

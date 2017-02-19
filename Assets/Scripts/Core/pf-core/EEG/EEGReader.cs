@@ -15,6 +15,9 @@ namespace pfcore
 		{
 			return PacketQueue.TryDequeue(out packet);
 		}
+
+		public abstract void Stop();
 	}
 }
+
 

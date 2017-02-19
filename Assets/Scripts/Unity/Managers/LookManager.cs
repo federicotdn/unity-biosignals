@@ -25,6 +25,8 @@ public class LookManager : MonoBehaviorSingleton<LookManager> {
 	private float vy;
 
 
+	public bool paused;
+
 	private CounterTimer recoilTimer;
 	private CounterTimer shakeXTimer;
 	private CounterTimer shakeYTimer;

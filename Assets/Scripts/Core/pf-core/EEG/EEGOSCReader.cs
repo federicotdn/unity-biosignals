@@ -25,5 +25,12 @@ namespace pfcore
 			((OSCMessage)packet.Data[0]).Extra = (byte)EyesStatus.NONE;
 			PacketQueue.Enqueue(packet);
 		}
+
+		public override void Stop()
+		{
+			if (server != null) {
+				server.Close();
+			}
+		}
 	}
 }

@@ -53,5 +53,9 @@ namespace pfcore
 
 			Finished = true;
 		}
+
+		public override void Stop()
+		{
+		}
 	}
 }

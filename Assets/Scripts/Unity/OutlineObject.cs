@@ -58,6 +58,8 @@ public class OutlineObject : MonoBehaviour {
 	}
 
 	void OnDestroy() {
-		EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
+		if (EEGGameManager.Instance != null) {
+			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
+		}
 	}
 }

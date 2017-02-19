@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets;
+using UnityStandardAssets.Characters.FirstPerson;
 
 public class FPSPlayer : Humanoid {
 
@@ -27,6 +29,7 @@ public class FPSPlayer : Humanoid {
 
 	private CounterTimer coolDownTimer;
 	private CounterTimer reloadTimer;
+	private FirstPersonController fpsController;
 
 	void Start () {
 		base.OnStart ();
@@ -37,62 +40,67 @@ public class FPSPlayer : Humanoid {
 		reloadTimer.Update(ReloadTime);
 		rounds = magSize;
 		remainingRounds = (magsCount - 1) * magSize;
+		fpsController = GetComponent<FirstPersonController> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		coolDownTimer.Update (Time.deltaTime);
-		reloadTimer.Update (Time.deltaTime); 
+		if (EEGGameManager.Instance.Status == GameStatus.Playing) {
+			fpsController.enabled = true;
+			coolDownTimer.Update (Time.deltaTime);
+			reloadTimer.Update (Time.deltaTime); 
 
-		if (Input.GetKeyDown(KeyCode.L)) {
-			flashlight.enabled = !flashlight.enabled;
-			MainAudioSource.PlayOneShot (flashlightClip);
-		}
-
-		if (Input.GetKeyDown (reloadKey) && reloadTimer.Finished) {
-			if (remainingRounds >= 1) {
-				gunAudioSource.PlayOneShot (ReloadClip);
-				reloadTimer.Reset ();
-				int reloadCount = Mathf.Min(magSize - rounds, remainingRounds);
-				rounds += reloadCount;
-				remainingRounds -= reloadCount;
-			} else {
-				gunAudioSource.PlayOneShot (GunEmptyClip);
+			if (Input.GetKeyDown (KeyCode.L)) {
+				flashlight.enabled = !flashlight.enabled;
+				MainAudioSource.PlayOneShot (flashlightClip);
 			}
 
-		}
+			if (Input.GetKeyDown (reloadKey) && reloadTimer.Finished) {
+				if (remainingRounds >= 1) {
+					gunAudioSource.PlayOneShot (ReloadClip);
+					reloadTimer.Reset ();
+					int reloadCount = Mathf.Min (magSize - rounds, remainingRounds);
+					rounds += reloadCount;
+					remainingRounds -= reloadCount;
+				} else {
+					gunAudioSource.PlayOneShot (GunEmptyClip);
+				}
 
-		if (reloadTimer.Finished && coolDownTimer.Finished && Input.GetMouseButtonDown (0)) {
-			if (rounds <= 0) {
-				gunAudioSource.PlayOneShot (GunEmptyClip);
-			} else {
-				Animator.SetTrigger ("Fire");
-				shellEffect.Play ();
-				coolDownTimer.Reset ();
-				gunAudioSource.PlayOneShot (GunShotClip);
-				rounds--;
-				LookManager.Instance.Recoil ();
-				Vector3 rayOrigin = FPSCam.ViewportToWorldPoint (new Vector3(0.5f, 0.5f, 0.0f));
+			}
 
-				RaycastHit hit;
+			if (reloadTimer.Finished && coolDownTimer.Finished && Input.GetMouseButtonDown (0)) {
+				if (rounds <= 0) {
+					gunAudioSource.PlayOneShot (GunEmptyClip);
+				} else {
+					Animator.SetTrigger ("Fire");
+					shellEffect.Play ();
+					coolDownTimer.Reset ();
+					gunAudioSource.PlayOneShot (GunShotClip);
+					rounds--;
+					LookManager.Instance.Recoil ();
+					Vector3 rayOrigin = FPSCam.ViewportToWorldPoint (new Vector3 (0.5f, 0.5f, 0.0f));
 
-				if (Physics.Raycast (rayOrigin, FPSCam.transform.forward, out hit, Range))
-				{
+					RaycastHit hit;
 
-					HitBox hitBox = hit.collider.GetComponent<HitBox>();
-					// If there was a health script attached
-					if (hitBox != null) {
-						// Call the damage function of that script, passing in our gunDamage variable
-						hitBox.Hit (hit);
-					} else {
-						BombHitBox bombHitBox = hit.collider.GetComponent<BombHitBox> ();
-						if (bombHitBox != null) { 
-							Bomb bomb = bombHitBox.transform.parent.gameObject.GetComponent<Bomb>();
-							bomb.Explode ();
+					if (Physics.Raycast (rayOrigin, FPSCam.transform.forward, out hit, Range)) {
+
+						HitBox hitBox = hit.collider.GetComponent<HitBox> ();
+						// If there was a health script attached
+						if (hitBox != null) {
+							// Call the damage function of that script, passing in our gunDamage variable
+							hitBox.Hit (hit);
+						} else {
+							BombHitBox bombHitBox = hit.collider.GetComponent<BombHitBox> ();
+							if (bombHitBox != null) { 
+								Bomb bomb = bombHitBox.transform.parent.gameObject.GetComponent<Bomb> ();
+								bomb.Explode ();
+							}
 						}
 					}
 				}
 			}
+		} else {
+			fpsController.enabled = false;
 		}
 	}
 		
