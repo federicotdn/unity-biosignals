@@ -81,7 +81,7 @@ Para comprobar el correcto funcionamiento del dispositivo, se utilizó un softwa
 	\label{fig:emg-electricguru}
 \end{figure}
 
-\subsection{SPO2}
+\subsection{\acrshort{spo2}}
 
 Para medir el ritmo cardíaco se decidió utilizar el dispositivo \emph{CMS50D+ Contec Pulse Oximeter}. Éste es un pulsioxímetro de transmisión de alta precisión, fácil de utilizar y de bajo consumo. Dicho dispositivo utiliza el puerto serie para enviar datos utilizando un formato propietario. Los datos más relevantes que envía el sensor son:
 
@@ -91,7 +91,7 @@ Para medir el ritmo cardíaco se decidió utilizar el dispositivo \emph{CMS50D+ 
 \item \textbf{Oxígeno:} Porcentaje de oxígeno.
 \end{itemize} 
 
-El dispositivo se conecta a la computadora con un cable USB 2.0 que internamente convierte de serie a USB. Se debe contar con un controlador de puerto serie en la computadora que permita su lectura. La frecuencia de muestreo es de $256 \, Hz$.
+El dispositivo se conecta a la computadora con un cable USB 2.0 que internamente convierte de serie a USB. Se debe contar con un controlador de puerto serie en la computadora que permita su lectura. La frecuencia de muestreo es de $256 \, Hz$. El margen de error del dispositivo utilizado es de $\pm2\%$ para la medición de \acrshort{spo2} y ritmo cardíaco. Éste margen de error pequeño se debe a que el \emph{CMS50D+} es un dispositivo médico, con lo que se necesita que sea lo más preciso posible.
 
 \section{Obtención y Procesamiento de Señales}
 
@@ -173,13 +173,13 @@ Al igual que en \acrshort{eeg}, al transicionar de un estado de tension de muscu
 
 Al realizar los experimentos, se noto que ocasionalmente los datos leídos contenían grandes cantidades de ruido, por lo que eran prácticamente inutilizables. El problema encontrado fue que el sujeto conectado al modulo \acrshort{emg} no estaba eléctricamente aislado al suelo, lo cual introducía ruido a los valores leídos. El problema fue resuelto asegurándose de que el sujeto utilizara calzado con suficiente aislación eléctrica, como por ejemplo botas o zapatillas deportivas.
 
-\subsection{SPO2}
+\subsection{\acrshort{spo2}} \label{sec:spo2-signal-processing}
 
-Como se mencionó anteriormente, el dispositivo elegido utilizaba un formato propietario. Por este motivo, no se podía obtener una correcta lectura de los datos. La única forma de obtener los datos era realizando una ingeniería inversa. Se investigó y se encontró  cómo era la estructura interna de cada paquete. Una vez que se podían leer paquetes, estos debían ser procesados. El ritmo cardíaco calculado por el sensor utiliza una ventana de 30 segundos. Esta duración era inaceptable para utilizar en tiempo real ya que se reflejaba el ritmo cardíaco de 30 segundos anteriores, en lugar del actual. Por este motivo, se decidió calcular el ritmo cardíaco utilizando los picos.
+Como se mencionó anteriormente, el dispositivo elegido utilizaba un formato propietario. Por este motivo, no se podía obtener una correcta lectura de los datos. La única forma de obtener los datos era realizando ingeniería inversa sobre el protocolo utilizado. Se investigó y se encontró cómo era la estructura interna de cada paquete recibido. Una vez que se podían leer paquetes, estos debían ser procesados. El ritmo cardíaco calculado por el sensor utiliza una ventana de 30 segundos. Esta duración era inaceptable para utilizar en tiempo real ya que reflejaba el ritmo cardíaco calculado sobre los 30 segundos anteriores, la cual es una duración de tiempo demasiado extensa en una aplicación interactiva. Por ésta razón, se decidió calcular el ritmo cardíaco utilizando los picos del ciclo cardíaco, utilizando una ventana más pequeña.
 
-El dispositivo obtiene $256$ muestras por segundo pero el ritmo cardíaco de una persona en reposo se encuentra entre $ 60$ - $100$. Por lo tanto, para cada latido, hay múltiples paquetes indicando que hubo un pico. Para evitar estimar incorrectamente, se consideró como un único pico a todos los paquetes continuos que indicaban que hubo un pico.
+El dispositivo obtiene $256$ muestras por segundo, pero el ritmo cardíaco de una persona en reposo se encuentra entre los $60$ - $100$ \acrshort{bpm}. Por lo tanto, para cada latido, hay múltiples paquetes consecutivos indicando que hubo un pico. Para evitar estimar incorrectamente, se estableció un tiempo mínimo $t$ segundos que debía transcurrir entre picos. Entonces, si se recibía un paquete indicando un pico luego de menos de $t$ segundos del anterior, simplemente se lo considero como parte del mismo pico del ciclo cardíaco.
 
-En una primera aproximación, se utilizó una ventana de $10$ segundos y se calculaba el ritmo cardíaco utilizando la técnica de promedio. Dicha técnica no resultó efectiva ya que el ritmo cardíaco contaba con grandes fluctuaciones lo que causaba que sea inutilizable en tiempo real. Luego, se empezó a utilizar la técnica de medir el tiempo entre latidos y realizar el promedio de los últimos seis valores. Esta técnica resultó efectiva indicando un ritmo cardíaco estable y preciso. Se comparó con el valor de ritmo cardíaco obtenido por el sensor para determinar si era preciso. A su vez se comparó con lo medido por un \emph{Apple Watch}.
+En una primera aproximación, se utilizó una ventana de $10$ segundos y se calculaba el ritmo cardíaco utilizando la técnica de promedio. Dicha técnica no resultó efectiva ya que el ritmo cardíaco contaba con grandes fluctuaciones lo que causaba que sea inutilizable en tiempo real. Luego, se empezó a utilizar la técnica de medir el tiempo entre latidos y realizar el promedio de los últimos nueve valores. Esta técnica resultó efectiva indicando un ritmo cardíaco estable y suficientemente preciso. Se comparó con el valor de ritmo cardíaco obtenido por el sensor para determinar si era preciso. A su vez se comparó con lo medido por un \emph{Apple Watch}.
 
 Con este sensor simplemente se buscaba observar si el ritmo cardíaco superaba un umbral por lo que no requirió reconocimiento de patrones.
 

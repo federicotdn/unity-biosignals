@@ -167,7 +167,7 @@ Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia d
 \caption{Resultados de entrenamientos utilizando lecturas de \acrshort{emg} para varios sujetos. Frecuencia de muestreo: $512\,Hz$.}
 \label{tab:emg-results-512}
 \end{table}
-
+	
 Como se puede observar en la tabla \ref{tab:emg-results-512}, el nivel de precision se mantuvo elevado, luego de haber realizado el cambio de frecuencia de muestreo. Las dos sesiones mas largas fueron graficadas, nuevamente, para poder observar la relación entre los valores de los vectores de características y el estado del músculo:
 
 \begin{figure}[H]
@@ -187,3 +187,46 @@ Como se puede observar en la tabla \ref{tab:emg-results-512}, el nivel de precis
 Las figuras \ref{fig:emg-graph-s1-512} y \ref{fig:emg-graph-s3-512} muestran, nuevamente, una clara separación entre las muestras tomadas durante el tiempo que se mantuvo el músculo relajado y tensado.
 
 En definitiva, los niveles de precision alcanzados utilizando las técnicas detalladas en este informe fueron muy elevados ($97\%$ o más en la mayoría de los casos). Éstos valores resultaron ser más que suficientes para el desarrollo de las simulaciones interactivas, que en sí también fueron diseñadas teniendo en cuenta que la precision de predicción prácticamente nunca podría ser del $100\%$.
+
+\section{\acrshort{spo2}}
+
+Para medir la precision del método explicado en la sección \ref{sec:spo2-signal-processing}, se grabó una sesión de aproximadamente un minuto para cuatro sujetos, y se comparó el promedio de \acrshort{bpm} obtenido durante la duración del intervalo.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ |c|c|c| } 
+ \hline
+ Sujeto & Promedio de \acrshort{bpm} (Sensor) & Promedio de \acrshort{bpm} (Calculado) \\ 
+ \hline
+ 1 & $78.380$ & $77.055$ \\
+ \hline
+ 2 & $84.300$ & $80.775$ \\
+ \hline
+ 3 & $74.953$ & $73.848$ \\
+ \hline
+ 4 & $80.412$ & $77.004$ \\
+
+ \hline
+\end{tabular}
+\caption{Promedios de \acrshort{bpm} para las sesiones de \acrshort{spo2} medidas.}
+\label{tab:spo2-results}
+\end{table}
+
+Como se puede ver en la tabla \ref{tab:spo2-results}, los resultados obtenidos a través de nuestro método de calculo de \acrshort{bpm} son similares a los calculados internamente por el sensor. La diferencia mas grande entre ambos resultados, para todas las sesiones, fue de aproximadamente $4\%$. Ambos métodos para calcular \acrshort{bpm} tienen sus ventajas y desventajas: el que utiliza el sensor produce valores que fluctúan menos en el tiempo, pero representan un valor promediado sobre un intervalo de tiempo extenso, por lo que no responden rápidamente a cambios en el ritmo cardíaco. Por el otro lado, nuestro método responde mas rápidamente a los cambios, pero tiende a producir resultados que fluctúan con mayores magnitudes. Se graficaron los resultados de las sesiones de los sujetos $2$ y $3$ para poder comparar visualmente los resultados:
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{javier-1-spo2.png}
+    \caption{Gráfico de \acrshort{bpm} a través del tiempo para la sesión del sujeto $2$.}
+	\label{fig:spo2-graph-2}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+    \includegraphics[width=0.8\textwidth]{gabriela-1-spo2.png}
+    \caption{Gráfico de \acrshort{bpm} a través del tiempo para la sesión del sujeto $3$.}
+	\label{fig:spo2-graph-3}
+\end{figure}
+
+El gráfico \ref{fig:spo2-graph-2} muestra como ambos métodos de medición tienden a producir los mismos resultados, pero con algunas diferencias. El método del sensor tiende a producir los mismos valores producidos por nuestro método, pero cierto atraso. A la vez, nuestro método tiende a producir resultados que varían mas rápidamente con el tiempo. El gráfico \ref{fig:spo2-graph-3} muestra una sesión donde ambos métodos produjeron resultados mucho mas similares. En el caso de éste proyecto, se prefirió nuestro método, ya que la simulación interactiva requiere de un tiempo de respuesta lo mas corto posible a los cambios de ritmo cardíaco del usuario. Es necesario remarcar que aunque las mediciones de \acrshort{bpm} son discretas, se utilizaron gráficos de línea ya que éstos permitían interpretar la información más fácilmente. Los valores leídos están representados como puntos sobre las líneas.
+

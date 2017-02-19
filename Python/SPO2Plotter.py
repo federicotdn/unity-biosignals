@@ -33,7 +33,7 @@ def main():
 
 	plt.legend(handles=[l1, l2])
 	plt.xlabel('Segundos')
-	plt.ylabel('BPMs')
+	plt.ylabel('BPM')
 	plt.show()
 
 def plot_bpms(lines, offset, title):
