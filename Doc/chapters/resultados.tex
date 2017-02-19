@@ -84,7 +84,7 @@ Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto 
 
 Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
 
-\section{\acrshort{emg}}
+\section{\acrshort{emg}} \label{sec:emg-results}
 
 Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. Para la elección de clasificador, se realizaron pruebas sobre cuatro clasificadores distintos. Se tomaron seis sesiones de \acrshort{emg} grabadas, y se aplico la técnica de validación cruzada con $k$ iteraciones ( mencionada en la sección \ref{sec:classification}) por cada clasificador. Los resultados fueron los siguientes:
 
