@@ -7,7 +7,6 @@ namespace pfcore {
 	{
 		private SPO2Reader reader;
 		private List<long> peaks = new List<long>();
-		private bool previousPeak;
 		private Thread readerThread;
 
         private List<SPO2Packet> processedPackets = new List<SPO2Packet>();
@@ -18,6 +17,8 @@ namespace pfcore {
         }
 
 		private const int AVG_COUNT = 7;
+        private const int MAX_BPM = 160;
+        private long lastPeakTime;
 
 		public SPO2Processor(SPO2Reader reader)
 		{
@@ -26,6 +27,7 @@ namespace pfcore {
 
 		public void Start()
 		{
+            lastPeakTime = DateTime.Now.Ticks;
 			readerThread = new Thread(new ThreadStart(reader.Start));
 			readerThread.Start();
 		}
@@ -38,12 +40,11 @@ namespace pfcore {
 
 			while (queue.TryDequeue(out packet))
 			{
-				if (packet.Peak && !previousPeak)
+				if (packet.Peak && TimeSpan.FromTicks(packet.timeStamp - lastPeakTime).TotalSeconds > 60.0f / MAX_BPM)
 				{
 					peaks.Add(packet.timeStamp);
+                    lastPeakTime = packet.timeStamp;
 				}
-
-				previousPeak = packet.Peak;
 
 				// Discard old packages
 				while (peaks.Count > AVG_COUNT)
@@ -66,7 +67,7 @@ namespace pfcore {
 
 		public int GetBPM()
 		{
-			if (peaks.Count < 2)
+			if (peaks.Count < AVG_COUNT)
 			{
 				return 0;
 			}
