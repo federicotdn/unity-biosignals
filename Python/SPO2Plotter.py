@@ -28,8 +28,8 @@ def main():
 	else:
 		offset = int(procBpmsLines[0][1])
 
-	l1, = plot_bpms(rawBpmsLines, offset, "BPMs brutos")
-	l2, = plot_bpms(procBpmsLines, offset, "BPMs procesados")
+	l1, = plot_bpms(rawBpmsLines, offset, "BPMs sensor")
+	l2, = plot_bpms(procBpmsLines, offset, "BPMs calculados")
 
 	plt.legend(handles=[l1, l2])
 	plt.xlabel('Segundos')
@@ -39,24 +39,26 @@ def main():
 def plot_bpms(lines, offset, title):
 	bpms_x = []
 	bpms_y = []
-	lastBpm = -1
 
 	avg = 0
+	skip = 0
 
 	for line in lines:
 		bpm = int(line[0])
 		timestamp = int(line[1])
 		avg += bpm
 
-		if True:
-			bpms_x.append((timestamp - offset) / 10000000)
-			bpms_y.append(bpm)
-			lastBpm = bpm
+		skip += 1
+		if skip % 100 != 0:
+			continue
+
+		bpms_x.append((timestamp - offset) / 10000000)
+		bpms_y.append(bpm)
 
 	avg /= len(lines)
 	print(title + ' average: ' + str(avg))
 
-	return plt.plot(bpms_x, bpms_y, 'p', label=title, marker='.', mew=0.05)
+	return plt.plot(bpms_x, bpms_y, label=title, marker='.', mew=0.05)
 
 if __name__ == "__main__":
     main()
