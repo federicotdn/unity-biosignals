@@ -90,19 +90,13 @@ public class EnergySphereGun : MonoBehaviour {
     }
 
     public void MuscleTenseTick() {
-        Debug.Log("MuscleTenseTick");
-
         if (chargeCounter < MAX_CHARGE_COUNTERS) {
             chargeCounter++;
             chargeReached = chargeCounter;
         }
-
-        Debug.Log("ChargeCounter: " + chargeCounter + " reached: " + chargeReached);
     }
 
     public void MuscleRelaxedTick() {
-        Debug.Log("MuscleRelaxedTick");
-
         if (chargeCounter > 0) {
             chargeCounter--;
 
@@ -113,7 +107,5 @@ public class EnergySphereGun : MonoBehaviour {
         } else {
             chargeReached = 0;
         }
-
-        Debug.Log("ChargeCounter: " + chargeCounter + " reached: " + chargeReached);
     }
 }
