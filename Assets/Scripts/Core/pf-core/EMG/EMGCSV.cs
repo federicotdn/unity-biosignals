@@ -9,17 +9,17 @@ using System.Threading;
 
 namespace pfcore
 {
-	class EMGAnalysis
+	class EMGCSV
 	{
 		private string filename;
 		private const float TRAINING_COUNT_PCTG = 0.75f;
 
-		public EMGAnalysis(string filename)
+		public EMGCSV(string filename)
 		{
 			this.filename = filename;
 		}
 
-		public void PrintResults(bool writeCSV)
+		public void CreateCSV()
 		{
 			Console.WriteLine("--------------------------------");
 			Console.WriteLine("Using file: " + filename);
@@ -62,61 +62,27 @@ namespace pfcore
 			List<TrainingValue> trainingValues = GetTrainingValues(trainingPackets, true);
 			List<TrainingValue> predictionValues = GetTrainingValues(predictionPackets, false);
 
-			if (writeCSV)
+			System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+			customCulture.NumberFormat.NumberDecimalSeparator = ".";
+			Thread.CurrentThread.CurrentCulture = customCulture;
+
+			StringBuilder sb = new StringBuilder();
+
+			foreach (TrainingValue val in trainingValues)
 			{
-				System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
-				customCulture.NumberFormat.NumberDecimalSeparator = ".";
-				Thread.CurrentThread.CurrentCulture = customCulture;
-
-				StringBuilder sb = new StringBuilder();
-
-				foreach (TrainingValue val in trainingValues)
-				{
-					sb.AppendLine(csvLineFromTrainingValue(val));
-				}
-
-				foreach (TrainingValue val in predictionValues)
-				{
-					sb.AppendLine(csvLineFromTrainingValue(val));
-				}
-
-				File.WriteAllText(filename + ".csv", sb.ToString());
+				sb.AppendLine(csvLineFromTrainingValue(val));
 			}
+
+			foreach (TrainingValue val in predictionValues)
+			{
+				sb.AppendLine(csvLineFromTrainingValue(val));
+			}
+
+			File.WriteAllText(filename + ".csv", sb.ToString());
 
 			Console.WriteLine("Training values count: " + trainingValues.Count);
 			Console.WriteLine("Prediction values count: " + predictionValues.Count);
-
-			Console.WriteLine("--------------------------------");
-
-			Trainer trainer = new Trainer(EMGProcessor.FEATURE_COUNT, ClassifierType.DecisionTree);
-			EMGProcessor.Train(trainingValues, trainer);
-
-			int[,] confMat = new int[2, 2];
-
-			foreach (TrainingValue predValue in predictionValues)
-			{
-				int result = trainer.Predict(predValue);
-				MuscleState muscleState = (MuscleState)result;
-
-				int i = (predValue.State == (int)MuscleState.TENSE) ? 1 : 0;
-				int j = (muscleState == MuscleState.TENSE) ? 1 : 0;
-
-				confMat[i, j]++;
-			}
-
-			Console.WriteLine("Confusion matrix:");
-			Console.WriteLine("   R     T");
-			Console.WriteLine("R  {0}    {1}", confMat[0, 0], confMat[0, 1]);
-			Console.WriteLine("T  {0}    {1}", confMat[1, 0], confMat[1, 1]);
-
-			double sensitivity = (double)confMat[0, 0] / (confMat[0, 0] + confMat[0, 1]);
-			double specificity = (double)confMat[1, 1] / (confMat[1, 0] + confMat[1, 1]);
-			double accuracy = confMat[0, 0] + confMat[1, 1];
-			accuracy /= predictionValues.Count;
-
-			Console.WriteLine("Sensitivity: " + sensitivity);
-			Console.WriteLine("Specificity: " + specificity);
-			Console.WriteLine("Accuracy: " + accuracy);
+            Console.WriteLine("CSV file created.");
 		}
 
 		private string csvLineFromTrainingValue(TrainingValue val)
