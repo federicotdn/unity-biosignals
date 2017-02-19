@@ -16,7 +16,7 @@ namespace pfcore {
             }
         }
 
-		private const int AVG_COUNT = 7;
+		private const int AVG_COUNT = 10;
         private const int MAX_BPM = 160;
         private long lastPeakTime;
 

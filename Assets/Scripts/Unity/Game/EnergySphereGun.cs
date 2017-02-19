@@ -17,7 +17,7 @@ public class EnergySphereGun : MonoBehaviour {
     private EnergySphere currentSphere = null;
 
     void Start() {
-        //StartCoroutine(FakeEMGLoop()); // Use Keys instead of EMG for demo
+        StartCoroutine(FakeEMGLoop()); // Use Keys instead of EMG for demo
     }
 
     void Update() {
@@ -32,7 +32,7 @@ public class EnergySphereGun : MonoBehaviour {
                 currentSphere = null;
             }
         } else if (chargeCounter >= SPAWN_SPHERE_START && chargeCounter < MAX_CHARGE_COUNTERS) {
-            float newScale = ((float)chargeReached / MAX_CHARGE_COUNTERS) * EnergySphere.MAX_SCALE_FACTOR;
+            float newScale = GetMultiplier();
 
             if (currentSphere == null) {
                 CreateSphere();
@@ -45,10 +45,15 @@ public class EnergySphereGun : MonoBehaviour {
         }
 
         if (Input.GetKeyUp(KeyCode.F)) {
+            chargeCounter = chargeReached = 1;
             CreateSphere();
             currentSphere.SetScale(0.1f);
             LaunchCurrentSphere();
         }
+    }
+
+    private float GetMultiplier() {
+        return ((float)chargeReached / MAX_CHARGE_COUNTERS) * EnergySphere.MAX_SCALE_FACTOR;
     }
 
     private void CreateSphere() {
@@ -66,7 +71,7 @@ public class EnergySphereGun : MonoBehaviour {
         currentSphere.transform.position = transform.position + (forward * 0.5f);
         currentSphere.transform.rotation = transform.rotation;
 
-        currentSphere.GetComponent<Rigidbody>().AddForce(forward * baseStrength);
+        currentSphere.GetComponent<Rigidbody>().AddForce(forward * baseStrength * GetMultiplier());
         currentSphere.EnableAutoDestroy();
 
         chargeCounter = chargeReached = 0;

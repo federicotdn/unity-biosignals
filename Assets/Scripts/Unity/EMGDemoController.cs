@@ -53,5 +53,11 @@ public class EMGDemoController : MonoBehaviour {
         } else if (Input.GetKeyUp(KeyCode.DownArrow)) {
             processor.CurrentMuscleState = MuscleState.RELAXED;
         }
+
+        if (Input.GetKeyUp(KeyCode.Z)) {
+            foreach (PrefabSpawner spawner in FindObjectsOfType<PrefabSpawner>()) {
+                spawner.Respawn();
+            }
+        }
     }
 }
