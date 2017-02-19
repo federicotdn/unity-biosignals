@@ -10,20 +10,20 @@ Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo a
  \hline
  Clasificador & Precisión $\alpha_{10 \, Hz}$ &  Precisión $\alpha_{256 \, Hz}$ \\ 
  \hline
- Bayesiano ingenuo & $0.732$  & $0.680$  \\
+ Bayesiano ingenuo & $0.656$  & $0.615$  \\
  \hline
- \gls{lda}  & $0.726$ & $0.767$ \\
+ \gls{lda}  & $0.667$ & $0.689$ \\
   \hline
-  \gls{svm} & $0.706$ & $0.542$ \\
+  \gls{svm} & $0.627$ & $0.5374$ \\
   \hline
- Árbol de decisión & $0.723$ & $0.834$ \\
+ Árbol de decisión & $0.6723$ & $0.755$ \\
  \hline
 \end{tabular}
 \caption{Resultados de utilizar distintos clasificadores sobre todas las muestras.}
 \label{tab:eeg-class-result}
 \end{table}
 
-Se puede observar que los mejores resultados se obtuvieron utilizando un árbol de decisión con un vector de cuatro características obtenido de $256$ muestras. Al de utilizar el método con un vector de dos características obtenidos a $10 \, Hz$, no hubo grandes diferencias en cuanto al clasificador por lo que se decidió utilizar un árbol de decisión para ambos métodos.
+Se puede observar que los mejores resultados se obtuvieron utilizando un árbol de decisión con un vector de cuatro características obtenido de $256$ muestras. Como en ambos métodos el árbol de decisión fue el que mejores resultados arrojó, se utilizó dicho clasificador.
 
 En la tabla \ref{tab:eeg-results} se pueden observar los resultados de todas las sesiones.
 
@@ -39,10 +39,16 @@ En la tabla \ref{tab:eeg-results} se pueden observar los resultados de todas las
  \hline
  3 & $0.768$ & $0.88125$ \\
  \hline
-4  & $0.727$ & $0.909$ \\
+ 4  & $0.727$ & $0.909$ \\
  \hline
-
-
+  5 & $0.510$ & $0.660$ \\
+ \hline
+ 6 & $0.645$ & $0.655$ \\
+ \hline
+ 7 & $0.656$ & $0.795$ \\
+ \hline
+ 8  & $0.682$ & $0.593$ \\
+ \hline
 
  \hline
 \end{tabular}
@@ -50,7 +56,7 @@ En la tabla \ref{tab:eeg-results} se pueden observar los resultados de todas las
 \label{tab:eeg-results}
 \end{table}
 
-La primer observación que se puede realizar es que utilizar $\alpha_{256 \, Hz}$ es más preciso que utilizar $\alpha_{10 \, Hz}$. Como se mencionó anteriormente, esto se debe a que en el primer caso se toman $256$ muestras para calcular la potencia de \emph{Alfa} mientras que en el segundo se utilizan únicamente $25$. A su vez, en el primer caso se utilizan los valores obtenidos por cada electrodo por separado mientras que en el segundo caso se promedian y se arma el vector de características con dos valores consecutivos. Utilizar las mediciones de los distintos electrodos en un período de tiempo describe mejor el estado que utilizar valores de dos períodos consecutivos.
+La primer observación que se puede realizar es que utilizar $\alpha_{256 \, Hz}$ es más preciso que utilizar $\alpha_{10 \, Hz}$ en la mayoría de los casos. Como se mencionó anteriormente, esto se debe a que en el primer caso se toman $256$ muestras para calcular la potencia de \emph{Alfa} mientras que en el segundo se utilizan únicamente $25$. A su vez, en el primer caso se utilizan los valores obtenidos por cada electrodo por separado mientras que en el segundo caso se promedian y se arma el vector de características con dos valores consecutivos. Utilizar las mediciones de los distintos electrodos en un período de tiempo describe mejor el estado que utilizar valores de dos períodos consecutivos. Se consideró inaceptable que en algunos sujetos la precisión diera muy cercana al azar. Por este motivo y por todo lo mencionado anteriormente, se utilizó el método $\alpha_{256 \, Hz}$.
 
 En las figuras \ref{fig:subject-2-10} y \ref{fig:subject-2-256} se observan gráficos de dispersión utilizando los valores de potencia de \emph{Alfa}. En ambos se observa una clara separación de estados. El estado de ojos cerrados contiene valores mayores que el estado de ojos abiertos. La figura \ref{fig:subject-2-10} cuenta con una cantidad mayor de valores atípicos, particularmente, una cantidad mayor de valores de \emph{Alfa} elevados en el estado de ojos abiertos. A su vez, en la figura \ref{fig:subject-2-256} los valores para ojos abiertos se encuentran mayormente concentrados por debajo de los valores para ojos cerrados. Por estos motivos, la precisión es mayor al utilizar el vector de cuatro dimensiones. Debido a la separación que se observa en los gráficos, fue suficiente utilizar un clasificador simple.
 
@@ -80,7 +86,7 @@ Al comparar las figuras \ref{fig:subject-1-256} y \ref{fig:subject-2-256}, se pu
 
 Cabe destacar que al contar con un vector de cuatro características, para graficar se necesitarían cuatro dimensiones. Para abordar este problema se decidió transformar el vector en un vector de dos componentes donde la primer componente es el promedio de los dos primeros valores y la segunda, el promedio de los dos últimos valores.
 
-Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores. Esta gran diferencia puede apreciarse al observar que el Sujeto $1$ obtuvo una precisión mucho menor que el resto de los sujetos.
+Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores. Otro de ellos es que el cerbero de dos personas distintas responde formas diferentes antes los estímulos. Esta gran diferencia puede apreciarse al observar que el Sujeto $1$ obtuvo una precisión mucho menor que el resto de los sujetos.
 
 Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
 
