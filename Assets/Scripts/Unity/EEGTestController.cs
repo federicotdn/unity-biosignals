@@ -69,7 +69,6 @@ public class EEGTestController : MonoBehaviour {
 	}
 
 	void OnFFT() {
-		Debug.Log (processor.FFTResults.Count);
 		AddFFTToSeries (processor.FFTResults, fftSeries);
 		AddFFTToSeries (processor.TP9FFT, tp9Series);
 		AddFFTToSeries (processor.AF7FFT, af7Series);

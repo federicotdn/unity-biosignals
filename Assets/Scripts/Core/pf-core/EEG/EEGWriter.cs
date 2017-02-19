@@ -6,7 +6,7 @@ using System.IO;
 
 namespace pfcore
 {
-	public class EEGWriter
+	internal class EEGWriter
 	{
 		private EEGReader reader;
 
@@ -60,7 +60,7 @@ namespace pfcore
 					finished = true;
 					processingThread.Join();
 					string baseFilePath = Directory.GetCurrentDirectory();
-					baseFilePath += "/" + string.Format("/{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".eeg";
+					baseFilePath += string.Format("/{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + ".eeg";
 
 					Console.WriteLine("Saving to raw packets to: " + baseFilePath);
 

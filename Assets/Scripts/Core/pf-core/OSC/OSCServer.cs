@@ -54,5 +54,10 @@ namespace OSC
 			client.BeginReceive(callBack, null);
 			Monitor.Exit(callbackLock);
 		}
+
+		public void Close() {
+			PacketReceivedEvent = null;
+			client.Close();
+		}
 	}
 }
