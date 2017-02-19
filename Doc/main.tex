@@ -12,7 +12,7 @@
 \usepackage{babelbib}
 \usepackage{float}
 \usepackage{appendix}
-\usepackage[acronym]{glossaries}
+\usepackage[section,numberedsection=autolabel,acronym]{glossaries}
 \graphicspath{ {images/} }
 
 \title{
@@ -30,14 +30,32 @@
 
 \setglossarypreamble[acronym]{Se preservaron los acrónimo en inglés para facilitar la búsqueda de los mismos y para mantener consistencia con las publicaciones ya existentes. A continuación se presenta una lista de los acrónimos utilizados y su definición.}
 
-\newacronym{psd}{PSD}{\emph{Power Spectral Density} o Densidad Espectral de Potencia}
+\newacronym{psd}{PSD}{\emph{Power Spectral Density}}
+\newacronym{spo2}{SpO\textsubscript{2}}{Pulsioximetría}
+\newacronym{eeg}{EEG}{Electroencefalografía}
+\newacronym{emg}{EMG}{Electromiografía}
+\newacronym{acat}{ACAT}{\emph{Assistive context-aware toolkit}}
+\newacronym{nasa}{NASA}{\emph{National Aeronautics and Space Administration}}
+\newacronym{ekg}{EKG}{Electrocardiograma}
+\newacronym{gsr}{GSR}{\emph{Galvanic Skin Response}}
+\newacronym{fft}{FFT}{\emph{Fourier Fast Transform}}
+\newacronym{svm}{SVM}{\emph{Support Vector Machines}}
+\newacronym{lda}{LDA}{\emph{Linear Discriminant Analisis}}
+\newacronym{bci}{BCI}{\emph{Brain-computer Interface}}
+\newacronym{muap}{MUAP}{\emph{Motor Unit Action Potential}}
+\newacronym{osc}{OSC}{\emph{Open Sound Control System}}
+\newacronym{udp}{UDP}{\emph{User Data Protocol}}
+\newacronym{sdk}{SDK}{\emph{Software Development Kit}}
+\newacronym{cil}{CIL}{\emph{Common Intermediate Language}}
+\newacronym{il2cpp}{IL2CPP}{\emph{Intermediate Language to C++}}
+\newacronym{ecs}{ECS}{\emph{Entity-Component System}}
 
 \begin{document}
 \maketitle
 
 \chapter*{Resumen}
 \justifying
-Las bioseñales consisten en señales producidas por tejidos vivos. Las técnicas utilizadas para obtener bioseñales en este trabajo fueron: EEG (Electroencefalografía), la cual consiste en la actividad bioeléctrica cerebral, EMG (Electromiografía), la cual contempla la actividad eléctrica generada por los músculos del cuerpo, y SpO2 (Pulsioximetría), la cual permite determinar la oxigenación en sangre.
+Las bioseñales consisten en señales producidas por tejidos vivos. Las técnicas utilizadas para obtener bioseñales en este trabajo fueron: \gls{eeg}, la cual consiste en la actividad bioeléctrica cerebral, \gls{emg}, la cual contempla la actividad eléctrica generada por los músculos del cuerpo, y \gls{spo2}, la cual permite determinar la oxigenación en sangre.
 
 Dichas señales, luego de ser leídas, fueron procesadas para eliminar ruido y para extraer las características de interés. Con las características extraídas se utilizaron clasificadores para determinar si el usuario realizó una determinada acción. En este caso, se utilizó para determinar si el usuario estaba con los ojos abiertos o cerrados, y para determinar si el usuario estaba haciendo fuerza con la mano o no.
 
@@ -64,9 +82,10 @@ Con la información obtenida de los clasificadores se realizaron alteraciones en
 \chapter{Conclusiones}
 \input{chapters/conclusiones}
 
-\addcontentsline{toc}{chapter}{Lista de Ácronimos}
-\printglossary[type=\acronymtype,title={Lista de Ácronimos}]
+\appendix
+\chapter{Apéndice}
 
+\printglossary[type=\acronymtype,title={Lista de Acrónimos}]
 
 \addcontentsline{toc}{chapter}{Bibliografía}
 \bibliography{bibliography}{}

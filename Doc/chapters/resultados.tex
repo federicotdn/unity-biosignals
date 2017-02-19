@@ -1,6 +1,6 @@
-En este capítulo se presentan los resultados obtenidos al procesar las señales y se realiza un breve análisis. Al registrar sesiones,  se creaba una única sesión y luego se dividía en múltiples partes. Debido a que el posicionamiento del sensor es importante y varía cuando se coloca y se retira,  y a que el estado del cuerpo cambia de un instante al otro, las bioseñales sufren variaciones. Por este motivo, se utilizaban datos de una única sesión tanto como para entrenar como para predecir. De esta manera, se buscaba que la señal sea lo más consistente posible. Para calcular la precisión se utilizó el método de validación cruzada de $k$ iteraciones. Se tomó esta decisión ya que, como se mencionó en la sección \ref{sec:classification}, partir las sesiones en dos partes y utilizar una para entrenamiento y otra para validación no resulta representativo debido a que la elección del lugar en donde se parten los datos puede influir mucho en el resultado. Se utilizaron valores de $k$ iguales a $5$, $10$ y $15$. La elección de estos valores se basó en la cantidad de muestras con la que se contaba. Luego, se promediaban los resultados arrojados por cada valor de $k$ y ese número reflejaba la precisión de la sesión. Tanto en EEG como en EMG se analizaron los siguientes clasificadores: bayesiano ingenuo, análisis discriminante lineal (LDA por sus siglas en inglés), Máquinas de vectores de soporte (SVM por sus siglas en inglés) y árboles de decisión. En ningún caso se realiza un análisis del por qué algunos clasificadores resultan mejores que otros ya que no es el foco de este proyecto.
+En este capítulo se presentan los resultados obtenidos al procesar las señales y se realiza un breve análisis. Al registrar sesiones,  se creaba una única sesión y luego se dividía en múltiples partes. Debido a que el posicionamiento del sensor es importante y varía cuando se coloca y se retira,  y a que el estado del cuerpo cambia de un instante al otro, las bioseñales sufren variaciones. Por este motivo, se utilizaban datos de una única sesión tanto como para entrenar como para predecir. De esta manera, se buscaba que la señal sea lo más consistente posible. Para calcular la precisión se utilizó el método de validación cruzada de $k$ iteraciones. Se tomó esta decisión ya que, como se mencionó en la sección \ref{sec:classification}, partir las sesiones en dos partes y utilizar una para entrenamiento y otra para validación no resulta representativo debido a que la elección del lugar en donde se parten los datos puede influir mucho en el resultado. Se utilizaron valores de $k$ iguales a $5$, $10$ y $15$. La elección de estos valores se basó en la cantidad de muestras con la que se contaba. Luego, se promediaban los resultados arrojados por cada valor de $k$ y ese número reflejaba la precisión de la sesión. Tanto en EEG como en EMG se analizaron los siguientes clasificadores: \emph{naive Bayes},  \acrshort{lda}, \gls{svm} y árboles de decisión. En ningún caso se realizó un análisis del por qué algunos clasificadores resultaron mejores que otros ya que no fue el foco de este proyecto.
 
-\section{EEG}
+\section{\acrshort{eeg}}
 
 Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo anterior, primero se comenzó utilizando los valores de potencia \emph{Alfa} que brindaba el sensor ($\alpha_{10 \, Hz}$). Para intentar mejorar la precisión, se decidió realizar una implementación propia ($\alpha_{256 \, Hz}$) y confeccionar el vector de características con cuatro elementos. Para determinar que clasificador utilizar, se utilizaron todos los conjuntos de datos y se promedio la precisión de cada clasificador. En la tabla \ref{tab:eeg-class-result} se pueden observar los resultados de cada clasificador.
  
@@ -12,9 +12,9 @@ Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo a
  \hline
  Bayesiano ingenuo & $0.732$  & $0.680$  \\
  \hline
- Análisis Discriminante Lineal (LDA)  & $0.726$ & $0.767$ \\
+ \gls{lda}  & $0.726$ & $0.767$ \\
   \hline
- Máquinas de vectores de soporte (SVM) & $0.706$ & $0.542$ \\
+  \gls{svm} & $0.706$ & $0.542$ \\
   \hline
  Árbol de decisión & $0.723$ & $0.834$ \\
  \hline
@@ -84,9 +84,9 @@ Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto 
 
 Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
 
-\section{EMG}
+\section{\acrshort{emg}}
 
-Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. Para la elección de clasificador, se realizaron pruebas sobre cuatro clasificadores distintos. Se tomaron seis sesiones de EMG grabadas, y se aplico la técnica de validación cruzada con $k$ iteraciones ( mencionada en la sección \ref{sec:classification}) por cada clasificador. Los resultados fueron los siguientes:
+Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. Para la elección de clasificador, se realizaron pruebas sobre cuatro clasificadores distintos. Se tomaron seis sesiones de \acrshort{emg} grabadas, y se aplico la técnica de validación cruzada con $k$ iteraciones ( mencionada en la sección \ref{sec:classification}) por cada clasificador. Los resultados fueron los siguientes:
 
 \begin{table}[H]
 \centering
@@ -94,13 +94,13 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
  \hline
  Clasificador & Precisión \\ 
  \hline
- Bayesiano ingenuo & $0.971$ \\
+ \emph{Naive Bayes} & $0.971$ \\
  \hline
- Análisis Discriminante Lineal & $0.958$ \\
+ \gls{lda} & $0.958$ \\
  \hline
- Máquinas de vectores de soporte & $0.498$ \\
+  \gls{svm} & $0.498$ \\
  \hline
- Árboles de decisión & $0.978$ \\
+ Árbol de decisión & $0.978$ \\
  
  \hline
 \end{tabular}
@@ -108,7 +108,7 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
 \label{tab:emg-classifiers}
 \end{table}
 
-Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de Máquinas de vectores de soporte, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. No se utilizó un clasificador más complejo, como una red neuronal, ya que era posible resolverlo con clasificadores simples. Como se observará más adelante, existe una clara separación entre los valores de un estado y el otro por lo que un clasificador simple es más que suficiente. Además, los clasificadores más complejos requieren más poder de procesamiento y requieren una gran dedicación de tiempo para determinar los mejores parámetros. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
+Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de \acrshort{svm}, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. No se utilizó un clasificador más complejo, como una red neuronal, ya que era posible resolverlo con clasificadores simples. Como se observará más adelante, existe una clara separación entre los valores de un estado y el otro por lo que un clasificador simple es más que suficiente. Además, los clasificadores más complejos requieren más poder de procesamiento y requieren una gran dedicación de tiempo para determinar los mejores parámetros. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
 
 \begin{table}[H]
 \centering
@@ -124,31 +124,31 @@ Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de pre
 
  \hline
 \end{tabular}
-\caption{Resultados de entrenamientos utilizando lecturas de EMG para distintos sujetos. Frecuencia de muestreo: $256\,Hz$.}
+\caption{Resultados de entrenamientos utilizando lecturas de \acrshort{emg} para distintos sujetos. Frecuencia de muestreo: $256\,Hz$.}
 \label{tab:emg-results}
 \end{table}
 
-Como muestran los valores de la tabla \ref{tab:emg-results}, los niveles de precisión alcanzados son muy elevados: en las tres sesiones realizadas, se logró un nivel de precisión de $95\%$, o mayor. Es necesario remarcar que al medir señales de EMG, existen varias fuentes de ruido eléctrico, que pueden afectar los valores leídos y por lo tanto perjudicar la precision del entrenador. El efecto neto de éstas fuentes de ruido varía de sesión en sesión, ya que depende de factores como la cantidad de movimiento de los electrodos en relación a la piel, o la presencia de dispositivos que emitan radiación electromagnética\cite{emg-delsys}.
+Como muestran los valores de la tabla \ref{tab:emg-results}, los niveles de precisión alcanzados son muy elevados: en las tres sesiones realizadas, se logró un nivel de precisión de $95\%$, o mayor. Es necesario remarcar que al medir señales de \acrshort{emg}, existen varias fuentes de ruido eléctrico, que pueden afectar los valores leídos y por lo tanto perjudicar la precision del entrenador. El efecto neto de éstas fuentes de ruido varía de sesión en sesión, ya que depende de factores como la cantidad de movimiento de los electrodos en relación a la piel, o la presencia de dispositivos que emitan radiación electromagnética\cite{emg-delsys}.
 
 A continuación, se muestran los gráficos de dispersión de las dos sesiones más largas, que permiten visualizar las diferencias entre los vectores de características de ambos estados de tensión de músculo.
 
  \begin{figure}[H]
 	\centering
     \includegraphics[width=1\textwidth]{fede-1.png}
-    \caption{Gráfico de dispersión del vector de características EMG para la sesión del sujeto $1$.}
+    \caption{Gráfico de dispersión del vector de características \acrshort{emg} para la sesión del sujeto $1$.}
 	\label{fig:emg-graph-s1}
 \end{figure}
 
  \begin{figure}[H]
 	\centering
     \includegraphics[width=1\textwidth]{javo-1.png}
-    \caption{Gráfico de dispersión del vector de características EMG para la sesión del sujeto $3$.}
+    \caption{Gráfico de dispersión del vector de características \acrshort{emg} para la sesión del sujeto $3$.}
 	\label{fig:emg-graph-s3}
 \end{figure}
 
 En la figura \ref{fig:emg-graph-s1}, se puede observar una clara separación entre las muestras tomadas con el musculo relajado, y las muestras tomadas con el musculo tensado. En la figura \ref{fig:emg-graph-s3} se puede observar el mismo efecto, con una separación aun mas marcada. Esta clara separación fue la que permitió utilizar un clasificador simple. También, se puede notar como las muestras tomadas con músculo relajado se encuentran concentradas en un área pequeña, debido a la poca variación de potencial medido de muestra en muestra. Por el otro lado, las muestras tomadas con músculo tensado se encuentran dispersas, ya que al tensar el músculo no siempre es posible mantener el mismo nivel fuerza ejercida.
 
-Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia de muestreo del modulo EMG fue cambiada de $256\,Hz$ a $512\,Hz$. Para comprobar que la precision de predicción se mantuvo luego de este cambio, se grabaron nuevas sesiones.
+Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia de muestreo del modulo \acrshort{emg} fue cambiada de $256\,Hz$ a $512\,Hz$. Para comprobar que la precision de predicción se mantuvo luego de este cambio, se grabaron nuevas sesiones.
 
 \begin{table}[H]
 \centering
@@ -164,7 +164,7 @@ Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia d
 
  \hline
 \end{tabular}
-\caption{Resultados de entrenamientos utilizando lecturas de EMG para varios sujetos. Frecuencia de muestreo: $512\,Hz$.}
+\caption{Resultados de entrenamientos utilizando lecturas de \acrshort{emg} para varios sujetos. Frecuencia de muestreo: $512\,Hz$.}
 \label{tab:emg-results-512}
 \end{table}
 

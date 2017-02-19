@@ -8,7 +8,7 @@ Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de
 	\item \textbf{Existencia:}
 		\begin{itemize}
 			\item Permanentes: Existen sin necesidad de un impacto artificial, disparador o excitación externa al cuerpo y están disponibles todo el tiempo. Por ejemplo, la señal electrocardiográfica es inducida por la excitación eléctrica del corazón.
-			\item Inducidas: Son disparadas artificialmente, excitadas o inducidas externamente. Su duración está ligada a la duración de la excitación. Cuando el impacto artificial termina, la bioseñal se atenúa. Por ejemplo, la pulsioximetría (SpO\textsubscript{2}) utiliza luz para detectar el oxígeno en sangre y la señal dura tanto tiempo como dicha luz se encuentre encendida.
+			\item Inducidas: Son disparadas artificialmente, excitadas o inducidas externamente. Su duración está ligada a la duración de la excitación. Cuando el impacto artificial termina, la bioseñal se atenúa. Por ejemplo, la \gls{spo2} utiliza luz para detectar el oxígeno en sangre y la señal dura tanto tiempo como dicha luz se encuentre encendida.
 		\end{itemize}
 	\item \textbf{Dinamismo:}
 		\begin{itemize}
@@ -17,10 +17,10 @@ Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de
 		\end{itemize}
 	\item \textbf{Origen:}
 		\begin{itemize}
-			\item Eléctricas: Estas incluyen señales como electrocardiograma, que refleja la actividad eléctrica del corazón, electroencefalograma (EEG), que refleja la actividad eléctrica de las neuronas,  electromiografma (EMG), que refleja la actividad eléctrica de los músculos, o la respuesta galvánica de la piel (GSR), que refleja las variaciones de energía en la piel.
+			\item Eléctricas: Estas incluyen señales como \gls{ekg}, que refleja la actividad eléctrica del corazón, \gls{eeg}, que refleja la actividad eléctrica de las neuronas,  \gls{emg}, que refleja la actividad eléctrica de los músculos, o \gls{gsr}, que refleja las variaciones de energía en la piel.
 			\item Magnéticas: Reflejan un campo magnético inducido. Por ejemplo un magnetocardiograma utiliza los campos magnéticos emitidos por las corrientes eléctricas generadas por la excitación del corazón.
 			\item Mecánicas: Incluyen deformaciones del cuerpo o vibraciones en la piel. Por ejemplo un mecanorespirograma utiliza los movimientos del abdomen para medir el ritmo cardíaco.
-			\item Ópticas: Utilizan la absorción de la luz. Se utiliza una luz artificial. Un ejemplo es la pulsioxomietría (SpO2).
+			\item Ópticas: Utilizan la absorción de la luz. Se utiliza una luz artificial. Un ejemplo es la \gls{spo2}.
 			\item Acústicas: Utiliza diversos sonidos del cuerpo como por ejemplo sonidos cardíacos.
 			\item Químicas: Reflejan la composición química y los cambios temporales en los elementos sólidos, líquidos y gaseosos del cuerpo.
 			\item Térmicas: Utilizan la absorción y pérdida de calor en el cuerpo.
@@ -37,7 +37,7 @@ Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de
 
 \section{Obtención y Procesamiento de Señales}
 
-En la figura \ref{fig:signal-pipeline} se pueden observar las distintas etapas por las que pasa una bioseñal al ser procesada: obtención de la señal fisiológica de un sensor, utilización de un transductor, procesamiento analógico, digitalización, transmisión, procesamiento de la señal digital, extracción de características y clasificación, y salida.
+En la figura \ref{fig:signal-pipeline} se pueden observar las distintas etapas por las que pasa una bioseñal al ser procesada: obtención de la señal fisiológica de un sensor, utilización de un transductor, procesamiento analógico, digitalización, transmisión, procesamiento de la señal digital, extracción de características y clasificación, y salida del clasificador.
 
 \begin{figure}[H]
 	\centering
@@ -119,18 +119,18 @@ Luego de digitalizar la señal, el dispositvo puede transmitirla hacia alguna co
 
 \subsection{Procesamiento de la Señal Digital}
 
-Como se mencionó anteriormente, la señal digital puede presentar ruido que se genera al digitalizarla. En algunos casos, hay que aplicar filtros para reducir el ruido. Existen diversos filtros. Uno de ellos es el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran haber introducido.. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
+Como se mencionó anteriormente, la señal digital puede presentar ruido que se genera al digitalizarla. En algunos casos, hay que aplicar filtros para reducir el ruido. Existen diversos filtros. Uno de ellos es el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran haber introducido. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
 $$ g(x) = \frac{1}{\sqrt{2 * \pi} * \sigma } * e^{-\frac{x^{2}}{2 * \sigma^{2}}} $$
 
 Muchas veces las señales pueden tener una cierta tendencia. Es decir, se encuentran desfasadas. Para compensar esta tendencia, se utiliza una técnica conocida como \emph{detrending}. Esta consiste en eliminar dicha tendencia.  La forma más simple de realizar \emph{detrending} es calcular la media del sensor y restarla a cada valor. Existen otros algoritmos más complejos de \emph{detrending} pero estos escapan al foco de este trabajo.
 
-Una vez que se redujo el ruido, se pueden aplicar otros filtros o continuar. Como se mencionó anteriormente muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $\mu V$ (microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un EMG, puede significar un impuslo de fuerza. En un EEG, puede significar un pestañeo.
+Una vez que se redujo el ruido, se pueden aplicar otros filtros o continuar. Como se mencionó anteriormente muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $\mu V$ (microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un \acrshort{emg}, puede significar un impuslo de fuerza. En un \acrshort{eeg}, puede significar un pestañeo.
 
 Otro procesamiento que se le puede aplicar es la transformada discreta de \emph{Fourier}. La transformada de \emph{Fourier} transforma una función que se encuentra en el dominio del tiempo a una función que se encuentra en el dominio de la frecuencia. La transformada de \emph{Fourier} se define de la siguiente manera:
 
 $$ x_{k} = \sum_{n=0}^{N-1} x_{n}e^{-\frac{2 \pi i}{N}kn} \qquad k = 0,\hdots, N - 1 $$
 
-Computar la Transformada de \emph{fourier} tiene un costo computacional alto. Por este motivo, generalmente, se calcula la Transformada Rápida de \emph{Fourier} (\emph{FFT} por sus siglas en inglés). Esta es una aproximación a la Transformada de \emph{Fourier} y tiene un costo computacional menor. Para aplicar la \emph{FFT} se acumulan valores durante un período de tiempo. Esto se conoce como ventana. A esta ventana, se le puede aplicar una función de ventana. Una función de ventana es una función matemática en la cual el resultado es $0$ si los valores se encuentran fuera de un determinado intervalo y distinto de $0$ si se encuentran dentro de él. 
+Computar la Transformada de \emph{fourier} tiene un costo computacional alto. Por este motivo, generalmente, se calcula la \acrshort{fft}. Esta es una aproximación a la Transformada de \emph{Fourier} y tiene un costo computacional menor. Para aplicar la \acrshort{fft} se acumulan valores durante un período de tiempo. Esto se conoce como ventana. A esta ventana, se le puede aplicar una función de ventana. Una función de ventana es una función matemática en la cual el resultado es $0$ si los valores se encuentran fuera de un determinado intervalo y distinto de $0$ si se encuentran dentro de él. 
 
 Una vez que la función se encuentra en el dominio de la frecuencia, se puede proceder con el procesamiento. Se selecciona el rango de frecuencias de interés y se le puede aplicar un filtro pasa banda, que deja pasar un determinado rango de frecuencias de una señal y atenúa el resto. Luego de aplicar el filtro pasa banda, se cuenta con las frecuencias de interés y se continúa con el procesamiento. Una alternativa es calcular la \acrshort{psd}. Esta se define como:
 
@@ -142,11 +142,11 @@ Esta potencia puede ser utilizada luego como una característica de interés per
 
 \section{Extracción de Características de Interés y Clasificación} \label{sec:classification}
 
-Cuando se cuenta con la señal procesada, se puede utilizar directamente con reglas simples como utilizar un umbral. Este es el caso en el que se estén buscando picos. Si se buscan patrones más complejos, hay que utilizar reconocimiento de patrones. El reconocimiento de patrones tiene dos pasos principales:
+Cuando se cuenta con la señal pre-procesada, se utilizan métodos de procesamiento de señales tradicionales que buscan características distinguibles.  Se puede utilizar una regla simple como un umbral. Por ejemplo al buscar picos, si la pendiente excede un umbral se le asocia un estado (pestañeo, impulso de fuerza, etc) y sino, otro. Si se buscan patrones más complejos, hay que utilizar métodos de clasificación más robustos que utilizan reconocimiento de patrones. El reconocimiento de patrones tiene dos pasos principales:
 
 \begin{itemize}
   \item \textbf{Extracción de características:} Esta etapa consiste en elegir características de la señal que sean relevantes al estado que se quiere clasificar. Por lo general estás características se colocan en un vector conocido como vector de características. El extractor utiliza como entrada una o más señales y las transforma en características útiles. Las características pueden ser por ejemplo ciertas bandas de frecuencia, calcular la \acrshort{psd} sobre una determinada banda de frecuencias, el valor de las derivadas en un instante del tiempo, entre otros. 
-  \item \textbf{Clasificación:} En este paso se le asigna una clase a un conjunto de características (vector de características) extraído de la señal. Aquí se utilizan algoritmos de aprendizaje automático. Existen diversos algoritmos de clasificación, por ejemplo análisis discriminante lineal, árbol de decisión, clasificador bayesiano, entre otros \cite{eeg-tutorial}. También existen clasificadores más complejos como la utilización de redes neuronales. La elección del clasificador depende de la complejidad del problema.
+  \item \textbf{Clasificación:} En este paso se le asigna una clase a un conjunto de características (vector de características) extraído de la señal. Aquí se utilizan algoritmos de aprendizaje automático. Existen diversos algoritmos de clasificación, por ejemplo \gls{lda}, árbol de decisión, \emph{naive Bayes}, entre otros \cite{eeg-tutorial}. También existen clasificadores más complejos como la utilización de redes neuronales. La elección del clasificador depende de la complejidad del problema.
 \end{itemize}
 
 Utilizar aprendizaje automático consiste en dos etapas:
@@ -156,8 +156,6 @@ Utilizar aprendizaje automático consiste en dos etapas:
 	\item \textbf{Uso:} Consiste en usar el modelo (características y clasificador) obtenido durante la calibración para poder reconocer el estado del usuario \cite{eeg-tutorial}. 
 \end{itemize}
 
-En el caso de utilizar un EEG para detectar si el usuario tiene los ojos cerrados, en la etapa de calibración se obtienen los datos y extraen las características deseadas y se entrena al clasificador indicando a que estado (ojos abiertos o cerrados) corresponde cada dato. Luego, en la etapa de uso, se extraen las características de la señal del usuario y se envían al clasificador para que indique en que estado se encuentra.
-
 \begin{figure}[H]
 	\centering
     \includegraphics[width=0.8\textwidth]{eeg-pipeline.png}
@@ -165,9 +163,9 @@ En el caso de utilizar un EEG para detectar si el usuario tiene los ojos cerrado
 	\label{fig:eeg-pipeline}
 \end{figure}
 
-En la figura \ref{fig:eeg-pipeline} se puede observar lo descripto anteriormente. Primero, se reciben las señales. Luego, se extraen las características. En este caso se trata de frecuencias asociadas a la corteza motora. Una vez que el vector de características fue creado, se envía al clasificador (en este caso análisis de discriminante lineal). Finalmente, el clasificador determina a que clase pertenece cada vector. En este ejemplo, se intento determinar si el usuario imaginó mover la mano derecha o la izquierda. 
+En la figura \ref{fig:eeg-pipeline} se puede observar lo descripto anteriormente. Primero, se reciben las señales. Luego, se extraen las características. En este caso se trata de frecuencias asociadas a la corteza motora. Una vez que el vector de características fue creado, se envía al clasificador (en este caso \acrshort{lda}). En la etapa de calibración, se entrena al clasificador indicándole en que estado se encuentra el usuario para cada vector de características.  Finalmente, el clasificador determina a que clase pertenece cada vector. En este ejemplo, se intento determinar si el usuario imaginó mover la mano derecha o la izquierda. 
 
-Para medir la precisión del clasificador se arma una matriz de confusión. Esta, es una matriz de dos dimensiones en la cuál una dimensión representa los valores actuales y otra los valores predecidos. Por ejemplo, si utilizamos el ejemplo de ojos cerrados o abiertos, la matriz se armaría de la siguiente manera:
+Para medir la precisión del clasificador se utiliza una matriz de confusión. Esta, es una matriz de dos dimensiones en la cuál una dimensión representa los valores actuales y otra los valores predichos. Por ejemplo, si se quisiera detectar sin el usuario se encuentra con los ojos cerrados o abiertos, la matriz se armaría de la siguiente manera:
 
 \[
 \textrm{Mat} = \begin{blockarray}{ccc}
@@ -179,7 +177,7 @@ Para medir la precisión del clasificador se arma una matriz de confusión. Esta
 \end{blockarray}
  \]
  
- , donde $ A $ representa el estado de ojos abiertos y $ C $, el de ojos cerrados. La primera dimensión representa el valor obtenido y la segunda el valor predecido. Por lo tanto, $Mat_{0,0}$ representa los positivos verdaderos ($TP$) (las veces que acertó el clasificador cuando el usuario tenía los ojos abiertos), $Mat_{0,1}$ representa los falsos negativos ($FN$) (valores que el clasificador clasificó como $C$ pero en realidad eran $A$), $Mat_{1,0}$ representa los falsos positivos ($FP$) (valores que el clasificador clasificó como $A$ pero en realidad eran $C$), y $Mat_{1,1}$ representa los verdaderos negativos ($TN$) (valores que el clasificador clasificó como $C$ y realmente eran $C$). Utilizando esta matriz se puede obtener la precisión, la cuál se define de la siguiente manera:
+ , donde $ A $ representa el estado de ojos abiertos y $ C $, el de ojos cerrados. La primera dimensión representa el valor obtenido y la segunda el valor predicho. Por lo tanto, $Mat_{0,0}$ representa los positivos verdaderos ($TP$) (las veces que acertó el clasificador cuando el usuario tenía los ojos abiertos), $Mat_{0,1}$ representa los falsos negativos ($FN$) (valores que el clasificador clasificó como $C$ pero en realidad eran $A$), $Mat_{1,0}$ representa los falsos positivos ($FP$) (valores que el clasificador clasificó como $A$ pero en realidad eran $C$), y $Mat_{1,1}$ representa los verdaderos negativos ($TN$) (valores que el clasificador clasificó como $C$ y realmente eran $C$). Utilizando esta matriz se puede obtener la precisión, la cuál se define de la siguiente manera:
  
 $$ ACC = \frac{TP + TN}{P + N} $$ 
 , donde $P =$ total de casos positivos y $ N =$ total de casos negativos. O simplemente:
@@ -190,20 +188,20 @@ Los valores cercanos a $0.5$ implican que el clasificador es malo y es azar. Cua
 
 Para determinar que parámetros de ajuste son los mejores para un modelo se puede utilizar el método de validación cruzada. Este consiste en subdividir un conjuntos de datos en dos subconjuntos, utilizar uno de ellos como datos de predicción y otro como de entrenamiento. Luego se validan los subconjuntos de entrenamiento contra el subconjunto de predicción y se toma la media. La validación cruzada más simple es el método de regresión. Aquí simplemente se dividen los datos de la muestra en dos particiones: una de entrenamiento y una de validación. Este método es rápido de computar pero el problema es que la evaluación puede depender en gran medida de como es la división entre datos de prueba y de entrenamiento. La varianza puede ser muy elevada. Una mejora a este método de validación cruzada de k iteraciones cruzadas. Este consiste en dividir los datos en $k$ subconjuntos y utilizar   $k$ veces regresión lineal. Cada iteración se elige un subconjunto como conjunto de validación y el resto son usados como conjuntos de entrenamiento. Es decir, se elige un único subconjunto de datos como conjunto de validación y los $k -1$ restantes, se utilizan como conjunto de entrenamiento. Luego se toma el promedio de todas las iteraciones \cite{cross-validation}.
 
-\subsection{Salida}
+\subsection{Salida del Clasificador}
 
 Una vez que la señal fue procesada, la información obtenida está lista para ser utilizada. La salida puede ser, por ejemplo, una API de una librería que le permite a un usuario acceder a la información de forma amigable o una visualización en la computadora.
 
 \section{Señales de Interés}
 
 En la sección \ref{sec:biosignals} se introdujo el concepto de bioseñales y se mencionaron algunas de ellas. Este proyecto tiene foco en tres de ellas: 
-electroencefalografía, electromiografía y pulsioximetría. En las siguientes secciones se brindará más información sobre las mismas.
+\gls{eeg}, \gls{emg} y \gls{spo2}. En las siguientes secciones se brindará más información sobre las mismas.
 
-\subsection{Electroencefalografía (EEG)}
+\subsection{\gls{eeg}}
 
-La electroencefalografía detecta la actividad eléctrica de las neuronas, es decir, del cerebro. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica. Los dispositivos utilizados para realizar un eletctroencefalograma cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal digital que se obtiene es el nivel de potencial eléctrico en cada electrodo. Un electroencefalograma no sirve si no se le da alguna aplicación. Aquí aparece el concepto de Interfaz Cerebro-Computora (también conocido por sus silgas en inglés como BCI). "BCI es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de BCI no es determinar la intensión de una persona espíando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
+La \gls{eeg} detecta la actividad eléctrica de las neuronas, es decir, del cerebro. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica. Los dispositivos utilizados para realizar un eletctroencefalograma cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal digital que se obtiene es el nivel de potencial eléctrico en cada electrodo. Un electroencefalograma no sirve si no se le da alguna aplicación. Aquí aparece el concepto de \gls{bci}. "\acrshort{bci} es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de \acrshort{bci} no es determinar la intensión de una persona espíando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
 
-Al aplicar la Transformada de \emph{Fourier} a la señal EEG, se obtienen distintas frecuencias. En EEG, dichas frecuencias se dividen en cinco bandas:
+Al aplicar la Transformada de \emph{Fourier} a la señal \acrshort{eeg}, se obtienen distintas frecuencias. En \acrshort{eeg}, dichas frecuencias se dividen en cinco bandas:
 
 \begin{itemize}
  \item \textbf{\emph{Alfa} ($\alpha$):} $ 8 \, Hz \leq f \leq 13 \, Hz$. Las ondas \emph{Alfa} se suprimen cuando los ojos se encuentran abiertos y hay estimulación visual presente. Cuando los ojos se encuentran cerrados, estas aumentan.
@@ -213,19 +211,19 @@ Al aplicar la Transformada de \emph{Fourier} a la señal EEG, se obtienen distin
  \item \textbf{\emph{Gamma} ($\gamma$):} $ 30 \, Hz \leq f \leq 60 \, Hz $. Algunos expertos consideran los valores de $\beta > 30 \, Hz $ como una quinta banda. \cite{neural-eng}.
 \end{itemize}
 
-Como las frecuencias de interés abarcan hasta por los menos los $60 \, Hz$, se debe debe muestrar al menos a a $120 \, Hz$. Como se menciono anteriormente, muchas veces se utiliza una frecuencia de muestreo mayor y por lo general en EEG, se utiliza una frecuencia de muestreo superior a los $200 \, Hz$ \cite{neural-eng}.
+Como las frecuencias de interés abarcan hasta por los menos los $60 \, Hz$, se debe debe muestrar al menos a a $120 \, Hz$. Como se menciono anteriormente, muchas veces se utiliza una frecuencia de muestreo mayor y por lo general en \acrshort{eeg}, se utiliza una frecuencia de muestreo superior a los $200 \, Hz$ \cite{neural-eng}.
 
-\subsection{Electromiografía (EMG)}
+\subsection{\gls{emg}}
 
-La electromiografía consiste en registrar la actividad eléctrica producida por los músculos del cuerpo. La actividad eléctrica surge cuando una unidad motora es activada por el sistema nervioso del cuerpo: una unidad motora consiste en una motor neurona, y todas las fibras musculas a la que esta conectada.  Cuando se activa la unidad motora, se genera un voltaje (llamado MUAP, sus siglas en inglés) y se contraen los músculos.  Entonces, la señal EMG consiste en medir la suma de varios MUAPs de uno o mas músculos específicos. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica.
+La \gls{emg} consiste en registrar la actividad eléctrica producida por los músculos del cuerpo. La actividad eléctrica surge cuando una unidad motora es activada por el sistema nervioso del cuerpo: una unidad motora consiste en una motor neurona, y todas las fibras musculas a la que esta conectada.  Cuando se activa la unidad motora, se genera un voltaje (llamado \acrshort{muap}) y se contraen los músculos.  Entonces, la señal \acrshort{emg} consiste en medir la suma de varios \acrshort{muap}s de uno o mas músculos específicos. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica.
 
-El rango de la amplitud de una señal EMG es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto. Por lo tanto, se debe muestrear al menos a $300 \, Hz$.
+El rango de la amplitud de una señal \acrshort{emg} es de aproximadamente $0\ mV$ a $10\ mV$, y su frecuencia de $0\, Hz$ a $500\, Hz$.  Sin embargo, el rango dominante de energía de la señal es de los $50\, Hz$ a $150\, Hz$, el cual es el que se intenta medir en este proyecto. Por lo tanto, se debe muestrear al menos a $300 \, Hz$.
 
-\subsection{Pulsioximetría (SpO\textsubscript{2})}
+\subsection{\gls{spo2}}
 
-La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{SpO2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{SpO2-2}.  
+La pulsioximetría permite determinar el porcentaje de sangre arterial saturado con oxígeno. Esta técnica no es invasiva y se basa en medir la absorción de luz roja e infraroja que pasa por el oído o dedo de una persona \cite{spo2-1}. Se basa medir una señal llamada \emph{Fotopletismografía}, la cual es una medición óptica del cambio de volumen de sangre en las arterias. Estas son obtenidas irradiando dos longitudes de onda de luz distintas a través del tejido. Existen dos formas de leer la oxigenación en sangre: transmisión y reflexión de la luz. En transmisión, se envían haces de luz utilizando una luz LED y se utiliza un fotodetector del otro lado que detecta estos haces. En cambio, en reflexión, se coloca un fotodetector del mismo lado que la luz led y se detecta la reflexión de la luz \cite{spo2-2}.  
 
-El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{SpO2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. Esta señal es inducida, ya que se requiere de la utilización de una luz, dinámica, ya que varía de forma considerable en el tiempo, y, óptica. En este caso, la salida del transductor es binaria. Indica si ha habido un pico o no, por lo que no se genera ruido al digitalizarla.
+El corazón bombea sangre a través de las arterias de forma continua. Este es conocido como el ciclo cardíaco. Este ciclo puede ser observado con un pulsioximetro ya que se generan variaciones de volumen en las arterias \cite{spo2-2}. En la figura \ref{fig:cardiac-cycle} se pueden observar los picos generados por el ciclo cardíaco. Dichos picos son utilizados para estimar el ritmo cardíaco. Esta señal es inducida, ya que se requiere de la utilización de una luz, dinámica, ya que varía de forma considerable en el tiempo, y, óptica.
 
 \begin{figure}[H]
 	\centering
