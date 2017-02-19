@@ -41,8 +41,8 @@
     <Compile Include="SPO2\SPO2Packet.cs" />
     <Compile Include="SPO2\SPO2Processor.cs" />
     <Compile Include="SPO2\SPO2Reader.cs" />
-	<Compile Include="SPO2\SPO2Writer.cs" />
-    <Compile Include="EMG\EMGAnalysis.cs" />
+    <Compile Include="SPO2\SPO2Writer.cs" />
+    <Compile Include="EMG\EMGCSV.cs" />
     <Compile Include="EMG\EMGFileReader.cs" />
     <Compile Include="EMG\EMGPacket.cs" />
     <Compile Include="EMG\EMGProcessor.cs" />

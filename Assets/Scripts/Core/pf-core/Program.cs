@@ -9,7 +9,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGAnalysis, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, EEGCSV, SPO2Writer
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGCSV, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, EEGCSV, SPO2Writer
 	}
 
 	class MainClass
@@ -56,9 +56,9 @@ namespace pfcore
 					Console.WriteLine("Running on EEGTrain mode!\n");
 					RunEEGTrain(args[1], args[2]);
 					break;
-				case RunMode.EMGAnalysis:
+				case RunMode.EMGCSV:
 					Console.WriteLine("Running EMG Analysis on file.");
-					RunEMGAnalysis(args[1]);
+					RunEMGCSV(args[1]);
 					break;
 				case RunMode.EEGConvert:
 					Console.WriteLine("Running EEG Convert");
@@ -152,10 +152,10 @@ namespace pfcore
 			}
 		}
 
-		private static void RunEMGAnalysis(string filename)
+		private static void RunEMGCSV(string filename)
 		{
-			EMGAnalysis analysis = new EMGAnalysis(filename);
-			analysis.PrintResults(true);
+			EMGCSV analysis = new EMGCSV(filename);
+			analysis.CreateCSV();
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
 		}
@@ -213,8 +213,8 @@ namespace pfcore
 			List<string> filepaths = getFiles(directoryPath, "*.emg");
 			List<List<TrainingValue>> dataSets = new List<List<TrainingValue>>();
 			foreach (string filepath in filepaths) {
-				List<EMGPacket> packets = EMGAnalysis.ReadPackets(filepath);
-				List<TrainingValue> data = EMGAnalysis.GetTrainingValues(packets, false);
+				List<EMGPacket> packets = EMGCSV.ReadPackets(filepath);
+				List<TrainingValue> data = EMGCSV.GetTrainingValues(packets, false);
 				dataSets.Add(data);
 			}
 
@@ -225,6 +225,8 @@ namespace pfcore
 			};
 
 			CrossValidation.CrossValidate(dataSets, ks, EMGProcessor.FEATURE_COUNT, filepaths);
+
+            Console.ReadKey();
 		}
 
 		private static void RunEEGJoin(string file1, string file2, string newName) {

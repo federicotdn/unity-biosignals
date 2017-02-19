@@ -90,7 +90,7 @@ Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto 
 
 Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
 
-\section{\acrshort{emg}}
+\section{\acrshort{emg}} \label{sec:emg-results}
 
 Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores leídos fueron procesados para obtener un vector de dos características cada $128$ muestras, y luego fueron alimentados a un clasificador. Para la elección de clasificador, se realizaron pruebas sobre cuatro clasificadores distintos. Se tomaron seis sesiones de \acrshort{emg} grabadas, y se aplico la técnica de validación cruzada con $k$ iteraciones ( mencionada en la sección \ref{sec:classification}) por cada clasificador. Los resultados fueron los siguientes:
 
@@ -100,13 +100,13 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
  \hline
  Clasificador & Precisión \\ 
  \hline
- \emph{Naive Bayes} & $0.971$ \\
+ \emph{Naive Bayes} & $0.962$ \\
  \hline
- \gls{lda} & $0.958$ \\
+ \gls{lda} & $0.951$ \\
  \hline
-  \gls{svm} & $0.498$ \\
+  \gls{svm} & $0.457$ \\
  \hline
- Árbol de decisión & $0.978$ \\
+ Árbol de decisión & $0.973$ \\
  
  \hline
 \end{tabular}
@@ -164,9 +164,13 @@ Como se menciono en la sección \ref{sec:emg-signal-processing}, la frecuencia d
  \hline
  1 & $0.972$ & $284$ \\
  \hline
- 2 & $0.984$ & $292$ \\
+ 2 & $0.991$ & $339$ \\
  \hline
- 3 & $0.991$ & $339$ \\
+ 3 & $0.984$ & $292$ \\
+ \hline
+ 4 & $0.953$ & $130$ \\
+ \hline
+ 5 & $0.969$ & $146$ \\
 
  \hline
 \end{tabular}
@@ -192,7 +196,7 @@ Como se puede observar en la tabla \ref{tab:emg-results-512}, el nivel de precis
 
 Las figuras \ref{fig:emg-graph-s1-512} y \ref{fig:emg-graph-s3-512} muestran, nuevamente, una clara separación entre las muestras tomadas durante el tiempo que se mantuvo el músculo relajado y tensado.
 
-En definitiva, los niveles de precision alcanzados utilizando las técnicas detalladas en este informe fueron muy elevados ($97\%$ o más en la mayoría de los casos). Éstos valores resultaron ser más que suficientes para el desarrollo de las simulaciones interactivas, que en sí también fueron diseñadas teniendo en cuenta que la precision de predicción prácticamente nunca podría ser del $100\%$.
+En definitiva, los niveles de precision alcanzados utilizando las técnicas detalladas en este informe fueron muy elevados ($95\%$ o más en todos los casos). Éstos valores resultaron ser más que suficientes para el desarrollo de las simulaciones interactivas, que en sí también fueron diseñadas teniendo en cuenta que la precision de predicción prácticamente nunca podría ser del $100\%$.
 
 \section{\acrshort{spo2}}
 
