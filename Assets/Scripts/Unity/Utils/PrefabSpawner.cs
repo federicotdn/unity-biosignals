@@ -6,7 +6,11 @@ public class PrefabSpawner : MonoBehaviour {
     private GameObject lastInstance = null;
 	
     void Start() {
-        Respawn();
+        if (transform.childCount > 0) {
+            lastInstance = transform.GetChild(0).gameObject;
+        } else {
+            Respawn();
+        }
     }
 
     public void Respawn() {

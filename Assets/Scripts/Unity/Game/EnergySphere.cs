@@ -21,9 +21,14 @@ public class EnergySphere : MonoBehaviour {
     private float targetScale;
     private float transitionDuration;
 
+    private AudioSource audioSource;
+
 	void Start () {
         lastScale = scaleFactor;
         sphereCollider.radius = START_RADIUS;
+        audioSource = GetComponent<AudioSource>();
+
+        audioSource.Play();
     }
 
     public void EnableAutoDestroy() {
@@ -41,6 +46,10 @@ public class EnergySphere : MonoBehaviour {
         scaleFactor = newScale;
         sphereCollider.radius = START_RADIUS * scaleFactor;
         particleTransform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+        if (audioSource != null) {
+            audioSource.pitch = Mathf.Clamp(scaleFactor, 0.1f, 3.0f);
+            audioSource.volume = Mathf.Clamp(scaleFactor / 4, 0.0f, 1.0f);
+        }
     }
 
     void Update() {
@@ -79,6 +88,5 @@ public class EnergySphere : MonoBehaviour {
         }
 
         Explode();
-        Debug.Log("collision");
     }
 }
