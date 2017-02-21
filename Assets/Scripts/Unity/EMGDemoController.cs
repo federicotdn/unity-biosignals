@@ -1,5 +1,6 @@
 ﻿using pfcore;
 using UnityEngine;
+using UnityStandardAssets.Characters.FirstPerson;
 
 public class EMGDemoController : MonoBehaviour {
 
@@ -7,6 +8,8 @@ public class EMGDemoController : MonoBehaviour {
     private EMGManager manager;
     private EMGProcessor processor;
 
+    public FirstPersonController fpsController;
+    public EMGTrainingController trainingController;
     public EnergySphereGun sphereGun;
 
     void Start () {
