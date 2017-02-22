@@ -21,6 +21,8 @@ public class EnergySphere : MonoBehaviour {
     private float targetScale;
     private float transitionDuration;
 
+    private bool destroyOnContact = false;
+
     private AudioSource audioSource;
 
 	void Start () {
@@ -32,6 +34,7 @@ public class EnergySphere : MonoBehaviour {
     }
 
     public void EnableAutoDestroy() {
+        destroyOnContact = true;
         StartCoroutine(WaitAndExplode(MAX_LIFE_TIME));
     }
 
@@ -83,7 +86,7 @@ public class EnergySphere : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision collision) {
-        if (collision.gameObject.GetComponent<EnergySphere>() != null) {
+        if (collision.gameObject.GetComponent<EnergySphere>() != null || !destroyOnContact) {
             return;
         }
 
