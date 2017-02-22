@@ -136,6 +136,7 @@ namespace pfcore
 			else if (mode == Mode.PREDICTING)
 			{
 				predictedMuscleState = MuscleState.NONE;
+                trainer = new Trainer(FEATURE_COUNT, ClassifierType.DecisionTree);
 			}
 			else if (mode == Mode.WRITING)
 			{
@@ -246,8 +247,11 @@ namespace pfcore
 
 		private void EndTraining()
 		{
-			Train(trainingData, trainer);
-			trainingData.Clear();
+            if (trainingData.Count > 0) {
+                Train(trainingData, trainer);
+            }
+
+            trainingData.Clear();
 		}
 
 		internal static void Train(List<TrainingValue> trainingData, Trainer trainer)

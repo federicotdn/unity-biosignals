@@ -12,14 +12,6 @@ public class EMGWidget : MonoBehaviour {
 
     private int ticks = 0;
 
-	void Start () {
-		
-	}
-	
-	void Update () {
-		
-	}
-
     public void WidgetCallback() {
         EMGProcessor proc = EMGManager.Instance.Processor;
         ticks++;
