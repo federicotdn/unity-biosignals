@@ -104,7 +104,6 @@ public class Zombie : Humanoid,  PoolableObject<Zombie> {
 				growlTimer.Reset ();
 				AudioSrc.PlayOneShot (growlClip);
 				AudioSrc.volume = 1;
-				Debug.Log ("Growl");
 			}
 
 			growlTimer.Update (Time.deltaTime);

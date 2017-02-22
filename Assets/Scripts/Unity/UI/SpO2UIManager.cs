@@ -21,8 +21,8 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 		playerWinsPanel.SetActive (false);
 		pausePanel.SetActive (false);
 		portInput.text = SpO2Manager.Instance.portName;
-		SpO2Manager.Instance.minBPM = minBPMSlider.value;
-		SpO2Manager.Instance.maxBPM = maxBPMSlider.value;
+		minBPMSlider.Value = SpO2Manager.Instance.minBPM;
+		SpO2Manager.Instance.maxBPM = SpO2Manager.Instance.minBPM;
 	}
 	
 	// Update is called once per frame
@@ -31,7 +31,10 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 	}
 
 	public void Retry() {
-		loadingPanel.SetActive (false);
+		loadingPanel.SetActive (true);
+		gameOverPanel.SetActive (false);
+		playerWinsPanel.SetActive (false);
+		pausePanel.SetActive (false);
 		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
@@ -55,8 +58,8 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 			Cursor.visible = true;
 		} else {
 			Cursor.visible = false;
-			SpO2Manager.Instance.minBPM = minBPMSlider.value;
-			SpO2Manager.Instance.maxBPM = maxBPMSlider.value;
+			SpO2Manager.Instance.minBPM = minBPMSlider.Value;
+			SpO2Manager.Instance.maxBPM = maxBPMSlider.Value;
 		}
 	}
 

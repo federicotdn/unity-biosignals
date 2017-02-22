@@ -51,6 +51,7 @@ public class SpO2GameManager : MonoBehaviorSingleton<SpO2GameManager> {
 				player.enabled = true;
 				SpO2UIManager.Instance.Pause (false);
 				SoundManager.Instance.UnPauseAudio ();
+				SoundManager.Instance.MuteAll (false);
 				break;
 			case Spo2GameStatus.Paused:
 				fpsController.enabled = false;
@@ -58,6 +59,7 @@ public class SpO2GameManager : MonoBehaviorSingleton<SpO2GameManager> {
 				SpO2UIManager.Instance.Pause (true);
 				Time.timeScale = 0;
 				SoundManager.Instance.PauseAudio ();
+				SoundManager.Instance.MuteAll (true);
 				break;
 			case Spo2GameStatus.GameOver:
 				Invoke ("GameOver", 1f);

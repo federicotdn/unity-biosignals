@@ -16,7 +16,7 @@ public class Target : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.GetComponent<FPSPlayer> () != null) {
-			EEGGameManager.Instance.PlayerWins ();
+			EEGGameManager.Instance.Status = GameStatus.PlayerWins;
 		}
 	}
 }

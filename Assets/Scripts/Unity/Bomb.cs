@@ -139,6 +139,12 @@ public class Bomb : MonoBehaviour {
 		audioSource.PlayOneShot (explosionSound);
 	}
 
+	void OnDestroy() {
+		if (SoundManager.Instance != null) {
+			SoundManager.Instance.RemoveAudioSrc (audioSource);
+		}
+	}
+
 	private void Hit(Humanoid humanoid) {
 		Vector3 pos = humanoid.transform.position;
 		pos.y = transform.position.y;

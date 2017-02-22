@@ -13,14 +13,15 @@ public class SoundManager : MonoBehaviorSingleton<SoundManager> {
 
 	private bool paused;
 	private List<AudioSource> audioSources;
+
+	void Awake() {
+		audioSources = new List<AudioSource> ();
+	}
+
 	// Use this for initialization
 	void Start() {
 		AudioSource[] sources = (AudioSource[])Object.FindObjectsOfType (typeof(AudioSource));
-		audioSources = new List<AudioSource> ();
-		foreach (AudioSource src in sources) {
-			audioSources.Add (src);
-		}
-
+		audioSources = new List<AudioSource> (sources);
 		audioSources.Remove (mainAudioSrc);
 		audioSources.Remove (secondaryAudioSrc);
 
@@ -29,13 +30,21 @@ public class SoundManager : MonoBehaviorSingleton<SoundManager> {
 	
 	// Update is called once per frame
 	void Update () {
-		
 	}
 
 	public void PlayMainSong() {
 		mainAudioSrc.clip = mainClip;
 		mainAudioSrc.loop = true;
 		mainAudioSrc.Play ();
+	}
+
+	public void PauseMainSong(bool pause) {
+		if (pause) {
+			mainAudioSrc.Pause ();
+		} else {
+			mainAudioSrc.UnPause ();
+
+		}
 	}
 
 	public void Click() {
@@ -68,7 +77,7 @@ public class SoundManager : MonoBehaviorSingleton<SoundManager> {
 
 	public void MuteAll(bool mute) {
 		foreach (AudioSource src in audioSources) {
-			src.mute = true;
+			src.mute = mute;
 		}
 	}
 
@@ -96,6 +105,10 @@ public class SoundManager : MonoBehaviorSingleton<SoundManager> {
 
 	public void PlayClip(AudioClip clip) {
 		secondaryAudioSrc.PlayOneShot (clip);
+	}
+
+	public void RemoveAudioSrc(AudioSource audioSrc) {
+		audioSources.Remove (audioSrc);
 	}
 	
 }

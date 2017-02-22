@@ -14,8 +14,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 	public int minStatusDuration = 10;
 	public int maxStatusDuration = 40;
 	public AudioClip trainingBeep;
-	public AudioSource audioSrc;
-	public TrainingPanel trainingPanel;
 
 	public int StatusCount { get; private set; }
 
@@ -28,7 +26,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 
 	private Trainer trainer;
 
-	private CounterTimer testingTimer;
 	private CounterTimer trainingTimer;
 	private CounterTimer statusTimer;
 
@@ -56,14 +53,9 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 		}
 		reader = new EEGOSCReader (port);
 		processor = new EEGProcessor (reader);
-
-		StatusCount = 0;
-		Status = EyesStatus.NONE;
-
 		processor.ProcessorCallback = OnFFT;
-		testingTimer = new CounterTimer (5);
-		audioSrc.clip = trainingBeep;
-		audioSrc.loop = false;
+		Status = 0;
+		Status = EyesStatus.NONE;		
 		previousPlayerPos = player.transform.position;
 	}
 	
@@ -71,40 +63,38 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 	void Update ()
 	{
 		if (training) {
-			Cursor.visible = true;
 			float remainingTime = statusTimer.Length - statusTimer.CurrentTime;
 			float totalRemainingTime = trainingTimer.Length - trainingTimer.CurrentTime;
-			trainingPanel.timer.text = ((int)Mathf.Min((remainingTime), totalRemainingTime)).ToString ();
 
-			string minutes = Mathf.Floor(totalRemainingTime / 60).ToString("00");
-			string seconds = (totalRemainingTime % 60).ToString("00");
-			trainingPanel.totalTimer.text = minutes + ":" + seconds;
+			EEGUIManager uiManager = EEGUIManager.Instance;
+			uiManager.trainingTimer = ((int)Mathf.Min ((remainingTime), totalRemainingTime));
+			uiManager.remainingTime = totalRemainingTime;
 		
 			if (!beepPlayed && remainingTime < 1.3f && !(totalRemainingTime < 1.3f)) {
-				audioSrc.Play ();
+				SoundManager.Instance.PlayClip (trainingBeep);
 				if (processor.Status == EyesStatus.OPEN) {
 					StartCoroutine (PlayDelayed ());
-					trainingPanel.actionText.text = "Cierra los ojos!";
+					uiManager.actionText = "Cierra los ojos!";
 				} else {
-					trainingPanel.actionText.text = "Abre los ojos!";
+					uiManager.actionText = "Abre los ojos!";
 				}
-				trainingPanel.actionText.GetComponent<Blink> ().StartBlinking ();
+				uiManager.trainingPanel.actionText.GetComponent<Blink> ().StartBlinking ();
 				beepPlayed = true;
 			}
 
 			if (trainingTimer.Finished) {
 				processor.Training = false;
 				training = false;
-				trainingPanel.gameObject.SetActive (false);
+				uiManager.Training (false);
 				EEGGameManager.Instance.Status = GameStatus.Playing;
 				trained = true;
 			} else if (statusTimer.Finished) {
 				if (processor.Status == EyesStatus.OPEN) {
 					processor.Status = EyesStatus.CLOSED;
-					trainingPanel.statusText.text = "Manten los ojos cerrados";
+					uiManager.statusText = "Manten los ojos cerrados";
 				} else {
 					processor.Status = EyesStatus.OPEN;
-					trainingPanel.statusText.text = "Manten los ojos abiertos";
+					uiManager.statusText = "Manten los ojos abiertos";
 				}
 				beepPlayed = false;
 				statusTimer = new CounterTimer (Random.Range (minStatusDuration, maxStatusDuration));
@@ -124,17 +114,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 
 			previousPlayerPos = player.transform.position;
 		}
-
-//		if (testingTimer.Finished) {
-//			testingTimer.Reset ();
-//			if (Status == EyesStatus.CLOSED) {
-//				Status = EyesStatus.OPEN;
-//			} else {
-//				Status = EyesStatus.CLOSED;
-//			}
-//		}
-
-		testingTimer.Update (Time.deltaTime);
 	}
 
 	public void StartReading() {
@@ -151,25 +130,33 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 		processor = null;
 	}
 
+	void OnDestroy() {
+		reading = false;
+		if (processor != null) {
+			processor.StopAndJoin ();
+			processor = null;
+		}
+	}
+
 	public void StartTraining ()
 	{
-		trainingPanel.gameObject.SetActive (true);
-		trainingPanel.Reset ();
+		EEGUIManager.Instance.Training (true);
+		beepPlayed = false;
 	}
 
 	public void StartTrainingClicked ()
 	{
-		int duration = (int)trainingPanel.durationSlider.value;
+		int duration = (int)EEGUIManager.Instance.trainingPanel.durationSlider.value;
 		trainingTimer = new CounterTimer (duration * 60);
 		statusTimer = new CounterTimer (Random.Range (minStatusDuration, maxStatusDuration));
 		processor.Status = EyesStatus.OPEN;
+		processor.Training = true;
 		training = true;
 		StartReading ();
 	}
 
 	void OnFFT ()
 	{
-		Debug.Log (processor.TrainingValues.Count);
 		if (trained) {
 			if (processor.Status == EyesStatus.CLOSED) {
 				StatusCount++;
@@ -189,6 +176,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 	IEnumerator PlayDelayed ()
 	{
 		yield return new WaitForSeconds (0.6f);	
-		audioSrc.Play ();
+		SoundManager.Instance.PlayClip (trainingBeep);
 	}
 }

@@ -26,23 +26,8 @@ namespace pfcore
 		}
 	}
 
-	public struct EEGData
-	{
-		public double[][] features;
-		public int[] outputs;
-
-		public EEGData(double[][] features, int[] outputs)
-		{
-			this.features = features;
-			this.outputs = outputs;
-		}
-	}
-
 	public class EEGProcessor
 	{
-		public List<float> Alpha { get; private set; }
-		public List<float> Beta { get; private set; }
-		public List<EyesStatus> AlphaStatus { get; private set; }
 		public List<Complex> FFTResults { get; private set; }
 		public List<TrainingValue> TrainingValues { get; private set; }
 		public List<TrainingValue> AlphaTrainingValues { get; private set; }
@@ -52,7 +37,6 @@ namespace pfcore
 		public List<Complex> AF7FFT { get; private set; }
 		public List<Complex> AF8FFT { get; private set; }
 		public List<Complex> TP10FFT { get; private set; }
-		public List<EyesStatus> RawStatus { get; private set; }
 
 		public const int SAMPLING_RATE = 256;
 		public const int FFT_SAMPLE_SIZE = 256;
@@ -68,6 +52,7 @@ namespace pfcore
 		private List<float> af8 = new List<float>();
 		private List<float> tp10 = new List<float>();
 		private EyesStatus prevStatus = EyesStatus.OPEN;
+		private bool keepTrainingData;
 		private Trainer trainer;
 		private Thread readerThread;
 
@@ -94,6 +79,7 @@ namespace pfcore
 					trainer = new Trainer(FEATURE_COUNT, ClassifierType.DecisionTree);
 					if (TrainingValues.Count > 0) {
 						trainer.Train(TrainingValues);
+						TrainingValues.Clear();
 					}
 				}
 			}
@@ -125,7 +111,7 @@ namespace pfcore
 					tp9.Clear();
 					tp10.Clear();
 
-					if (Training && TrainingValues.Count >= SKIP)
+					if (Training && TrainingValues.Count >= SKIP && keepTrainingData)
 					{
 						for (int i = 0; i < SKIP; i++)
 						{
@@ -146,12 +132,7 @@ namespace pfcore
 			}
 		}
 
-		public EEGProcessor(EEGReader reader)
-		{
-			AlphaStatus = new List<EyesStatus>();
-			RawStatus = new List<EyesStatus>();
-			Alpha = new List<float>();
-			Beta = new List<float>();
+		public EEGProcessor(EEGReader reader, bool keepTrainingData) {
 			TrainingValues = new List<TrainingValue>();
 			AlphaTrainingValues = new List<TrainingValue>();
 
@@ -162,6 +143,11 @@ namespace pfcore
 			TP10FFT = new List<Complex>();
 
 			this.reader = reader;
+			this.keepTrainingData = keepTrainingData;
+		}
+
+		public EEGProcessor(EEGReader reader) : this(reader, false)
+		{
 
 		}
 
@@ -225,10 +211,13 @@ namespace pfcore
 				trainingValue.Features[1] = PSD(AF7FFT, FREQ_STEP);
 				trainingValue.Features[2] = PSD(AF8FFT, FREQ_STEP);
 				trainingValue.Features[3] = PSD(TP10FFT, FREQ_STEP);
-				TrainingValues.Add(trainingValue);
 
 				if (!Training && trainer != null) {
 					Status = (EyesStatus) trainer.Predict(trainingValue);
+				}
+
+				if (training || keepTrainingData) {
+					TrainingValues.Add(trainingValue);
 				}
 
 			}
@@ -286,8 +275,7 @@ namespace pfcore
 
 					if (msg.Address == "/muse/elements/alpha_absolute")
 					{
-						Alpha.Add((float)msg.Data[0]);
-						if (!Training || (Training && alphaIgnore == 0))
+						if (!Training || (Training && alphaIgnore == 0 && keepTrainingData))
 						{
 							if (alphaSet)
 							{
@@ -314,11 +302,6 @@ namespace pfcore
 						}
 
 						prevStatus = Status;
-						AlphaStatus.Add(status);
-					}
-					else if (msg.Address == "/muse/elements/beta_absolute")
-					{
-						Beta.Add((float)msg.Data[0]);
 					}
 					else if (msg.Address == "/muse/eeg")
 					{
@@ -326,7 +309,6 @@ namespace pfcore
 						af7.Add((float)msg.Data[1]);
 						af8.Add((float)msg.Data[2]);
 						tp10.Add((float)msg.Data[3]);
-						RawStatus.Add(status);
 					}
 				}
 			}

@@ -9,7 +9,7 @@ namespace pfcore
 {
 	enum RunMode
 	{
-		EEG, EMG, EKG, EMGWrite, EEGWrite, EEGTrain, EMGCSV, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, EEGCSV, SPO2Writer
+		EEG, EMG, EKG, EMGWrite, EEGWrite, EMGCSV, EEGConvert, EMGCrossVal, EEGCrossVal, EEGJoin, EEGCSV, SPO2Writer
 	}
 
 	class MainClass
@@ -51,10 +51,6 @@ namespace pfcore
 				case RunMode.EEGWrite:
 					Console.WriteLine("Running on EEGWrite mode!\n");
 					RunEEGWrite();
-					break;
-				case RunMode.EEGTrain:
-					Console.WriteLine("Running on EEGTrain mode!\n");
-					RunEEGTrain(args[1], args[2]);
 					break;
 				case RunMode.EMGCSV:
 					Console.WriteLine("Running EMG Analysis on file.");
@@ -123,12 +119,6 @@ namespace pfcore
 			EEGWriter writer = new EEGWriter(reader);
 			writer.Start();
 
-		}
-
-		private static void RunEEGTrain(string trainingSet, string predictionSet)
-		{
-			EEGAnalysis analysis = new EEGAnalysis(trainingSet, predictionSet);
-			analysis.Start();
 		}
 
 		private static void RunEKG()
@@ -281,7 +271,7 @@ namespace pfcore
 		private static void RunEEGCSV(string filepath)
 		{
 			EEGReader reader = new EEGFileReader(filepath, false);
-			EEGProcessor processor = new EEGProcessor(reader);
+			EEGProcessor processor = new EEGProcessor(reader, true);
 
 			processor.Start();
 

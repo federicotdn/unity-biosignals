@@ -4,7 +4,7 @@ using UnityEngine;
 using pfcore;
 
 public enum GameStatus {
-	Playing, Training, Paused
+	Playing, Training, Paused, GameOver, PlayerWins
 }
 
 public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
@@ -29,6 +29,8 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	private bool visibilityOn;
 	private CounterTimer checkingTimer;
 
+	private bool started;
+
 	private GameStatus status;
 	public GameStatus Status {
 		get {
@@ -38,19 +40,40 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		set {
 			switch (value) {
 			case GameStatus.Playing:
+				player.fpsController.enabled = true;
+				player.enabled = true;
 				Time.timeScale = 1;
 				Cursor.visible = false;
-				LookManager.Instance.paused = false;
+				SoundManager.Instance.UnPauseAudio ();
+				SoundManager.Instance.MuteAll (false);
+				SoundManager.Instance.PauseMainSong (false);
+				EEGUIManager.Instance.Pause (false);
 				break;
 			case GameStatus.Training:
-				Cursor.visible = true;
+				SoundManager.Instance.PauseAudio ();
+				SoundManager.Instance.PauseMainSong (true);
+				SoundManager.Instance.MuteAll (true);
+				EEGUIManager.Instance.Pause (false);
+				player.fpsController.enabled = false;
+				player.enabled = false;
 				EEGManager.Instance.StartTraining ();
-				LookManager.Instance.paused = true;
-//				Time.timeScale = 0;
 				break;
 			case GameStatus.Paused:
+				SoundManager.Instance.PauseAudio ();
+				SoundManager.Instance.MuteAll (true);
+				player.fpsController.enabled = false;
 				Time.timeScale = 0;
-				Cursor.visible = true;
+				EEGUIManager.Instance.Pause (true);
+				break;
+			case GameStatus.GameOver:
+				Invoke ("GameOver", 1);
+				break;
+			case GameStatus.PlayerWins:
+				SoundManager.Instance.PauseAudio ();
+				SoundManager.Instance.MuteAll (true);
+				player.fpsController.enabled = false;
+				Time.timeScale = 0;
+				EEGUIManager.Instance.PlayerWins ();
 				break;
 			}
 
@@ -67,19 +90,30 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		activeBombs = new HashSet<Bomb> ();
 		previousStatus = EyesStatus.NONE;
 		checkingTimer = new CounterTimer (checkingInterval);
-		if (EEGManager.Instance.trainFromFile) {
-			Status = GameStatus.Playing;
-		} else {
-			Status = GameStatus.Training;
-		}
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if (!started) {
+			if (EEGManager.Instance.trainFromFile) {
+				Status = GameStatus.Playing;
+			} else {
+				Status = GameStatus.Training;
+			}
+			started = true;
+		}
+
 		switch (status) {
 		case GameStatus.Playing:
+			if (Input.GetKeyDown (KeyCode.P)) {
+				Status = GameStatus.Paused;
+				return;
+			}
+
 			if (player.health <= 0) {
-				GameOver ();
+				Status = GameStatus.GameOver;
+				return;
 			}
 
 			EyesStatus status = EEGManager.Instance.Status;
@@ -155,11 +189,14 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 			previousStatus = status;
 			checkingTimer.Update (Time.deltaTime);
 			break;
-		case GameStatus.Training:
-			
-			break;
 		case GameStatus.Paused:
-			
+			if (Input.GetKeyDown (KeyCode.P)) {
+				Status = GameStatus.Playing;
+				return;
+			}
+			break;
+		default:
+
 			break;
 			
 		}
@@ -182,12 +219,11 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		}
 	}
 
-	public void PlayerWins() {
-		Debug.Log ("Player wins");
-	}
-
 	private void GameOver() {
-		Debug.Log ("Game Over");
+		SoundManager.Instance.PauseAudio ();
+		SoundManager.Instance.MuteAll (true);
+		player.fpsController.enabled = false;
+		Time.timeScale = 0;
+		EEGUIManager.Instance.GameOver ();
 	}
-
 }

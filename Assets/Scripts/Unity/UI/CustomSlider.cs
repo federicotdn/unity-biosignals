@@ -8,9 +8,13 @@ public class CustomSlider : MonoBehaviour {
 	public Text valueText;
 	public Slider slider;
 
-	public int value {
+	public int Value {
 		get {
 			return (int)slider.value;
+		}
+
+		set {
+			slider.value = value;
 		}
 	}
 
