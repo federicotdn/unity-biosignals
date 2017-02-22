@@ -12,11 +12,13 @@ public class FPSUI : MonoBehaviorSingleton<FPSUI> {
 	public Image roundsImage;
 	public FPSPlayer player;
 	public Image bloodImage;
+	public Text waveLabel;
 
 	// Use this for initialization
 
 	private int previousHealth;
 	private int previousRounds;
+	private int previousWave;
 	void Start () {
 		Color color = bloodImage.color;
 		color.a = 0;
@@ -30,7 +32,7 @@ public class FPSUI : MonoBehaviorSingleton<FPSUI> {
 		rounds.text = player.rounds  + " | " + player.remainingRounds;
 		healthText.text = player.health.ToString ();
 		if (BPMPText != null) {
-			BPMPText.text = EKGManager.Instance.BPM.ToString ();
+			BPMPText.text = SpO2Manager.Instance.BPM.ToString ();
 		}
 
 		if (previousHealth != -1 && player.health != previousHealth) {
@@ -51,6 +53,14 @@ public class FPSUI : MonoBehaviorSingleton<FPSUI> {
 
 		previousHealth = player.health;
 		previousRounds = player.remainingRounds;
+
+		if (waveLabel != null && SpO2GameManager.IsInitialized()) {
+			waveLabel.text = SpO2GameManager.Instance.wave.ToString ();
+			if (previousWave != SpO2GameManager.Instance.wave) {
+				waveLabel.GetComponent<Blink> ().StartBlinking ();
+			}
+			previousWave = SpO2GameManager.Instance.wave;
+		}
 	}
 
 	private void Flash() {

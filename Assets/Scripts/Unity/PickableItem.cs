@@ -12,6 +12,9 @@ public class PickableItem : MonoBehaviour {
 	public float amplitude = 0.1f;
 	public ItemType type;
 	public AudioClip soundEffect;
+	public bool shouldDestroy;
+
+	public bool pickedUp;
 
 	private float y0;
 	private float x0;
@@ -30,7 +33,11 @@ public class PickableItem : MonoBehaviour {
 	}
 
 	public void Pickup() {
-		EEGGameManager.Instance.RemoveOutlineObject(GetComponent<OutlineObject>());
-		Destroy (gameObject);
+		pickedUp = true;
+		if (shouldDestroy && EEGGameManager.IsInitialized()) {
+			EEGGameManager.Instance.RemoveOutlineObject(GetComponent<OutlineObject>());
+			Destroy (gameObject);
+		} 
 	}
+		
 }

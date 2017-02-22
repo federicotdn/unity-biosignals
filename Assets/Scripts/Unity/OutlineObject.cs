@@ -37,7 +37,7 @@ public class OutlineObject : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (outline && raycastTimer.Finished) {
+		if (EEGManager.IsInitialized() && outline && raycastTimer.Finished) {
 			raycastTimer.Reset ();
 			RaycastHit hit;
 			Vector3 dir = ((EEGGameManager.Instance.player.transform.position + Vector3.up * 0.2f) - transform.position);
@@ -58,7 +58,7 @@ public class OutlineObject : MonoBehaviour {
 	}
 
 	void OnDestroy() {
-		if (EEGGameManager.Instance != null) {
+		if (EEGGameManager.IsInitialized() && EEGGameManager.Instance != null) {
 			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
 		}
 	}

@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Zombie : Humanoid {
+public class Zombie : Humanoid,  PoolableObject<Zombie> {
 
 	public FPSPlayer player;
 	public List<Transform> patrols;
 	public NavMeshAgent Agent;
 	public Animator animator;
+	public List<AudioClip> deathClips;
 	public List<AudioClip> GrowlClips;
-	public List<AudioClip> HitClips;
 	public float attackCooldown = 1;
 	public float raycastInterval = 1;
 	public float maxViewingDistance = 20;
 	public float stoppingDistance = 1;
-	public ParticleSystem bulletImpactEffect;
 	public ParticleSystem deadEffect;
 	public int damage = 20;
 	public float hearingDistance = 10;
+	public bool outlined = false;
+	public float growlInterval = 0.5f;
 
 	public AudioSource AudioSrc;
 
-	private AudioClip hitClip;
+	private CounterTimer growlTimer;
+	private AudioClip deathClip;
 	private AudioClip growlClip;
 	private CounterTimer coolDownTimer;
 	private bool attacking;
@@ -31,30 +33,38 @@ public class Zombie : Humanoid {
 	private bool playerFound;
 	private bool patrolMode;
 	private int patrolIndex = 0;
+	private List<Collider> colliders;
 
 	// Use this for initialization
 	void Start () {
 		base.OnStart ();
+
+		if (!outlined) {
+			Destroy(GetComponent<OutlineObject>());
+		}
+
 		growlClip = GrowlClips[Random.Range(0, GrowlClips.Count)];
-		hitClip = HitClips[Random.Range(0, HitClips.Count)];
-		AudioSrc.clip = growlClip;
-		AudioSrc.loop = true;
-		AudioSrc.Play ();
+		deathClip = deathClips[Random.Range(0, deathClips.Count)];
+
+		growlTimer = new CounterTimer (growlInterval + Random.value);
+
 		raycastTimer = new CounterTimer (raycastInterval);
 		patrolMode = patrols.Count > 1;
 		if (patrolMode) {
 			currentTarget = patrols[patrolIndex];
 			Agent.stoppingDistance = 0;
-		} else {
+		} else if (player != null)  {
 			currentTarget = player.transform;
+			playerFound = true;
 			Agent.stoppingDistance = stoppingDistance;
 		}
-		animator.applyRootMotion = false;
+
+		colliders = new List<Collider> (GetComponentsInChildren<Collider>());
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (health > 0) {
+		if (health > 0 && currentTarget != null) {
 			Vector3 dir = (player.transform.position - transform.position);
 
 			if (patrolMode && !playerFound) {
@@ -87,9 +97,17 @@ public class Zombie : Humanoid {
 					StartCoroutine (Attack ());
 				}
 			}
-
 			Agent.destination = currentTarget.position;
 			animator.SetFloat ("Speed", Agent.speed);
+
+			if (growlTimer.Finished && !AudioSrc.isPlaying) {
+				growlTimer.Reset ();
+				AudioSrc.PlayOneShot (growlClip);
+				AudioSrc.volume = 1;
+				Debug.Log ("Growl");
+			}
+
+			growlTimer.Update (Time.deltaTime);
 
 		}
 		raycastTimer.Update (Time.deltaTime);
@@ -102,23 +120,39 @@ public class Zombie : Humanoid {
 	}
 
 	public override void Hit(int damage, RaycastHit hit, bool hitPresent) {
-//		bloodEffect.transform.position = hit.point;
-//		bloodEffect.transform.rotation = Quaternion.LookRotation(hit.normal);
-//		bloodEffect.Play ();
 		health -= damage;
 		if (health <= 0) {
-			EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
+			if (EEGGameManager.IsInitialized()) {
+				EEGGameManager.Instance.RemoveOutlineObject (GetComponent<OutlineObject> ());
+			}
 			animator.SetTrigger ("Die");
-			AudioSrc.PlayOneShot (hitClip);
+			AudioSrc.PlayOneShot (deathClip);
 			if (hitPresent) {
 				deadEffect.transform.position = hit.point;
 				deadEffect.Play ();
 			}
 			Agent.enabled = false;
-			AudioSrc.enabled = false;
+			Invoke ("DisableAudioSrc", deathClip.length);
+			SetCollidersEnabled (false);
+			if (ZombieFactory.IsInitialized()) {
+				StartCoroutine (ReturnDelayed (10));
+				SpO2GameManager.Instance.ZombieDied ();
+			}
 		} else {
 			Agent.Move(-hit.normal * 0.4f);
 		}
+	}
+
+	private void SetCollidersEnabled(bool enabled) {
+		if (colliders != null) {
+			foreach (Collider collider in colliders) {
+				collider.enabled = enabled;
+			}
+		}
+	}
+
+	private void DisableAudioSrc() {
+		AudioSrc.enabled = false;
 	}
 
 	private IEnumerator Attack() {
@@ -130,4 +164,27 @@ public class Zombie : Humanoid {
 
 	}
 
+	public void OnRetrieve(ExtendablePool<Zombie> pool) {
+		health = maxHealth;
+		Agent.enabled = true;
+		AudioSrc.enabled = true;
+		SetCollidersEnabled (true);
+	}
+
+	public void OnReturn() {
+	}
+
+	public void SetPlayer(FPSPlayer player) {
+		this.player = player;
+		currentTarget = player.transform;
+		playerFound = true;
+		Agent.stoppingDistance = stoppingDistance;
+		Agent.destination = currentTarget.position;
+	}
+
+	IEnumerator ReturnDelayed(float delayTime)
+	{
+		yield return new WaitForSeconds (delayTime);
+		ZombieFactory.Instance.pool.Return (this);
+	}
 }
