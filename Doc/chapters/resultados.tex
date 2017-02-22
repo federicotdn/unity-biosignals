@@ -10,7 +10,7 @@ Como se mencionó en la sección \ref{sec:eeg-signal-processing} del capítulo a
  \hline
  Clasificador & Precisión $\alpha_{10 \, Hz}$ &  Precisión $\alpha_{256 \, Hz}$ \\ 
  \hline
- Bayesiano ingenuo & $0.656$  & $0.615$  \\
+ \emph{Naive Bayes} & $0.656$  & $0.615$  \\
  \hline
  \gls{lda}  & $0.667$ & $0.689$ \\
   \hline
@@ -37,7 +37,7 @@ En la tabla \ref{tab:eeg-results} se pueden observar los resultados de todas las
  \hline
  2 & $0.831$ & $0.881$ \\
  \hline
- 3 & $0.768$ & $0.88125$ \\
+ 3 & $0.768$ & $0.881$ \\
  \hline
  4  & $0.727$ & $0.909$ \\
  \hline
@@ -86,9 +86,9 @@ Al comparar las figuras \ref{fig:subject-1-256} y \ref{fig:subject-2-256}, se pu
 
 Cabe destacar que al contar con un vector de cuatro características, para graficar se necesitarían cuatro dimensiones. Para abordar este problema se decidió transformar el vector en un vector de dos componentes donde la primer componente es el promedio de los dos primeros valores y la segunda, el promedio de los dos últimos valores.
 
-Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto. Esto puede deberse a diversos motivos. Uno de ellos es que la persona al saber que está siendo analizada, se encuentra nerviosa por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores. Otro de ellos es que el cerbero de dos personas distintas responde formas diferentes antes los estímulos. Esta gran diferencia puede apreciarse al observar que el Sujeto $1$ obtuvo una precisión mucho menor que el resto de los sujetos.
+Otro aspecto a analizar es el hecho de que la precisión varía mucho de sujeto a sujeto, la variación inter-personal intrínseca de cada individuo. Esto puede deberse a diversos motivos, pero generalmente se atribuyen a la variabilidad natural biológica. Muchas bioseñales presentan adicionalmente una variación inter-personal notoria, es decir cambios entre las señales de la misma persona en diferentes momentos.  Además, pueden presentar un fenómeno reflexivo, donde al saber que está siendo analizada cada persona, se encuentra nerviosa, por ejemplo, por lo que puede afectar las ondas cerebrales. A su vez, si la persona se encuentra cansada, por ejemplo, los estímulos al campo visual tienden a ser menores, lo que genera que lo valores de \emph{Alfa} sean mayores. Otro de ellos es que el cerbero de dos personas distintas responde formas diferentes antes los estímulos. Esta gran diferencia puede apreciarse al observar que el Sujeto $1$ obtuvo una precisión mucho menor que el resto de los sujetos.
 
-Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron sorprendentes ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un determinado nivel de robustez.
+Si bien las ondas cerebrales varían mucho de persona a persona y de acuerdo al instante del tiempo, se realizó la prueba de utilizar como sesión de entrenamiento una sesión del sujeto 2  y como sesión de predicción una sesión del sujeto 1. Los resultados fueron remarcablemente positivos ya que se obtuvo una precisión de $0.6537$. Este valor no es comparable con los obtenidos anteriormente ya que dichos valores utilizaron validación cruzada y éste simplemente utilizo un conjunto de datos para entrenamiento y otro para validación. De esta forma, se observa que el sistema de clasificación ofrece un aceptable nivel de robustez para esta aplicación.
 
 Utilizar un umbral para determinar si el usuario se encontraba con los ojos cerrados, compensó la falta de precisión del clasificador. Se obtuvieron buenos resultados en el universo interactivo con tan solo $1$ minuto de entrenamiento. Si bien agregó una pequeña latencia, mejoró la robustez del sistema.
 
@@ -116,7 +116,7 @@ Como se mencionó en la sección \ref{sec:emg-signal-processing}, los valores le
 \label{tab:emg-classifiers}
 \end{table}
 
-Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de \acrshort{svm}, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. No se utilizó un clasificador más complejo, como una red neuronal, ya que era posible resolverlo con clasificadores simples. Como se observará más adelante, existe una clara separación entre los valores de un estado y el otro por lo que un clasificador simple es más que suficiente. Además, los clasificadores más complejos requieren más poder de procesamiento y requieren una gran dedicación de tiempo para determinar los mejores parámetros. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
+Como se puede observar en la tabla \ref{tab:emg-classifiers}, los niveles de precisión de todos los clasificadores, excepto el de \acrshort{svm}, fueron muy elevados. Se decidió proceder a utilizar el de Árboles de decisión ya que produjo el resultado más elevado. No se realizaron pruebas adicionales ya que se consideró que el nivel de precisión alcanzado era lo suficientemente alto para fines prácticos de la simulación. Como se observará más adelante, existe una clara separación entre los valores de un estado y el otro por lo que un clasificador simple es más que suficiente. Además, los clasificadores o esquemas más complejos requieren más poder de procesamiento y requieren una gran dedicación de tiempo para determinar los mejores parámetros. Luego de haber elegido el clasificador, se pudo realizar un estudio mas detallado, sesión por sesión. En la siguiente tabla se detalla: el sujeto utilizado, la precision alcanzada luego de entrenar al clasificador, y la duración total en segundos de las muestras tomadas. Para calcular la precisión obtenida en cada sesión, se utilizó nuevamente el método de validación cruzada de $k$ iteraciones.
 
 \begin{table}[H]
 \centering

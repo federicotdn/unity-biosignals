@@ -42,6 +42,7 @@ public class EMGTrainingController : MonoBehaviour {
         manager.StartReading();
 
         if (skipMode) {
+            demoController.enableFakeLoop = true;
             OnTrainingFinished();
             return;
         }
@@ -58,7 +59,7 @@ public class EMGTrainingController : MonoBehaviour {
         float remaining = timeSlider.value * 60;
         
         for (int i = 1; i < 4; i++) {
-            instructions.text = "Comenzando en " + i + "...";
+            instructions.text = "Comenzando en " + (4 - i) + "...";
             yield return new WaitForSeconds(1);
         }
 

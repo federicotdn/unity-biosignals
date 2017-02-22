@@ -1,4 +1,4 @@
-Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará sobre las bioseñales. Luego se hablará sobre el procesamiento de las señales (específicamente el procesamiento de bioseñales), desde su obtención hasta la extracción de características y clasificación. Finalmente, se explicará como funcionan algunos sensores y se introducirá información teórica sobre la señal que se obtiene de los mismos.
+Dado que este proyecto se centrará en las bioseñales, resulta fundamental explicar los conceptos necesarios para su entendimiento. Primero se hablará sobre las bioseñales. Luego se detallará sobre el procesamiento de las señales (específicamente el procesamiento de bioseñales), desde su obtención hasta la extracción de características y clasificación. Finalmente, se explicará como operan algunos sensores y se introducirá información teórica sobre la señal que se obtiene de los mismos.
 
 \section{Bioseñales}\label{sec:biosignals}
 
@@ -17,7 +17,7 @@ Como hay un gran número de mecanismos fisiológicos de interés, la cantidad de
 		\end{itemize}
 	\item \textbf{Origen:}
 		\begin{itemize}
-			\item Eléctricas: Estas incluyen señales como \gls{ekg}, que refleja la actividad eléctrica del corazón, \gls{eeg}, que refleja la actividad eléctrica de las neuronas,  \gls{emg}, que refleja la actividad eléctrica de los músculos, o \gls{gsr}, que refleja las variaciones de energía en la piel.
+			\item Eléctricas: Estas incluyen señales como \gls{ekg}, que refleja la actividad eléctrica del corazón, \gls{eeg}, que refleja la actividad eléctrica de las neuronas,  \gls{emg}, que refleja la actividad eléctrica de los músculos, o \gls{gsr}, que refleja las variaciones de energía eléctrica en la piel.
 			\item Magnéticas: Reflejan un campo magnético inducido. Por ejemplo un magnetocardiograma utiliza los campos magnéticos emitidos por las corrientes eléctricas generadas por la excitación del corazón.
 			\item Mecánicas: Incluyen deformaciones del cuerpo o vibraciones en la piel. Por ejemplo un mecanorespirograma utiliza los movimientos del abdomen para medir el ritmo cardíaco.
 			\item Ópticas: Utilizan la absorción de la luz. Se utiliza una luz artificial. Un ejemplo es la \gls{spo2}.
@@ -86,7 +86,7 @@ Los filtros más comunes pueden observarse en al figura \ref{fig:filters} y son:
 
 \subsection{Digitalización}
 
-Todas las bioseñales son analógicas. Por este motivo, deben ser digitalizadas para poder ser utilizadas por una computadora. Este proceso ocurre en el dispositivo. Cuenta con un componente electrónico que convierte un voltaje analógico en número digital equivalente. Una onda continua ($ x(t) $) se convierte en una onda discreta ($x[t]$), una función de números reales que son definidos como enteros en puntos discretos en el tiempo. Estos números se conocen como muestras y los puntos discretos en el tiempo son usualmente tomados en intervalos regulares ($T$), también conocida como frecuencia de muestreo:
+La mayor parte de las bioseñales se presentan en forma analógica. Por este motivo, deben ser digitalizadas para poder ser utilizadas por una computadora. Este proceso generalmente ocurre en un dispositivo de captura. Un componente electrónico convierte un voltaje analógico en una representación digital equivalente. Una onda continua ($ x(t) $) se convierte en una onda discreta ($x[t]$), una función de números reales que son definidos como enteros en puntos discretos en el tiempo. Estos números se conocen como muestras y los puntos discretos en el tiempo son usualmente tomados en intervalos regulares ($T$), también conocida como frecuencia de muestreo:
 
 $$ f_{s} = \frac{1}{T_{s}}\, Hz $$
 
@@ -99,7 +99,7 @@ Entonces, la señal analógica es segmentada en varias partes para que pueda cab
 	\label{fig:digitalization}
 \end{figure}
 
-Digitalizar una señal implica segmentar la amplitud y el tiempo. Resulta evidente que la señal digitalizada obtenida no es igual a la analógica. El grado de aproximación de la señal digital a la analógica depende de la segmentación realizada. Como se mencionó, se segmentan las siguientes dos componentes:
+Digitalizar una señal implica segmentar la amplitud y el tiempo. Si bien resulta evidente que la señal digitalizada obtenida no es igual a la analógica, antes ciertas restricciones matemáticas la información contenida digitalmente permitirían regenerar con tanta aproximación como se desee la señal original, balanceando la información en el campo frecuencial y temporal. El grado de aproximación de la señal digital a la analógica depende de la segmentación realizada. Como se mencionó, se segmentan las siguientes dos componentes:
 
 \begin{itemize}
 \item \textbf{Amplitud:} También se conoce como cuantificación. El grado de aproximación en este caso depende de la cantidad de valores distintos que son utilizados para representar la señal, es decir, la cantidad de bits utilizados. El nivel de cuantificación ($q$) se define como el tamaño del segmento de amplitud . El efecto de la cuantificación es la adición de ruido y este es determinado por $q$. En la figura \ref{fig:quantization} se puede observar el ruido añadido por la cuantificación. Por lo general los conversores usan $8$, $12$ y $16$ bits de salida. Pues la mayoría de las señales, no cuentan con una relación señal-ruido lo suficientemente elevada como para utilizar una resolución mayor.
@@ -122,9 +122,9 @@ Luego de digitalizar la señal, el dispositvo puede transmitirla hacia alguna co
 Como se mencionó anteriormente, la señal digital puede presentar ruido que se genera al digitalizarla. En algunos casos, hay que aplicar filtros para reducir el ruido. Existen diversos filtros. Uno de ellos es el filtro \emph{Gaussiano}. Dicho filtro suaviza la señal por lo que elimina los picos que se pudieran haber introducido. Además, el filtro \emph{Gaussiano}, a diferencia de otros filtros, no elimina las altas frecuencias completamente. El filtro \emph{Gaussiano} se aplica haciendo una convolución de la señal con la siguiente función:
 $$ g(x) = \frac{1}{\sqrt{2 * \pi} * \sigma } * e^{-\frac{x^{2}}{2 * \sigma^{2}}} $$
 
-Muchas veces las señales pueden tener una cierta tendencia. Es decir, se encuentran desfasadas. Para compensar esta tendencia, se utiliza una técnica conocida como \emph{detrending}. Esta consiste en eliminar dicha tendencia.  La forma más simple de realizar \emph{detrending} es calcular la media del sensor y restarla a cada valor. Existen otros algoritmos más complejos de \emph{detrending} pero estos escapan al foco de este trabajo.
+Muchas veces las señales pueden tener una cierta tendencia (trending). Para compensar esta tendencia, se utiliza una técnica conocida como \emph{detrending}. Esta consiste en eliminar dicha tendencia.  La forma más simple de realizar \emph{detrending} es calcular la media del sensor y restarla a cada valor. Existen otros algoritmos más complejos de \emph{detrending} y todo un amplio abanico de estudio de estás técnicas en relación al procesamiento de señales y bioseñales.  Adicionalmente, pueden encontrarse desfasadas. Las variaciones en la fase, el período y los ciclos de trabajo causan lo que se conoce como \emph{jitter}.
 
-Una vez que se redujo el ruido, se pueden aplicar otros filtros o continuar. Como se mencionó anteriormente muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $\mu V$ (microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un \acrshort{emg}, puede significar un impuslo de fuerza. En un \acrshort{eeg}, puede significar un pestañeo.
+Una vez que se redujo el ruido, se pueden aplicar otros filtros o continuar. Como se mencionó anteriormente muchos sensores tienen como salida el nivel de potencial eléctrico medidas en $ V, mV y \mu V$ (voltios, milivoltios y microvoltios). Esta información sin ningún tipo de procesamiento no es útil. Dependiendo de que se quiera detectar se pueden realizar distintas operaciones. Una de ellas, es la búsqueda de picos. La primera derivada de un pico tiene un cruce descendente igual a cero en su máximo. Por ello, lo que se hace es primero suavizar la señal para eliminar ruido y luego se calculan las derivadas cruzadas. Luego, si la pendiente excede un umbral, significa que se ha encontrado un cero \cite{peak-finding}. Estos picos encontrados representan distintas cosas dependiendo el sensor utilizado. Por ejemplo, al utilizar un \acrshort{emg}, puede significar un impuslo de fuerza. En un \acrshort{eeg}, puede significar un pestañeo.
 
 Otro procesamiento que se le puede aplicar es la transformada discreta de \emph{Fourier}. La transformada de \emph{Fourier} transforma una función que se encuentra en el dominio del tiempo a una función que se encuentra en el dominio de la frecuencia. La transformada de \emph{Fourier} se define de la siguiente manera:
 
@@ -140,7 +140,7 @@ $$ S_{xx} = |X(f)|^{2} \qquad \textbf{y} \qquad X(f) \textrm{ es la Transformada
 
 Esta potencia puede ser utilizada luego como una característica de interés pero esto discutirá más adelante. Otra alternativa  es, por ejemplo, calcular el promedio de las frecuencias. Las posibilidades aquí son muchas y dependen de lo que se esté buscando.
 
-\section{Extracción de Características de Interés y Clasificación} \label{sec:classification}
+\subsection{Extracción de Características de Interés y Clasificación} \label{sec:classification}
 
 Cuando se cuenta con la señal pre-procesada, se utilizan métodos de procesamiento de señales tradicionales que buscan características distinguibles.  Se puede utilizar una regla simple como un umbral. Por ejemplo al buscar picos, si la pendiente excede un umbral se le asocia un estado (pestañeo, impulso de fuerza, etc) y sino, otro. Si se buscan patrones más complejos, hay que utilizar métodos de clasificación más robustos que utilizan reconocimiento de patrones. El reconocimiento de patrones tiene dos pasos principales:
 
@@ -152,7 +152,7 @@ Cuando se cuenta con la señal pre-procesada, se utilizan métodos de procesamie
 Utilizar aprendizaje automático consiste en dos etapas:
 
 \begin{itemize}
-	\item \textbf{Calibración:} Consiste en adquirir la señal de entrenamiento, optimizar las características y entrenar el clasificador. Es decir, consiste en la acumulación de datos de entrenamiento que luego son enviados al clasificador.
+	\item \textbf{Calibración / Aprendizaje:} Consiste en adquirir la señal de entrenamiento, optimizar las características y entrenar el clasificador. Es decir, consiste en la acumulación de datos de entrenamiento que luego son enviados al clasificador.
 	\item \textbf{Uso:} Consiste en usar el modelo (características y clasificador) obtenido durante la calibración para poder reconocer el estado del usuario \cite{eeg-tutorial}. 
 \end{itemize}
 
@@ -199,7 +199,7 @@ En la sección \ref{sec:biosignals} se introdujo el concepto de bioseñales y se
 
 \subsection{\gls{eeg}}
 
-La \gls{eeg} detecta la actividad eléctrica de las neuronas, es decir, del cerebro. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica. Los dispositivos utilizados para realizar un eletctroencefalograma cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal digital que se obtiene es el nivel de potencial eléctrico en cada electrodo. Un electroencefalograma no sirve si no se le da alguna aplicación. Aquí aparece el concepto de \gls{bci}. "\acrshort{bci} es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de \acrshort{bci} no es determinar la intensión de una persona espíando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
+La \gls{eeg} detecta la actividad eléctrica de las neuronas, es decir, del cerebro. Con respecto a la clasificación, se trata de una señal permanente, ya que no debe ser inducida externamente, dinámica, ya que varía mucho en el tiempo, y eléctrica. Los dispositivos utilizados para realizar un eletctroencefalograma cuentan con una determinada cantidad de electrodos que miden el nivel de potencial eléctrico en $ \mu V$. Al utilizar uno de estos dispositivos, la señal digital que se obtiene es el nivel de potencial eléctrico en cada electrodo. El electroencefalograma ha sido una herramienta de diagnóstico y estudio del cerebro durante casi todo el siglo XX y XXI. Recientemente, se lo ha comenzado a utilizar para inferir y detectar algún patrón cognitivo reflejado en las señales que permita transferir información.  Así aparece el concepto de \gls{bci}. "\acrshort{bci} es un método de comunicación basado en la actividad neuronal generada por el cerebro...El objetivo de \acrshort{bci} no es determinar el pensamiento de una persona observando su actividad neuronal, sino que es proveer un nuevo canal de salida para el cerebro que requiere una adaptación de control voluntaria por parte del usuario"\cite{neural-eng}.
 
 Al aplicar la Transformada de \emph{Fourier} a la señal \acrshort{eeg}, se obtienen distintas frecuencias. En \acrshort{eeg}, dichas frecuencias se dividen en cinco bandas:
 

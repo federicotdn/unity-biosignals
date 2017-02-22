@@ -1,4 +1,5 @@
 ﻿using pfcore;
+using System.Collections;
 using UnityEngine;
 using UnityStandardAssets.Characters.FirstPerson;
 
@@ -12,12 +13,18 @@ public class EMGDemoController : MonoBehaviour {
     public EMGTrainingController trainingController;
     public EnergySphereGun sphereGun;
 
+    public bool enableFakeLoop = false;
+
     public void Setup() {
         manager = EMGManager.Instance;
         processor = manager.Processor;
 
-        processor.AddProcessorCallback(widget.WidgetCallback);
-        processor.AddProcessorCallback(DemoCallback);
+        if (!enableFakeLoop) {
+            processor.AddProcessorCallback(widget.WidgetCallback);
+            processor.AddProcessorCallback(DemoCallback);
+        } else {
+            StartCoroutine(FakeEMGLoop());
+        }
     }
 	
     public void DemoCallback() {
@@ -32,7 +39,18 @@ public class EMGDemoController : MonoBehaviour {
         }
     }
 
-	void Update () {
+    IEnumerator FakeEMGLoop() {
+        while (true) {
+            yield return new WaitForSeconds(EMGManager.EMG_TICK_DURATION); // Simulate EMGProcessor delay
+            if (Input.GetKey(KeyCode.E)) {
+                sphereGun.MuscleTenseTick();
+            } else {
+                sphereGun.MuscleRelaxedTick();
+            }
+        }
+    }
+
+    void Update () {
         if (Input.GetKeyUp(KeyCode.Z)) {
             foreach (PrefabSpawner spawner in FindObjectsOfType<PrefabSpawner>()) {
                 spawner.Respawn();

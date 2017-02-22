@@ -16,10 +16,6 @@ public class EnergySphereGun : MonoBehaviour {
     private uint chargeReached = 0;
     private EnergySphere currentSphere = null;
 
-    void Start() {
-        StartCoroutine(FakeEMGLoop()); // Use Keys instead of EMG for demo
-    }
-
     void Update() {
         if (currentSphere != null) {
             Vector3 forward = transform.forward.normalized;
@@ -76,17 +72,6 @@ public class EnergySphereGun : MonoBehaviour {
 
         chargeCounter = chargeReached = 0;
         currentSphere = null;
-    }
-
-    IEnumerator FakeEMGLoop() {
-        while (true) {
-            yield return new WaitForSeconds(EMGManager.EMG_TICK_DURATION); // Simulate EMGProcessor delay
-            if (Input.GetKey(KeyCode.E)) {
-                MuscleTenseTick();
-            } else {
-                MuscleRelaxedTick();
-            }
-        }
     }
 
     public void MuscleTenseTick() {

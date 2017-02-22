@@ -7,11 +7,11 @@ Primero se tuvo que elegir que señales se iban a procesar. Para llevar a cabo e
 \begin{itemize}
 \item \textbf{Practicidad:} Se buscó que el sensor requerido para obtener la señal no sea invasivo y que sea fácil de utilizar por personas no técnicas.
 \item \textbf{Uso en universos interactivos:} Que se le pueda dar un uso coherente en universos interactivos. Incluye el dinamismo de la señal ya que las señales casi estáticas no muestran una variabilidad suficiente para ser detectada en un período de tiempo de corta duración.
-\item \textbf{Tiempo de procesa} Se buscó que el sensor no sea invasivo.
+\item \textbf{Tiempo de procesamiento} El tiempo de procesamiento de las señales obtenidas debía ser aceptable para uso en tiempo real.
 \item \textbf{Precio y disponibilidad} Se buscó que existan dispositivos disponibles en el mercado y a precios accesibles.
 \end{itemize}
 
-Utilizando estos criterios, se eligieron las siguientes señales: \acrshort{emg}, \acrshort{emg} y \acrshort{spo2}. Todas ellas cumplen con la condición de ser dinámicas. Se determinó utilizar únicamente tres señales, y no una mayor cantidad, para evitar perder el foco del trabajo.
+Utilizando estos criterios, se eligieron las siguientes señales: \acrshort{emg}, \acrshort{emg} y \acrshort{spo2}. Todas ellas cumplen con la condición de ser prácticas y no invasivas, lo suficientemente dinámicas para que sean aplicables en nuestro estudio, que el tiempo de procesado sea apto para el tiempo real, y que los sensores fueron accesibles y comerciales como para poder probarlos e implementarlos.
 
 \subsection{\acrshort{eeg}}
 
@@ -31,7 +31,7 @@ Además, como ya se contaba con dos señales eléctricas permanentes, se buscó 
 
 \section{Hardware}
 
- Para la elección del \emph{hardware} se tuvieron en cuenta distintos criterios. Principalmente se busco un compromiso entre costo y fiabilidad pero también se tuvo en cuenta su facilidad de uso.
+Para la elección de los dispositivos de \emph{hardware} se tuvieron en cuenta los criterios antes mencionados buscando un compromiso entre costo y fiabilidad así como también se tuvo en cuenta su facilidad de uso.
 
 \subsection{\acrshort{eeg}}
 
@@ -103,7 +103,7 @@ Para leer la señal se decidió utilizar \emph{OSC}. Se tomó esta decisión ya 
 
 Una gran desventaja de este dispositivo, es que no cuenta con soporte para la aplicación \emph{MuseIO}, que permite obtener paquetes\acrshort{osc} a través de la computadora. Por este motivo, se terminó utilizando una aplicación móvil llamada \emph{Muse Monitor}, que nos permitió conectar el dispositivo al teléfono celular y desde allí enviar los paquetes \acrshort{osc} hacia la computadora. En un principio se pensó que la latencia podría ser un problema ya que cada paquete debe realizar dos trayectos, primero desde el dispositivo hacia el teléfono celular y luego hacia la computadora, pero esto no fue un problema ya que el flujo de datos no era masivo y los paquetes no eran de gran tamaño.
 
-En un principio, se utilizó un \emph{framework} para procesar los paquetes \acrshort{osc} pero este no resultó ser fiable. Se buscaron alternativas pero no hubo ninguna que cumpla con los estándares del equipo. Por este motivo, se desarrollo un procesador de paquetes \acrshort{osc} propio basado en otras implementaciones. Esto implicó leer el estándar, comprender como funciona e implementarlo.
+Inicialmente, se utilizó un \emph{framework} para procesar los paquetes \acrshort{osc} pero este no resultó ser fiable. Se buscaron alternativas pero no hubo ninguna que cumpla con los estándares del equipo. Por este motivo, se desarrollo un procesador de paquetes \acrshort{osc} propio basado en otras implementaciones. Esto implicó leer el estándar, comprender como funciona e implementarlo.
  
  Los estados que se buscaron detectar fueron ojos abiertos (A) y ojos cerrados (C). Por este motivo, la información que se necesitaba eran las ondas $\alpha$. Como se mencionó anteriormente, el dispositivo \emph{Muse} permitía acceder a la potencia de las ondas $\alpha$. Para obtener dichas ondas el dispositivo sigue el siguiente procedimiento:
  
@@ -143,7 +143,7 @@ Este procedimiento se aplica por cada uno de los cuatro electrodos. Por lo que c
 
 Con este vector de características, se alcanzó una precisión de hasta un $ 85 \%$. Esto se debe a que, si bien empeoro la precisión de detectar ojos cerrados, incrementó notablemente la de ojos abiertos.
  
- Se probó aplicar un filtro \emph{Gaussiano} a la señal bruta pero se obtuvieron exactamente los mismos resultados. Esto significa que el sensor no cuenta con ruido \emph{Gaussiano}. A su vez, se implementó \emph{detrending} pero tampoco se notaron diferencias. Al haber alcanzado el nivel de precisión que se buscaba, se decidió concluir con el procesamiento de la señal aquí. Es decir, no se aplicaron filtros de pasa banda ni funciones de ventana porque no se consideró necesario.
+Se probó aplicar un filtro \emph{Gaussiano} a la señal cruda pero se obtuvieron exactamente los mismos resultados. Esto significa que el sensor no cuenta con ruido sensible a un filtrado \emph{Gaussiano}. Ya que en la documentación no se especifica que tipos de filtros se aplican, la ausencia de ruido \emph{Gaussiano} podría ser explicada por dos motivos: o el sensor ya cuenta con filtros que reducen el ruido sensible a filtrados \emph{Gaussianos}, o bien que la etapa de cuantificación es lo suficientemente precisa como para no introducir ruido blanco (o una combinación ambos). A su vez, se implementó un \emph{detrending} lineal de la señal pero tampoco se notaron diferencias sustanciales. El método de \emph{detrending} calculaba la media de todas las muestras obtenidas del sensor durante un cierto periodo de tiempo, y luego le restaba ésta a todas las muestras leídas más adelante. Al haber alcanzado el nivel de precisión que se buscaba, se decidió concluir con el procesamiento de la señal en este punto. Es decir, no se aplicaron filtros de pasa-banda ni funciones de ventana porque no se consideró necesario.
  
 En la etapa de entrenamiento, en lugar de tomar todos los valores, se ignoran los valores de transición. Cuando se le indica al usuario que abra o cierre los ojos, se descartan dos segundos antes y después de la transición de estados. Esto se debe a que los valores que corresponden a la transición no son significativos. Los que realmente importan son cuando se está en un estado u otro.
  

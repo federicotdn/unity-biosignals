@@ -49,10 +49,6 @@ public class EMGManager : MonoBehaviorSingleton<EMGManager> {
             processor.Update();
         }
     }
-	
-    void OnApplicationQuit() {
-        StopReading();
-    }
 
     public void StartReading() {
         if (reading) {
@@ -74,6 +70,11 @@ public class EMGManager : MonoBehaviorSingleton<EMGManager> {
         }
 
         reading = true;
+    }
+
+    protected override void Destroy() {
+        base.Destroy();
+        StopReading();
     }
 
     public void StopReading() {
