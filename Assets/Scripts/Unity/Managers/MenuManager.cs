@@ -5,10 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviorSingleton<MenuManager> {
 
+	public AudioSource secondaryAudioSource;
+	public AudioClip clickClip;
+	public GameObject loadingPanel;
+
 	// Use this for initialization
 	void Start () {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+		loadingPanel.SetActive (false);
     }
 	
 	// Update is called once per frame
@@ -16,7 +21,9 @@ public class MenuManager : MonoBehaviorSingleton<MenuManager> {
 		
 	}
 
-	public void LoadScene(int scene) {
-		SceneManager.LoadScene (scene);
+	public void LoadScene(string sceneName) {
+		loadingPanel.SetActive (true);
+		secondaryAudioSource.PlayOneShot (clickClip);
+		SceneManager.LoadScene (sceneName);
 	}
 }

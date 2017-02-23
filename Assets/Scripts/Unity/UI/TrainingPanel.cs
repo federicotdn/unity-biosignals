@@ -57,7 +57,7 @@ public class TrainingPanel : MonoBehaviour {
 		int port;
 		try {
 			port = Int32.Parse(portInput.text);
-		} catch (FormatException e) {
+		} catch (FormatException) {
 			port = EEGManager.Instance.port;
 		}
 		EEGManager.Instance.StartTraining (durationSlider.Value * 60, port);

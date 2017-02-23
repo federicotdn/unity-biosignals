@@ -92,7 +92,7 @@ namespace pfcore
 			EEGReader reader;
 			if (filepath != null)
 			{
-				reader = new EEGFileReader(filepath, true);
+				reader = new EEGFileReader(filepath);
 			}
 			else
 			{
@@ -222,7 +222,7 @@ namespace pfcore
 		private static void RunEEGJoin(string file1, string file2, string newName) {
 			
 			EEGReader reader;
-			reader = new EEGFileReader(file1, false);
+			reader = new EEGFileReader(file1);
 			reader.Start();
 			List<OSCPacket> packets = new List<OSCPacket>();
 			OSCPacket packet;
@@ -233,7 +233,7 @@ namespace pfcore
 			Console.WriteLine("Read " + packets.Count + " packages from " + file1);
 			int prevCount = packets.Count;
 
-			reader = new EEGFileReader(file2, false);
+			reader = new EEGFileReader(file2);
 			reader.Start();
 			while (reader.TryDequeue(out packet)) {
 				packets.Add(packet);
@@ -270,7 +270,7 @@ namespace pfcore
 
 		private static void RunEEGCSV(string filepath)
 		{
-			EEGReader reader = new EEGFileReader(filepath, false);
+			EEGReader reader = new EEGFileReader(filepath);
 			EEGProcessor processor = new EEGProcessor(reader, true);
 
 			processor.Start();

@@ -16,7 +16,7 @@ namespace pfcore
 
 		internal static List<TrainingValue> getTrainingValues(string filepath) {
 			EEGReader reader;
-			reader = new EEGFileReader(filepath, false);
+			reader = new EEGFileReader(filepath);
 			EEGProcessor processor = new EEGProcessor(reader, true);
 
 			processor.Training = true;

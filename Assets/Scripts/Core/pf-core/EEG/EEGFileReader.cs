@@ -9,12 +9,10 @@ namespace pfcore
 	public class EEGFileReader : EEGReader
 	{
 		private string filePath;
-		private bool delay;
 
-		public EEGFileReader(string filePath, bool delay)
+		public EEGFileReader(string filePath)
 		{
 			this.filePath = filePath;
-			this.delay = delay;
 		}
 
 		public override void Start()
