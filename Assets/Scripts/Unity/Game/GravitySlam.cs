@@ -6,7 +6,7 @@ public class GravitySlam : EMGWeapon {
     public const uint LIFT_OBJECTS_START = 1;
     public const uint SLAM_OBJECTS_THRESHOLD = 2;
 
-    public float baseStrength = 3000.0f;
+    public float baseStrength = 4000.0f;
     private PhysicsObject[] liftedObjects = null;
 
     private uint chargeCounter = 0;

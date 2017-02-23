@@ -10,6 +10,7 @@ public class EMGTrainingController : MonoBehaviour {
     public Slider timeSlider;
     public Text instructions;
     public AudioSource audioSource;
+    public InputField portInput;
 
     public EMGDemoController demoController;
     private EMGManager manager;
@@ -23,6 +24,7 @@ public class EMGTrainingController : MonoBehaviour {
         OnSliderValueChanged();
 
         buttonText = startButton.GetComponentInChildren<Text>();
+        portInput.text = manager.portName;
     }
 
     void Update() {
@@ -35,6 +37,7 @@ public class EMGTrainingController : MonoBehaviour {
             return;
         }
 
+        manager.portName = portInput.text;
         startButton.interactable = false;
         timeSlider.interactable = false;
         manager.Setup();
