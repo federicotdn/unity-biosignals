@@ -19,8 +19,8 @@ namespace pfcore
 			reader = new EEGFileReader(filepath, false);
 			EEGProcessor processor = new EEGProcessor(reader, true);
 
-
 			processor.Training = true;
+
 			processor.Start();
 			while (!processor.Finished)
 			{

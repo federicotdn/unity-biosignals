@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>EMGCSV EMG/javier-1.emg</StartArguments>
+    <StartArguments>EEGCrossVal EEG</StartArguments>
     <StartWorkingDirectory>..\..\..\..\DataSets</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>

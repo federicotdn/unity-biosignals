@@ -22,7 +22,7 @@ namespace pfcore
 		private SupportVectorMachine svm;
 		private int featureSize;
 		private ClassifierType type;
-		private bool trained = false;
+		public bool Trained { get; private set; }
 
 		public Trainer(int featureSize, ClassifierType type)
 		{
@@ -68,12 +68,12 @@ namespace pfcore
 					break;
 			}
 
-			trained = true;
+			Trained = true;
 		}
 
 		public int[] Predict(List<TrainingValue> predictionData)
 		{
-			if (!trained)
+			if (!Trained)
 			{
 				throw new Exception("Train must be called first!");
 			}
@@ -101,7 +101,7 @@ namespace pfcore
 		}
 
 		public int Predict(TrainingValue val) {
-			if (!trained)
+			if (!Trained)
 			{
 				throw new Exception("Train must be called first!");
 			}

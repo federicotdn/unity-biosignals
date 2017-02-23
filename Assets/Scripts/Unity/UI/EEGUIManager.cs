@@ -15,11 +15,16 @@ public class EEGUIManager : MonoBehaviorSingleton<EEGUIManager> {
 	public GameObject pausePanel;
 	public CustomSlider minThresholdSlider;
 	public CustomSlider maxThresholdSlider;
+	public Text statusCount;
+	public Text status;
 	public int trainingTimer;
 	public float remainingTime;
 	public string actionText;
 	public string statusText;
 	private string previousActionText;
+
+
+	private string originalStatusText;
 
 	// Use this for initialization
 	void Start () {
@@ -31,6 +36,7 @@ public class EEGUIManager : MonoBehaviorSingleton<EEGUIManager> {
 		minThresholdSlider.Value = EEGManager.Instance.minThreshold;
 		maxThresholdSlider.Value = EEGManager.Instance.maxThreshold;
 		statusText = trainingPanel.statusText.text;
+		originalStatusText = statusText;
 	}
 
 	// Update is called once per frame
@@ -42,6 +48,9 @@ public class EEGUIManager : MonoBehaviorSingleton<EEGUIManager> {
 		trainingPanel.actionText.text = actionText;
 		trainingPanel.statusText.text = statusText;
 
+		statusCount.text = EEGManager.Instance.StatusCount.ToString();
+		status.text = EEGManager.Instance.Status.ToString ();
+
 		previousActionText = actionText;
 	}
 
@@ -50,41 +59,55 @@ public class EEGUIManager : MonoBehaviorSingleton<EEGUIManager> {
 		gameOverPanel.SetActive (false);
 		playerWinsPanel.SetActive (false);
 		pausePanel.SetActive (false);
+		EEGGameManager.Instance.SetProcessor (EEGManager.Instance.Processor, true);
 		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 	}
 
 	public void Exit() {
-		loadingPanel.SetActive (true);
-		gameOverPanel.SetActive (true);
-		SceneManager.LoadScene(0);
+		EEGGameManager.Instance.RemoveProcessor ();
+		SceneManager.LoadScene("Scenes/MainMenu");
 	}
 
 	public void GameOver() {
-		Cursor.visible = true;
+		UnlockCursor ();
 		gameOverPanel.SetActive (true);
 	}
 
 	public void PlayerWins() {
-		Cursor.visible = true;
+		UnlockCursor ();
 		playerWinsPanel.SetActive (true);
 	}
 
 	public void Training(bool training) {
 		trainingPanel.gameObject.SetActive (training);
 		if (training) {
-			Cursor.visible = true;
+			statusText = originalStatusText;
+			UnlockCursor ();
 			trainingPanel.Reset ();
 		}
+	}
+
+	public void Retrain() {
+		EEGManager.Instance.Retrain ();
+	}
+
+	private void UnlockCursor() {
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
 	}
 
 	public void Pause(bool pause) {
 		pausePanel.SetActive (pause);
 		if (pause) {
-			Cursor.visible = true;
+			UnlockCursor ();
 		} else {
 			Cursor.visible = false;
 			EEGManager.Instance.minThreshold = minThresholdSlider.Value;
 			EEGManager.Instance.maxThreshold = maxThresholdSlider.Value;
 		}
+	}
+
+	void OnDestroy() {
+		UnlockCursor ();
 	}
 }

@@ -51,9 +51,8 @@ public class LookManager : MonoBehaviorSingleton<LookManager>
 	public void Shake (float magnitude)
 	{
 		if (magnitude > 0.00001) {
-//			float periodDivider = Mathf.Lerp (0.7f, 1, 1 - magnitude);
-			shakeDx = Mathf.Sin (Time.timeSinceLevelLoad) * Time.deltaTime * ShakeMagnitude * magnitude * RandomSign(0.9f);
-			shakeDy = Mathf.Sin (((Time.timeSinceLevelLoad)) + Mathf.PI / 2) * Time.deltaTime * ShakeMagnitude * magnitude * RandomSign(0.9f);
+			shakeDx = Mathf.Sin (Time.timeSinceLevelLoad + Random.value) * Time.deltaTime * ShakeMagnitude * magnitude * RandomSign(0.85f);
+			shakeDy = Mathf.Sin (((Time.timeSinceLevelLoad) + Random.value) + Mathf.PI / 2) * Time.deltaTime * ShakeMagnitude * magnitude * RandomSign(0.9f);
 		
 			Vector3 vec = Random.insideUnitCircle;
 			shakeDx += vec.x * 0.05f * magnitude;

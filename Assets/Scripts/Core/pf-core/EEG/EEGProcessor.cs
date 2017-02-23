@@ -33,6 +33,8 @@ namespace pfcore
 		public List<TrainingValue> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
+		public float[] horseshoe;
+
 		public List<Complex> TP9FFT { get; private set; }
 		public List<Complex> AF7FFT { get; private set; }
 		public List<Complex> AF8FFT { get; private set; }
@@ -55,6 +57,7 @@ namespace pfcore
 		private bool keepTrainingData;
 		private Trainer trainer;
 		private Thread readerThread;
+		private bool started;
 
 		bool alphaSet;
 		double alpha1;
@@ -79,8 +82,9 @@ namespace pfcore
 					trainer = new Trainer(FEATURE_COUNT, ClassifierType.DecisionTree);
 					if (TrainingValues.Count > 0) {
 						trainer.Train(TrainingValues);
-						TrainingValues.Clear();
 					}
+					TrainingValues.Clear();
+					AlphaTrainingValues.Clear();
 				}
 			}
 		}
@@ -111,7 +115,7 @@ namespace pfcore
 					tp9.Clear();
 					tp10.Clear();
 
-					if (Training && TrainingValues.Count >= SKIP && keepTrainingData)
+					if (Training && TrainingValues.Count >= SKIP)
 					{
 						for (int i = 0; i < SKIP; i++)
 						{
@@ -153,8 +157,11 @@ namespace pfcore
 
 		public void Start()
 		{
-			readerThread = new Thread(new ThreadStart(reader.Start));
-			readerThread.Start();
+			if (!started) {
+				readerThread = new Thread(new ThreadStart(reader.Start));
+				readerThread.Start();
+				started = true;
+			}
 		}
 
 		public void Update()
@@ -179,6 +186,20 @@ namespace pfcore
 			}
 
 			Finished = reader.Finished;
+		}
+
+		public void Reset() {
+			af7.Clear();
+			af8.Clear();
+			tp9.Clear();
+			tp10.Clear();
+			TrainingValues.Clear();
+			AlphaTrainingValues.Clear();
+			trainer = null;
+			training = false;
+			readingsMean.Clear();
+			status = EyesStatus.NONE;
+			ignore = SKIP;
 		}
 
 		public void StopAndJoin()
@@ -212,7 +233,7 @@ namespace pfcore
 				trainingValue.Features[2] = PSD(AF8FFT, FREQ_STEP);
 				trainingValue.Features[3] = PSD(TP10FFT, FREQ_STEP);
 
-				if (!Training && trainer != null) {
+				if (!Training && trainer != null && trainer.Trained) {
 					Status = (EyesStatus) trainer.Predict(trainingValue);
 				}
 
@@ -309,7 +330,7 @@ namespace pfcore
 						af7.Add((float)msg.Data[1]);
 						af8.Add((float)msg.Data[2]);
 						tp10.Add((float)msg.Data[3]);
-					}
+					} 
 				}
 			}
 		}

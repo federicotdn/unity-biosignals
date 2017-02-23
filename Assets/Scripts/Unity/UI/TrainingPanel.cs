@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,9 +13,10 @@ public class TrainingPanel : MonoBehaviour {
 	public Text actionText;
 	public Button trainButton;
 	public Image totalTimerImage;
-	public Slider durationSlider;
-	public Text durationText;
-	public Text durationValueText;
+	public CustomSlider durationSlider;
+	public InputField portInput;
+	public Text portLabel;
+
 
 	// Use this for initialization
 	void Start () {
@@ -23,7 +25,7 @@ public class TrainingPanel : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		durationValueText.text = ((int)durationSlider.value).ToString();
+		
 	}
 
 	public void Reset() {
@@ -33,10 +35,11 @@ public class TrainingPanel : MonoBehaviour {
 		totalTimer.gameObject.SetActive (false);
 		totalTimerImage.gameObject.SetActive (false);
 		durationSlider.gameObject.SetActive (true);
-		durationText.gameObject.SetActive (true);
-		durationValueText.gameObject.SetActive (true);
+		portInput.gameObject.SetActive(true);
 		instructions.gameObject.SetActive(true);
 		trainButton.gameObject.SetActive(true);
+		portLabel.gameObject.SetActive (true);
+		portInput.text = EEGManager.Instance.port.ToString();
 	}
 
 	public void StartTraining() {
@@ -46,9 +49,17 @@ public class TrainingPanel : MonoBehaviour {
 		totalTimerImage.gameObject.SetActive (true);
 		totalTimer.gameObject.SetActive (true);
 		durationSlider.gameObject.SetActive (false);
-		durationText.gameObject.SetActive (false);
-		durationValueText.gameObject.SetActive (false);
 		instructions.gameObject.SetActive(false);
 		trainButton.gameObject.SetActive(false);
+		portInput.gameObject.SetActive(false);
+		portLabel.gameObject.SetActive (false);
+
+		int port;
+		try {
+			port = Int32.Parse(portInput.text);
+		} catch (FormatException e) {
+			port = EEGManager.Instance.port;
+		}
+		EEGManager.Instance.StartTraining (durationSlider.Value * 60, port);
 	}
 }

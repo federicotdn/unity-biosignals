@@ -39,24 +39,30 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 	}
 
 	public void Exit() {
+		UnlockCursor ();
         Time.timeScale = 1;
-        SceneManager.LoadScene(0);
+		SceneManager.LoadScene("Scenes/MainMenu");
 	}
 
 	public void GameOver() {
-		Cursor.visible = true;
+		UnlockCursor ();
 		gameOverPanel.SetActive (true);
 	}
 
-	public void PlayerWins() {
+	private void UnlockCursor() {
+		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
+	}
+
+	public void PlayerWins() {
+		UnlockCursor ();
 		playerWinsPanel.SetActive (true);
 	}
 
 	public void Pause(bool pause) {
 		pausePanel.SetActive (pause);
 		if (pause) {
-			Cursor.visible = true;
+			UnlockCursor ();
 		} else {
 			Cursor.visible = false;
 			SpO2Manager.Instance.minBPM = minBPMSlider.Value;
@@ -66,5 +72,9 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 
 	public void Reconnect() {
 		SpO2Manager.Instance.Reconnect (portInput.text);
+	}
+
+	void OnDestroy() {
+		UnlockCursor ();
 	}
 }

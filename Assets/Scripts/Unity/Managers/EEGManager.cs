@@ -7,7 +7,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 {
 	public FPSPlayer player;
 	public int port = 5005;
-	public bool trainFromFile;
 	public string filepath;
 	public int minThreshold = 3;
 	public int maxThreshold = 6;
@@ -21,10 +20,41 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 
 	private EEGReader reader;
 	private EEGProcessor processor;
+	public EEGProcessor Processor {
+		get {
+			return processor;
+		}
+
+		set {
+			if (processor != null) {
+				processor.StopAndJoin ();
+			}
+			if (value != null) {
+				processor = value;
+				processor.ProcessorCallback = OnFFT;
+				Status = 0;
+				Status = EyesStatus.NONE;	
+			}
+		}
+	}
 
 	private bool trained;
+	public bool Trained {
+		get {
+			return trained;
+		}
 
-	private Trainer trainer;
+		set {
+			trained = value;
+			if (value) {
+				training = false;
+				reading = true;
+				Status = EyesStatus.NONE;	
+			} else {
+				training = false;
+			}
+		}
+	}
 
 	private CounterTimer trainingTimer;
 	private CounterTimer statusTimer;
@@ -36,26 +66,6 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 
 	void Start ()
 	{
-		trainer = new Trainer (EEGProcessor.FEATURE_COUNT, ClassifierType.DecisionTree);
-		if (trainFromFile) {
-			EEGReader fileReader = new EEGFileReader (Application.dataPath + "/" + filepath, false);
-			EEGProcessor fileProcessor = new EEGProcessor (fileReader);
-
-			fileProcessor.Training = true;
-			fileProcessor.Start ();
-			while (!fileProcessor.Finished) {
-				fileProcessor.Update ();
-			}
-
-			trainer.Train (fileProcessor.TrainingValues);
-			trained = true;
-			reading = true;
-		}
-		reader = new EEGOSCReader (port);
-		processor = new EEGProcessor (reader);
-		processor.ProcessorCallback = OnFFT;
-		Status = 0;
-		Status = EyesStatus.NONE;		
 		previousPlayerPos = player.transform.position;
 	}
 	
@@ -72,7 +82,7 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 		
 			if (!beepPlayed && remainingTime < 1.3f && !(totalRemainingTime < 1.3f)) {
 				SoundManager.Instance.PlayClip (trainingBeep);
-				if (processor.Status == EyesStatus.OPEN) {
+				if (Processor.Status == EyesStatus.OPEN) {
 					StartCoroutine (PlayDelayed ());
 					uiManager.actionText = "Cierra los ojos!";
 				} else {
@@ -83,17 +93,16 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 			}
 
 			if (trainingTimer.Finished) {
-				processor.Training = false;
-				training = false;
+				Processor.Training = false;
 				uiManager.Training (false);
 				EEGGameManager.Instance.Status = GameStatus.Playing;
-				trained = true;
+				Trained = true;
 			} else if (statusTimer.Finished) {
-				if (processor.Status == EyesStatus.OPEN) {
-					processor.Status = EyesStatus.CLOSED;
+				if (Processor.Status == EyesStatus.OPEN) {
+					Processor.Status = EyesStatus.CLOSED;
 					uiManager.statusText = "Manten los ojos cerrados";
 				} else {
-					processor.Status = EyesStatus.OPEN;
+					Processor.Status = EyesStatus.OPEN;
 					uiManager.statusText = "Manten los ojos abiertos";
 				}
 				beepPlayed = false;
@@ -104,8 +113,8 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 			trainingTimer.Update (Time.deltaTime);
 		}
 
-		if (reading && processor != null) {
-			processor.Update ();
+		if (reading && Processor != null) {
+			Processor.Update ();
 
 			// If the player moves, he stops hearing
 			if (Vector3.Distance (player.transform.position, previousPlayerPos) > 0.005) {
@@ -118,47 +127,67 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 
 	public void StartReading() {
 		if (!reading) {
-			processor.Start ();
+			Processor.Start ();
 			reading = true;
 		}
+	}
+
+	public void StopTraining() {
+		if (processor != null) {
+			processor.Training = false;
+		}
+		training = false;
+		Trained = true;
+		EEGGameManager.Instance.Status = GameStatus.Playing;
 	}
 
 
 	void OnApplicationQuit() {
 		reading = false;
-		processor.StopAndJoin ();
-		processor = null;
-	}
-
-	void OnDestroy() {
-		reading = false;
 		if (processor != null) {
-			processor.StopAndJoin ();
-			processor = null;
+			Processor.StopAndJoin ();
+			Processor = null;
 		}
 	}
 
-	public void StartTraining ()
+	void OnDestroy() {
+		Time.timeScale = 1;
+	}
+
+	public void StartTrainingMode ()
 	{
 		EEGUIManager.Instance.Training (true);
 		beepPlayed = false;
 	}
 
-	public void StartTrainingClicked ()
+	public void StartTraining (int duration, int port)
 	{
-		int duration = (int)EEGUIManager.Instance.trainingPanel.durationSlider.value;
-		trainingTimer = new CounterTimer (duration * 60);
+		if (this.port != port || processor == null) {
+			this.port = port;
+			if (processor != null) {
+				processor.StopAndJoin ();
+				processor = null;
+			}
+			reader = new EEGOSCReader (port);
+			Processor = new EEGProcessor (reader);
+			EEGGameManager.Instance.SetProcessor (processor, false);
+			reading = false;
+		} else {
+			Processor.Reset ();
+		}
+
+		trainingTimer = new CounterTimer (duration);
 		statusTimer = new CounterTimer (Random.Range (minStatusDuration, maxStatusDuration));
-		processor.Status = EyesStatus.OPEN;
-		processor.Training = true;
+		Processor.Status = EyesStatus.OPEN;
+		Processor.Training = true;
 		training = true;
 		StartReading ();
 	}
 
 	void OnFFT ()
 	{
-		if (trained) {
-			if (processor.Status == EyesStatus.CLOSED) {
+		if (Trained) {
+			if (Processor.Status == EyesStatus.CLOSED) {
 				StatusCount++;
 			} else {
 				StatusCount--;
@@ -172,6 +201,12 @@ public class EEGManager : MonoBehaviorSingleton<EEGManager>
 			}
 		}
 	}
+
+	public void Retrain() {
+		Trained = false;
+		EEGGameManager.Instance.Status = GameStatus.Training;
+	}
+
 
 	IEnumerator PlayDelayed ()
 	{

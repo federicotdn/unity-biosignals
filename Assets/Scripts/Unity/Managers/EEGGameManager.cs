@@ -3,20 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using pfcore;
 
-public enum GameStatus {
-	Playing, Training, Paused, GameOver, PlayerWins
+public enum GameStatus
+{
+	Playing,
+	Training,
+	Paused,
+	GameOver,
+	PlayerWins
 }
 
-public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
+public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager>
+{
 	public FPSPlayer player;
 	public GameObject bombsContainer;
+	public GameObject zombiesContainer;
+
 	public float checkingInterval = 0.4f;
 
 	private HashSet<Bomb> bombs;
 
 	public float hearingDistance = 20;
 	public float maxVisibilityDuration = 7;
-
 
 	private HashSet<Bomb> activeBombs;
 	private HashSet<OutlineObject> activeObjects;
@@ -25,13 +32,16 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	private float visibilityTime;
 	private CounterTimer visibilityTimer;
 
+	private List<Zombie> zombies;
 	private EyesStatus previousStatus;
 	private bool visibilityOn;
 	private CounterTimer checkingTimer;
+	private ProcessorContainer processorContainer;
 
 	private bool started;
 
 	private GameStatus status;
+
 	public GameStatus Status {
 		get {
 			return status;
@@ -40,6 +50,8 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		set {
 			switch (value) {
 			case GameStatus.Playing:
+				PauseZombies (false);
+				EEGUIManager.Instance.Training (false);
 				player.fpsController.enabled = true;
 				player.enabled = true;
 				Time.timeScale = 1;
@@ -50,18 +62,23 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 				EEGUIManager.Instance.Pause (false);
 				break;
 			case GameStatus.Training:
+				PauseZombies (true);
+				player.fpsController.enabled = false;
+				player.enabled = false;
 				SoundManager.Instance.PauseAudio ();
+				Time.timeScale = 1;
 				SoundManager.Instance.PauseMainSong (true);
 				SoundManager.Instance.MuteAll (true);
 				EEGUIManager.Instance.Pause (false);
-				player.fpsController.enabled = false;
-				player.enabled = false;
-				EEGManager.Instance.StartTraining ();
+				EEGUIManager.Instance.Training (true);
+				EEGManager.Instance.StartTrainingMode ();
 				break;
 			case GameStatus.Paused:
+				PauseZombies (true);
+				player.fpsController.enabled = false;
+				player.enabled = false;
 				SoundManager.Instance.PauseAudio ();
 				SoundManager.Instance.MuteAll (true);
-				player.fpsController.enabled = false;
 				Time.timeScale = 0;
 				EEGUIManager.Instance.Pause (true);
 				break;
@@ -69,8 +86,10 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 				Invoke ("GameOver", 1);
 				break;
 			case GameStatus.PlayerWins:
-				SoundManager.Instance.PauseAudio ();
-				SoundManager.Instance.MuteAll (true);
+				PauseZombies (true);
+				player.fpsController.enabled = false;
+				player.enabled = false;
+				SoundManager.Instance.PlayWinSong ();
 				player.fpsController.enabled = false;
 				Time.timeScale = 0;
 				EEGUIManager.Instance.PlayerWins ();
@@ -82,25 +101,31 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 	}
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+	{
 		Bomb[] a = bombsContainer.GetComponentsInChildren<Bomb> ();
-		bombs = new HashSet<Bomb>(a);
+		bombs = new HashSet<Bomb> (a);
 		activeObjects = new HashSet<OutlineObject> ();
-		inactiveObjects = new HashSet<OutlineObject> (FindObjectsOfType<OutlineObject>());
+		inactiveObjects = new HashSet<OutlineObject> (FindObjectsOfType<OutlineObject> ());
 		activeBombs = new HashSet<Bomb> ();
 		previousStatus = EyesStatus.NONE;
 		checkingTimer = new CounterTimer (checkingInterval);
-
+		zombies = new List<Zombie> (zombiesContainer.GetComponentsInChildren<Zombie> ());
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		if (!started) {
-			if (EEGManager.Instance.trainFromFile) {
+			processorContainer = FindObjectOfType<ProcessorContainer> ();
+			if ((processorContainer != null && processorContainer.processor != null)) {
+				EEGManager.Instance.Processor = processorContainer.processor;
+				EEGManager.Instance.Trained = true;
 				Status = GameStatus.Playing;
 			} else {
 				Status = GameStatus.Training;
 			}
+
 			started = true;
 		}
 
@@ -163,7 +188,7 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 				activeBombs.Clear ();
 
 				if (previousStatus == EyesStatus.CLOSED) {
-					visibilityTimer = new CounterTimer (Mathf.Min(visibilityTime + EEGManager.Instance.minThreshold, maxVisibilityDuration));
+					visibilityTimer = new CounterTimer (Mathf.Min (visibilityTime + EEGManager.Instance.minThreshold, maxVisibilityDuration));
 					foreach (OutlineObject activeObject in activeObjects) {
 						activeObject.Outline = true;
 					}
@@ -195,6 +220,11 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 				return;
 			}
 			break;
+		case GameStatus.Training:
+			if (Input.GetKey (KeyCode.K)) {
+				EEGManager.Instance.StopTraining ();
+			}
+			break;
 		default:
 
 			break;
@@ -202,13 +232,25 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		}
 	}
 
-	public void RemoveBomb(Bomb bomb) {
-		bombs.Remove (bomb);
-		activeBombs.Remove (bomb);
-		RemoveOutlineObject (bomb.GetComponent<OutlineObject>());
+	private void PauseZombies (bool pause)
+	{
+		foreach (Zombie zombie in zombies) {
+			if (zombie.health >= 0) {
+				zombie.animator.enabled = !pause;
+				zombie.Agent.enabled = !pause;
+			}
+		}
 	}
 
-	public void RemoveOutlineObject(OutlineObject obj) {
+	public void RemoveBomb (Bomb bomb)
+	{
+		bombs.Remove (bomb);
+		activeBombs.Remove (bomb);
+		RemoveOutlineObject (bomb.GetComponent<OutlineObject> ());
+	}
+
+	public void RemoveOutlineObject (OutlineObject obj)
+	{
 		obj.Outline = false;
 		if (activeObjects != null) {
 			activeObjects.Remove (obj);
@@ -219,11 +261,36 @@ public class EEGGameManager : MonoBehaviorSingleton<EEGGameManager> {
 		}
 	}
 
-	private void GameOver() {
-		SoundManager.Instance.PauseAudio ();
-		SoundManager.Instance.MuteAll (true);
+	void OnDestroy ()
+	{
+		Time.timeScale = 1;
+	}
+		
+	private void GameOver ()
+	{
+		PauseZombies (true);
 		player.fpsController.enabled = false;
+		player.enabled = false;
+		SoundManager.Instance.PlayGameOverSong ();
 		Time.timeScale = 0;
 		EEGUIManager.Instance.GameOver ();
+	}
+
+	public void SetProcessor (EEGProcessor processor, bool create)
+	{
+		if (processorContainer == null && create) {
+			GameObject go = new GameObject ();
+			processorContainer = go.AddComponent<ProcessorContainer> (); 
+		}
+		if (processorContainer != null) {
+			processorContainer.processor = processor;
+		}
+	}
+
+	public void RemoveProcessor() {
+		if (processorContainer != null) {
+			processorContainer.processor.StopAndJoin ();
+			Destroy (processorContainer);
+		}
 	}
 }

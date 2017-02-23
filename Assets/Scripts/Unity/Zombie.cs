@@ -67,7 +67,7 @@ public class Zombie : Humanoid,  PoolableObject<Zombie> {
 		if (health > 0 && currentTarget != null) {
 			Vector3 dir = (player.transform.position - transform.position);
 
-			if (patrolMode && !playerFound) {
+			if (patrolMode && !playerFound && player.enabled) {
 				if (Agent.remainingDistance < 0.1) {
 					patrolIndex++;
 					patrolIndex %= patrols.Count;
@@ -97,9 +97,15 @@ public class Zombie : Humanoid,  PoolableObject<Zombie> {
 					StartCoroutine (Attack ());
 				}
 			}
-			Agent.destination = currentTarget.position;
-			animator.SetFloat ("Speed", Agent.speed);
+			if (Agent.enabled) {
+				Agent.destination = currentTarget.position;
+			}
 
+			if (animator.enabled) {
+				animator.SetFloat ("Speed", Agent.speed);
+
+			}
+				
 			if (growlTimer.Finished && !AudioSrc.isPlaying) {
 				growlTimer.Reset ();
 				AudioSrc.PlayOneShot (growlClip);
@@ -107,9 +113,8 @@ public class Zombie : Humanoid,  PoolableObject<Zombie> {
 			}
 
 			growlTimer.Update (Time.deltaTime);
-
+			raycastTimer.Update (Time.deltaTime);
 		}
-		raycastTimer.Update (Time.deltaTime);
 	}
 
 	private void PlayerFound() {
@@ -133,9 +138,11 @@ public class Zombie : Humanoid,  PoolableObject<Zombie> {
 			Agent.enabled = false;
 			Invoke ("DisableAudioSrc", deathClip.length);
 			SetCollidersEnabled (false);
-			if (ZombieFactory.IsInitialized()) {
+			if (ZombieFactory.IsInitialized ()) {
 				StartCoroutine (ReturnDelayed (10));
 				SpO2GameManager.Instance.ZombieDied ();
+			} else {
+				enabled = false;
 			}
 		} else {
 			Agent.Move(-hit.normal * 0.4f);

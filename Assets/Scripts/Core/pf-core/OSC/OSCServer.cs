@@ -18,9 +18,12 @@ namespace OSC
 
 		private Object callbackLock = new Object();
 
+		private bool finished;
+
 		public OSCServer(int port)
 		{
 			Port = port;
+			finished = false;
 			client = new UdpClient(port);
 			AsyncCallback callBack = new AsyncCallback(ReceiveCallback);
 			client.BeginReceive(callBack, null);
@@ -50,12 +53,19 @@ namespace OSC
 				PacketReceivedEvent(this, packet);
 			}
 
-			AsyncCallback callBack = new AsyncCallback(ReceiveCallback);
-			client.BeginReceive(callBack, null);
+			if (!finished) {
+				AsyncCallback callBack = new AsyncCallback(ReceiveCallback);
+				client.BeginReceive(callBack, null);
+			} else {
+				PacketReceivedEvent = null;
+				client.Close();
+			}
+
 			Monitor.Exit(callbackLock);
 		}
 
 		public void Close() {
+			finished = true;
 			PacketReceivedEvent = null;
 			client.Close();
 		}
