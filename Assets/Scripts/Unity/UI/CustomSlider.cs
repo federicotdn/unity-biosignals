@@ -7,14 +7,22 @@ public class CustomSlider : MonoBehaviour {
 
 	public Text valueText;
 	public Slider slider;
+	public bool halfIncrements = false;
 
-	public int Value {
+	public float Value {
 		get {
-			return (int)slider.value;
+			if (halfIncrements) {
+				return slider.value / 2.0f;
+			}
+			return slider.value;
 		}
 
 		set {
-			slider.value = value;
+			if (halfIncrements) {
+				slider.value = value * 2;
+			} else {
+				slider.value = value;
+			}
 		}
 	}
 
@@ -25,6 +33,10 @@ public class CustomSlider : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		valueText.text = slider.value.ToString ();
+		if (halfIncrements) {
+			valueText.text = (slider.value / 2.0f).ToString ();
+		} else {
+			valueText.text = slider.value.ToString ();
+		}
 	}
 }

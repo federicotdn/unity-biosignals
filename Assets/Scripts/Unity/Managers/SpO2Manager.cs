@@ -43,11 +43,17 @@ public class SpO2Manager : MonoBehaviorSingleton<SpO2Manager> {
 	}
 
 	void OnApplicationQuit() {
-		processor.StopAndJoin ();
+		if (processor != null) {
+			processor.StopAndJoin ();
+			processor = null;
+		}
 	}
 
 	void OnDestroy() {
-		processor.StopAndJoin ();
+		if (processor != null) {
+			processor.StopAndJoin ();
+			processor = null;
+		}
 	}
 
 	public void Reconnect(string portName) {

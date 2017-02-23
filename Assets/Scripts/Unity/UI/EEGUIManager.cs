@@ -102,8 +102,8 @@ public class EEGUIManager : MonoBehaviorSingleton<EEGUIManager> {
 			UnlockCursor ();
 		} else {
 			Cursor.visible = false;
-			EEGManager.Instance.minThreshold = minThresholdSlider.Value;
-			EEGManager.Instance.maxThreshold = maxThresholdSlider.Value;
+			EEGManager.Instance.minThreshold = (int)minThresholdSlider.Value;
+			EEGManager.Instance.maxThreshold = (int)maxThresholdSlider.Value;
 		}
 	}
 

@@ -145,7 +145,7 @@ public class SpO2GameManager : MonoBehaviorSingleton<SpO2GameManager> {
 
 	private void Spawn() {
 		int spawnNumber = Random.Range (minSpawnZombies, maxSpawnZombies + 1);
-		spawnNumber = Mathf.Min (spawnNumber, remainingZombies - spawnedZombies);
+		spawnNumber = Mathf.Min (spawnNumber, remainingZombies - spawnNumber);
 		spawnedZombies += spawnNumber;
 		for (int i = 0; i < spawnNumber; i++) {
 			Zombie zombie = ZombieFactory.Instance.pool.Retrieve ();

@@ -60,6 +60,6 @@ public class TrainingPanel : MonoBehaviour {
 		} catch (FormatException) {
 			port = EEGManager.Instance.port;
 		}
-		EEGManager.Instance.StartTraining (durationSlider.Value * 60, port);
+		EEGManager.Instance.StartTraining (((int)durationSlider.Value) * 60, port);
 	}
 }

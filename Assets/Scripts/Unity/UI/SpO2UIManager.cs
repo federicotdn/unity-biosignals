@@ -13,6 +13,7 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 	public InputField portInput;
 	public CustomSlider minBPMSlider;
 	public CustomSlider maxBPMSlider;
+	public CustomSlider shakeSlider;
 
 	// Use this for initialization
 	void Start () {
@@ -22,7 +23,8 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 		pausePanel.SetActive (false);
 		portInput.text = SpO2Manager.Instance.portName;
 		minBPMSlider.Value = SpO2Manager.Instance.minBPM;
-		SpO2Manager.Instance.maxBPM = SpO2Manager.Instance.minBPM;
+		maxBPMSlider.Value = SpO2Manager.Instance.maxBPM;
+		shakeSlider.Value = LookManager.Instance.ShakeMagnitude;
 	}
 	
 	// Update is called once per frame
@@ -63,10 +65,14 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 		pausePanel.SetActive (pause);
 		if (pause) {
 			UnlockCursor ();
+			minBPMSlider.Value = SpO2Manager.Instance.minBPM;
+			maxBPMSlider.Value = SpO2Manager.Instance.maxBPM;
+			shakeSlider.Value = LookManager.Instance.ShakeMagnitude;
 		} else {
 			Cursor.visible = false;
-			SpO2Manager.Instance.minBPM = minBPMSlider.Value;
-			SpO2Manager.Instance.maxBPM = maxBPMSlider.Value;
+			SpO2Manager.Instance.minBPM = (int)minBPMSlider.Value;
+			SpO2Manager.Instance.maxBPM = (int)maxBPMSlider.Value;
+			LookManager.Instance.ShakeMagnitude = shakeSlider.Value;
 		}
 	}
 
