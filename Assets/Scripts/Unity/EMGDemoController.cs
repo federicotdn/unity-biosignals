@@ -13,13 +13,17 @@ public class EMGDemoController : MonoBehaviour {
 
     public FirstPersonController fpsController;
     public EMGTrainingController trainingController;
+
     public EnergySphereGun sphereGun;
+    public GravitySlam gravitySlam;
 
     public bool enableFakeLoop = false;
+    private EMGWeapon currentWeapon;
 
     public void Setup() {
         manager = EMGManager.Instance;
         processor = manager.Processor;
+        currentWeapon = sphereGun;
 
         if (!enableFakeLoop) {
             processor.AddProcessorCallback(widget.WidgetCallback);
@@ -34,21 +38,25 @@ public class EMGDemoController : MonoBehaviour {
             return;
         }
 
-        if (processor.PredictedMuscleState == MuscleState.RELAXED) {
-            sphereGun.MuscleRelaxedTick();
-        } else if (processor.PredictedMuscleState == MuscleState.TENSE) {
-            sphereGun.MuscleTenseTick();
-        }
+        WeaponTick(processor.PredictedMuscleState);
     }
 
     IEnumerator FakeEMGLoop() {
         while (true) {
             yield return new WaitForSeconds(EMGManager.EMG_TICK_DURATION); // Simulate EMGProcessor delay
             if (Input.GetKey(KeyCode.E)) {
-                sphereGun.MuscleTenseTick();
+                WeaponTick(MuscleState.TENSE);
             } else {
-                sphereGun.MuscleRelaxedTick();
+                WeaponTick(MuscleState.RELAXED);
             }
+        }
+    }
+
+    private void WeaponTick(MuscleState state) {
+        if (state == MuscleState.RELAXED) {
+            currentWeapon.MuscleRelaxedTick();
+        } else if (state == MuscleState.TENSE) {
+            currentWeapon.MuscleTenseTick();
         }
     }
 
@@ -66,6 +74,14 @@ public class EMGDemoController : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.P)) {
             SceneManager.LoadScene("Scenes/MainMenu");
+        }
+
+        if (Input.GetKeyUp(KeyCode.Q)) {
+            if (currentWeapon == sphereGun) {
+                currentWeapon = gravitySlam;
+            } else {
+                currentWeapon = sphereGun;
+            }
         }
     }
 }

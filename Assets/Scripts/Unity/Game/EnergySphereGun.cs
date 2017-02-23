@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class EnergySphereGun : MonoBehaviour {
+public class EnergySphereGun : EMGWeapon {
 
     public const uint MAX_CHARGE_COUNTERS = 12;
     public const uint SPAWN_SPHERE_START = 1;
@@ -74,14 +72,14 @@ public class EnergySphereGun : MonoBehaviour {
         currentSphere = null;
     }
 
-    public void MuscleTenseTick() {
+    public override void MuscleTenseTick() {
         if (chargeCounter < MAX_CHARGE_COUNTERS) {
             chargeCounter++;
             chargeReached = chargeCounter;
         }
     }
 
-    public void MuscleRelaxedTick() {
+    public override void MuscleRelaxedTick() {
         if (chargeCounter > 0) {
             chargeCounter--;
 
