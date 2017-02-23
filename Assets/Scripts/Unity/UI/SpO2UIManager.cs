@@ -39,7 +39,8 @@ public class SpO2UIManager : MonoBehaviorSingleton<SpO2UIManager> {
 	}
 
 	public void Exit() {
-		SceneManager.LoadScene(0);
+        Time.timeScale = 1;
+        SceneManager.LoadScene(0);
 	}
 
 	public void GameOver() {

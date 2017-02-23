@@ -1,11 +1,13 @@
 ﻿using pfcore;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityStandardAssets.Characters.FirstPerson;
 
 public class EMGDemoController : MonoBehaviour {
 
     public EMGWidget widget;
+    public GameObject helpWidget;
     private EMGManager manager;
     private EMGProcessor processor;
 
@@ -55,6 +57,15 @@ public class EMGDemoController : MonoBehaviour {
             foreach (PrefabSpawner spawner in FindObjectsOfType<PrefabSpawner>()) {
                 spawner.Respawn();
             }
+        }
+
+        if (Input.GetKeyUp(KeyCode.H)) {
+            widget.gameObject.SetActive(!widget.gameObject.activeSelf);
+            helpWidget.SetActive(!helpWidget.activeSelf);
+        }
+
+        if (Input.GetKeyUp(KeyCode.P)) {
+            SceneManager.LoadScene("Scenes/MainMenu");
         }
     }
 }
