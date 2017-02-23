@@ -95,6 +95,7 @@ public class EMGTrainingController : MonoBehaviour {
 
     private void OnTrainingFinished() {
         demoController.widget.gameObject.SetActive(true);
+        demoController.helpWidget.SetActive(true);
         demoController.fpsController.enabled = true;
         demoController.Setup();
 
