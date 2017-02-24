@@ -16,7 +16,7 @@ namespace pfcore
 	{
 		internal static void Main(string[] args)
 		{
-#if !UNITY_EDITOR
+#if (!UNITY_EDITOR && !UNITY_STANDALONE)
 			Console.WriteLine("Hello from pfcore.Main");
 			if (args.Length < 1)
 			{
@@ -85,9 +85,9 @@ namespace pfcore
 
 			}
 #endif
-		}
+        }
 
-		private static void RunEEG(string filepath = null)
+        private static void RunEEG(string filepath = null)
 		{
 			EEGReader reader;
 			if (filepath != null)
