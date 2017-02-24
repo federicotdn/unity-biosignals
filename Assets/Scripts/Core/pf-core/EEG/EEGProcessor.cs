@@ -33,8 +33,6 @@ namespace pfcore
 		public List<TrainingValue> AlphaTrainingValues { get; private set; }
 		public bool Finished { get; private set; }
 
-		public float[] horseshoe;
-
 		public List<Complex> TP9FFT { get; private set; }
 		public List<Complex> AF7FFT { get; private set; }
 		public List<Complex> AF8FFT { get; private set; }

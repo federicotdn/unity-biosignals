@@ -34,7 +34,9 @@ public class SpO2Manager : MonoBehaviorSingleton<SpO2Manager> {
 	
 	// Update is called once per frame
 	void Update () {
-		processor.Update ();
+		if (processor != null) {
+			processor.Update ();
+		}
 
 		accelerate = Input.GetKey (KeyCode.K);
 
@@ -43,6 +45,7 @@ public class SpO2Manager : MonoBehaviorSingleton<SpO2Manager> {
 	}
 
 	void OnApplicationQuit() {
+		Time.timeScale = 1;
 		if (processor != null) {
 			processor.StopAndJoin ();
 			processor = null;
@@ -50,6 +53,7 @@ public class SpO2Manager : MonoBehaviorSingleton<SpO2Manager> {
 	}
 
 	void OnDestroy() {
+		Time.timeScale = 1;
 		if (processor != null) {
 			processor.StopAndJoin ();
 			processor = null;
